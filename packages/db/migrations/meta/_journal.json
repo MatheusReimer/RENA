@@ -15,6 +15,13 @@
       "when": 1789330356679,
       "tag": "0001_chemical_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789337592117,
+      "tag": "0002_nosy_eternity",
+      "breakpoints": true
     }
   ]
 }

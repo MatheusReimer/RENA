@@ -5,6 +5,7 @@
  */
 export * from './activity'
 export * from './auth'
+export * from './community'
 export * from './discussions'
 export * from './enums'
 export * from './gamification'

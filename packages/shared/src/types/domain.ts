@@ -277,6 +277,31 @@ export interface DiscussionCommentNode extends DiscussionComment {
 }
 
 /* ------------------------------------------------------------------ *
+ * Communities (SPEC 14)
+ * ------------------------------------------------------------------ */
+
+/** A media item seen as a place people gather, rather than as a catalogue row. */
+export interface CommunitySummary {
+  media: Media
+  memberCount: number
+  threadCount: number
+  replyCount: number
+  /** Whether the viewer has joined. Null when signed out. */
+  joined: boolean | null
+  lastActivityAt: IsoDateTime | null
+}
+
+export interface CommunityDetail extends CommunitySummary {
+  /** A page of members, newest first. */
+  members: CommunityMember[]
+}
+
+export interface CommunityMember {
+  user: UserSummary
+  joinedAt: IsoDateTime
+}
+
+/* ------------------------------------------------------------------ *
  * Lists (SPEC 15)
  * ------------------------------------------------------------------ */
 

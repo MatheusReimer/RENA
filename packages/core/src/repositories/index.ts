@@ -1,4 +1,5 @@
 export * from './activity.repository'
+export * from './community.repository'
 export * from './discover.repository'
 export * from './discussion.repository'
 export * from './friendship.repository'

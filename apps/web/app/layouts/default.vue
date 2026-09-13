@@ -31,6 +31,7 @@ const navItems = [
   { to: '/', icon: 'home', label: 'Home', sidebarOnly: false },
   { to: '/search', icon: 'search', label: 'Search', sidebarOnly: false },
   { to: '/discover', icon: 'discover', label: 'Discover', sidebarOnly: false },
+  { to: '/community', icon: 'community', label: 'Community', sidebarOnly: false },
   { to: '/friends', icon: 'friends', label: 'Friends', sidebarOnly: true },
   { to: '/lists', icon: 'lists', label: 'Lists', sidebarOnly: true },
   { to: '/activity', icon: 'activity', label: 'Notifications', sidebarOnly: false },

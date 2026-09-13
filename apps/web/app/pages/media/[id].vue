@@ -345,6 +345,13 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
             >
               Start a discussion
             </UiAppButton>
+            <UiAppButton
+              variant="ghost"
+              size="sm"
+              @click="navigateTo(`/community/${media.id}`)"
+            >
+              Open community
+            </UiAppButton>
           </div>
 
           <div v-if="threadsLoading" class="section__loading">
@@ -652,6 +659,8 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 }
 
 .section__actions {
+  display: flex;
+  gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 

@@ -127,6 +127,9 @@ async function main() {
   await seedLists(db, users, media)
   console.log(`  ${SEED_LISTS.length} lists`)
 
+  const memberships = await seedCommunities(db, users, media)
+  console.log(`  ${memberships} community memberships`)
+
   console.log('\n  Done. Sign in with any of these:\n')
   for (const user of SEED_USERS.slice(0, 3)) {
     console.log(`    ${user.email.padEnd(24)} ${SEED_PASSWORD}`)
@@ -148,6 +151,7 @@ async function clear(db: Database) {
     TRUNCATE TABLE
       activities, activity_likes, notifications,
       discussion_comments, discussion_threads, review_comments,
+      community_members,
       list_items, lists,
       reviews, review_likes, ratings,
       user_media, media_rating_stats, media,
@@ -398,6 +402,43 @@ async function seedRatingsAndReviews(
   `)
 
   return { ratings: ratingCount, reviews: reviewCount }
+}
+
+/**
+ * Community memberships (SPEC 14).
+ *
+ * Seeded against the titles that already have discussions, so the Community
+ * screen opens with places that are actually alive rather than a list of
+ * empty rooms.
+ */
+async function seedCommunities(
+  db: Database,
+  users: SeededUser[],
+  media: SeededMedia[],
+): Promise<number> {
+  const withThreads = await db
+    .selectDistinct({ mediaId: schema.discussionThreads.mediaId })
+    .from(schema.discussionThreads)
+
+  const targets = withThreads.length > 0
+    ? withThreads.map((row) => row.mediaId)
+    : media.slice(0, 5).map((item) => item.id)
+
+  const rows: Array<typeof schema.communityMembers.$inferInsert> = []
+
+  for (const mediaId of targets) {
+    // Most people, but not everyone -- a full house on every title reads as
+    // fake and hides the Join button in every screenshot.
+    for (const user of users) {
+      if (random() > 0.65) continue
+      rows.push({ mediaId, userId: user.id, joinedAt: daysAgo(Math.floor(random() * 30)) })
+    }
+  }
+
+  if (rows.length === 0) return 0
+
+  await db.insert(schema.communityMembers).values(rows).onConflictDoNothing()
+  return rows.length
 }
 
 async function seedDiscussions(db: Database, users: SeededUser[], media: SeededMedia[]) {

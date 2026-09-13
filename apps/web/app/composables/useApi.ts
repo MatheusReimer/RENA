@@ -4,6 +4,8 @@ import type {
   ApiErrorCode,
   DiscussionComment,
   DiscussionCommentNode,
+  CommunityDetail,
+  CommunitySummary,
   DiscoverSection,
   DiscussionThread,
   FriendRequest,
@@ -309,6 +311,25 @@ export function useApi() {
         request<{ sections: DiscoverSection[] }>('/api/discover', {
           query: type ? { type } : {},
         }),
+    },
+
+    /* -------------------------------------------------------------- *
+     * Communities (SPEC 14)
+     * -------------------------------------------------------------- */
+    communities: {
+      list: (scope: 'active' | 'joined' = 'active') =>
+        request<{ communities: CommunitySummary[] }>('/api/communities', {
+          query: { scope },
+        }),
+
+      get: (mediaId: string) =>
+        request<{ community: CommunityDetail }>(`/api/communities/${mediaId}`),
+
+      setMembership: (mediaId: string, joined: boolean) =>
+        request<{ joined: boolean; memberCount: number }>(
+          `/api/communities/${mediaId}/membership`,
+          { method: 'POST', body: { joined } },
+        ),
     },
 
     /* -------------------------------------------------------------- *

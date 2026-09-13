@@ -253,8 +253,9 @@ would resolve against it.
 - Ratings, consumption status, reviews, likes
 - Activity feed, friend requests and the friend graph, notifications
 - XP and badge evaluation
-- Design system and the Home, Search, Discover, Friends, Lists, Media, Profile,
-  Notifications and auth screens
+- Communities: join/leave, member lists, and a directory ranked by activity
+- Design system and the Home, Search, Discover, Community, Friends, Lists,
+  Media, Profile, Notifications and auth screens
 
 **Done — Phase 5, discussions (§14):**
 
