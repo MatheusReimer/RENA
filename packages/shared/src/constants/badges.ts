@@ -4,6 +4,8 @@
  * Requirements are declarative so `BadgeService` can evaluate them generically;
  * SPEC 17 forbids hardcoding badge logic in UI components.
  */
+import { MEDIA_TYPES } from './media'
+
 export const BADGE_REQUIREMENT_TYPES = [
   'rating_count',
   'review_count',
@@ -25,8 +27,14 @@ export interface BadgeDefinition {
   icon: string
   requirementType: BadgeRequirementType
   requirementValue: number
-  /** Narrows `rating_count_of_type` to a single media type. */
-  requirementMediaType?: 'movie' | 'series' | 'book'
+  /**
+   * Narrows `rating_count_of_type` to a single media type.
+   *
+   * Derived from MEDIA_TYPES rather than spelled out, so adding a media type
+   * makes per-type badges available for it without editing this file. An
+   * earlier hardcoded union is what made adding games a compile error here.
+   */
+  requirementMediaType?: (typeof MEDIA_TYPES)[number]
 }
 
 export const BADGE_DEFINITIONS: readonly BadgeDefinition[] = [
@@ -96,6 +104,15 @@ export const BADGE_DEFINITIONS: readonly BadgeDefinition[] = [
     requirementType: 'rating_count_of_type',
     requirementValue: 1,
     requirementMediaType: 'book',
+  },
+  {
+    slug: 'first-game',
+    name: 'First Game',
+    description: 'Rate your first game.',
+    icon: '🎮',
+    requirementType: 'rating_count_of_type',
+    requirementValue: 1,
+    requirementMediaType: 'game',
   },
   {
     slug: 'discussion-starter',

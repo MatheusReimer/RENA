@@ -292,6 +292,62 @@ export const SEED_MEDIA: SeedMedia[] = [
     releaseDate: '2020-09-15',
     metadata: { authors: ['Susanna Clarke'], pageCount: 245 },
   },
+  {
+    query: 'Baldurs Gate 3',
+    mediaType: 'game',
+    fallbackExternalId: 'seed-baldurs-gate-3',
+    title: "Baldur's Gate 3",
+    description:
+      'A party-based role-playing game set in the Forgotten Realms, where every choice reshapes the story.',
+    releaseDate: '2023-08-03',
+    metadata: {
+      genres: ['RPG', 'Strategy'],
+      platforms: ['PC', 'PlayStation 5', 'Xbox Series X'],
+      developers: ['Larian Studios'],
+    },
+  },
+  {
+    query: 'Elden Ring',
+    mediaType: 'game',
+    fallbackExternalId: 'seed-elden-ring',
+    title: 'Elden Ring',
+    description:
+      'An open-world action RPG set in the Lands Between, punishing and enormous in equal measure.',
+    releaseDate: '2022-02-25',
+    metadata: {
+      genres: ['Action', 'RPG'],
+      platforms: ['PC', 'PlayStation 5', 'Xbox Series X'],
+      developers: ['FromSoftware'],
+    },
+  },
+  {
+    query: 'Hades',
+    mediaType: 'game',
+    fallbackExternalId: 'seed-hades',
+    title: 'Hades',
+    description:
+      'A rogue-like dungeon crawler about escaping the underworld, one failed run at a time.',
+    releaseDate: '2020-09-17',
+    metadata: {
+      genres: ['Action', 'Rogue-like'],
+      platforms: ['PC', 'Nintendo Switch', 'PlayStation 5'],
+      developers: ['Supergiant Games'],
+    },
+  },
+  {
+    query: 'Disco Elysium',
+    mediaType: 'game',
+    fallbackExternalId: 'seed-disco-elysium',
+    title: 'Disco Elysium',
+    description:
+      'A detective role-playing game with no combat, where the argument inside your own head is the fight.',
+    releaseDate: '2019-10-15',
+    metadata: {
+      genres: ['RPG', 'Adventure'],
+      platforms: ['PC', 'PlayStation 5', 'Nintendo Switch'],
+      developers: ['ZA/UM'],
+    },
+  },
 ]
 
 /** Review bodies, paired to titles by index at seed time. */

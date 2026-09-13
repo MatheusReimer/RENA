@@ -1,6 +1,7 @@
 import { MEDIA_TYPES } from '@revy/shared/constants'
 import type { MediaType } from '@revy/shared/types'
 import { createOpenLibraryProvider } from './open-library'
+import { createRawgProvider } from './rawg'
 import { createTmdbProvider } from './tmdb'
 import type { MediaProvider, ProviderSearchResult } from './types'
 
@@ -14,6 +15,7 @@ import type { MediaProvider, ProviderSearchResult } from './types'
 
 export interface ProviderRegistryOptions {
   tmdbApiKey?: string | undefined
+  rawgApiKey?: string | undefined
   fetchImpl?: typeof fetch
 }
 
@@ -53,6 +55,19 @@ export function createProviderRegistry(options: ProviderRegistryOptions): Provid
     options.fetchImpl ? { fetchImpl: options.fetchImpl } : {},
   )
   byType.set('book', openLibrary)
+
+  // Games, when a RAWG key is configured. Same soft dependency as TMDB: a
+  // missing key leaves the type searchable-but-empty rather than breaking the
+  // app, and `searchAll` already tolerates a type with no provider.
+  if (options.rawgApiKey) {
+    byType.set(
+      'game',
+      createRawgProvider({
+        apiKey: options.rawgApiKey,
+        ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+      }),
+    )
+  }
 
   function all(): MediaProvider[] {
     return [...new Set(byType.values())]

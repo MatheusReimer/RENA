@@ -97,6 +97,9 @@ export interface MediaMetadata {
   /** Series. */
   seasonCount?: number
   episodeCount?: number
+  /** Games. */
+  platforms?: string[]
+  developers?: string[]
   /** Free-form passthrough for provider fields we do not model yet. */
   [key: string]: unknown
 }

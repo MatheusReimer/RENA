@@ -18,8 +18,10 @@ function useProviders() {
   if (!registry) {
     const config = useRuntimeConfig()
     registry = createProviderRegistry({
-      // Optional: without a TMDB key the app still runs and book search works.
+      // Both keys are optional. Without them the app still runs and book
+      // search works; the corresponding media types simply return no results.
       tmdbApiKey: config.tmdbApiKey || undefined,
+      rawgApiKey: config.rawgApiKey || undefined,
     })
   }
   return registry

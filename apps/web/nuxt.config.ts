@@ -43,6 +43,7 @@ export default defineNuxtConfig({
     databaseUrl: toAbsoluteEmbeddedUrl(process.env.DATABASE_URL ?? '', REPO_ROOT),
     authSecret: process.env.AUTH_SECRET ?? '',
     tmdbApiKey: process.env.TMDB_API_KEY ?? '',
+    rawgApiKey: process.env.RAWG_API_KEY ?? '',
     logQueries: process.env.NUXT_LOG_QUERIES ?? '',
     public: {
       brandName: BRAND.name,
