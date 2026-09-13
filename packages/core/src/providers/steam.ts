@@ -27,6 +27,29 @@ import {
 
 const SEARCH_URL = 'https://store.steampowered.com/api/storesearch'
 const DETAILS_URL = 'https://store.steampowered.com/api/appdetails'
+const CDN_BASE = 'https://cdn.akamai.steamstatic.com/steam/apps'
+
+/**
+ * Artwork built from the app id rather than taken from the API payload.
+ *
+ * Steam's search results carry `tiny_image`, which is the 184x69 store
+ * thumbnail -- a landscape sliver that looks blurry at card size and, forced
+ * into a portrait frame, shows a thin horizontal slice of the art. The CDN
+ * exposes better assets at predictable paths:
+ *
+ *   library_600x900   300x450, portrait, the same 2:3 as a film poster
+ *   header            460x215, landscape, the right shape for a backdrop
+ *
+ * `appdetails` returns the header too, but never the portrait one, so both are
+ * constructed here.
+ */
+function coverFor(appId: string | number): string {
+  return `${CDN_BASE}/${appId}/library_600x900.jpg`
+}
+
+function backdropFor(appId: string | number): string {
+  return `${CDN_BASE}/${appId}/header.jpg`
+}
 
 /**
  * Search terms walked for bulk import.
@@ -167,7 +190,7 @@ export function createSteamProvider(options: SteamProviderOptions = {}): MediaPr
           // Search results carry no date; the detail fetch fills it in when
           // the title is opened. Guessing one here would be worse than null.
           releaseDate: null,
-          coverImageUrl: item.tiny_image ?? null,
+          coverImageUrl: coverFor(item.id),
           subtitle: null,
         }))
     },
@@ -188,7 +211,7 @@ export function createSteamProvider(options: SteamProviderOptions = {}): MediaPr
       const data = await request<SteamSearchResponse>(url)
 
       return (data.items ?? [])
-        .filter((item) => item.name && looksLikeAGame(item.name) && item.tiny_image)
+        .filter((item) => item.name && looksLikeAGame(item.name))
         .map((item) => ({
           externalId: String(item.id),
           provider: 'steam',
@@ -197,8 +220,8 @@ export function createSteamProvider(options: SteamProviderOptions = {}): MediaPr
           originalTitle: null,
           description: null,
           releaseDate: null,
-          coverImageUrl: item.tiny_image ?? null,
-          backdropImageUrl: item.tiny_image ?? null,
+          coverImageUrl: coverFor(item.id),
+          backdropImageUrl: backdropFor(item.id),
           metadata: {},
         }))
     },
@@ -230,11 +253,10 @@ export function createSteamProvider(options: SteamProviderOptions = {}): MediaPr
         originalTitle: null,
         description: data.short_description?.trim() || null,
         releaseDate: parseSteamDate(data.release_date?.date),
-        // `header_image` is a 460x215 banner. It is the only artwork Steam
-        // exposes here, so it serves as both cover and backdrop; the poster
-        // component crops it to the shared ratio.
-        coverImageUrl: data.capsule_imagev5 ?? data.header_image ?? null,
-        backdropImageUrl: data.header_image ?? null,
+        // The portrait library capsule, not the landscape header the payload
+        // offers -- a banner in a poster frame is mostly crop.
+        coverImageUrl: coverFor(externalId),
+        backdropImageUrl: data.header_image ?? backdropFor(externalId),
         metadata: {
           genres: data.genres?.map((genre) => genre.description) ?? [],
           ...(platforms.length ? { platforms } : {}),

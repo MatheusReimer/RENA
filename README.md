@@ -34,7 +34,9 @@ instead of letting the seed apply migrations.
 
 The embedded database is development only: PGlite holds a single connection
 from a single process, so the dev server and `pnpm db:seed` cannot run at the
-same time.
+same time. Stop the dev server before either database command — force-killing
+the process mid-write can corrupt the data directory, and the fix is
+`rm -rf .data` followed by seed and import.
 
 After seeding, sign in as `matheus@example.com` / `password123` (every seeded
 account uses that password).
@@ -225,6 +227,13 @@ backstop bounds what that costs.
 **The limiter fails open.** If the storage backend is unreachable the request
 is allowed and the failure logged. A broken limiter turning into a total outage
 is a worse failure than a briefly unenforced ceiling.
+
+**Artwork is built from ids, not taken from payloads.** Steam's search returns
+`tiny_image` — a 184×69 landscape sliver that is blurry at card size and shows
+a thin horizontal slice when placed in a portrait frame. The CDN exposes
+`library_600x900` at a predictable path, which is the same 2:3 as a film
+poster. Every type now serves a portrait cover of usable resolution: 500×750
+from TMDB, 326×500 from Open Library, 300×450 from Steam.
 
 **Errors have a stable contract.** Every failure returns
 `{ "error": { "code", "message", "fields"? } }` with a machine-readable code.

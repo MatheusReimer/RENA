@@ -6,18 +6,73 @@ import { formatAverage, releaseYear } from '@revy/shared/utils'
 /**
  * A horizontally scrolling row of media cards (SPEC 21).
  *
- * The "Trending this week" / "Popular on ..." rails from the mockup. Uses the
- * shared `.rail` utility, which bleeds cards to the screen edge so the
- * partially-visible next card is the scroll affordance.
+ * The rail hides its scrollbar, which looks right but leaves a desktop mouse
+ * user with no way to reach the rest of the row -- the cards are there and
+ * simply unreachable. So it also carries arrow controls, shown only when there
+ * is actually something to scroll to and only on pointers that need them.
  */
 defineProps<{ section: DiscoverSection }>()
+
+const rail = ref<HTMLElement | null>(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+function measure() {
+  const el = rail.value
+  if (!el) return
+  canScrollLeft.value = el.scrollLeft > 8
+  // A pixel of slack: sub-pixel widths mean scrollLeft rarely lands exactly on
+  // the maximum, which would leave the arrow enabled forever.
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 8
+}
+
+/** Scrolls by most of a screenful, keeping a card of context. */
+function scrollBy(direction: -1 | 1) {
+  const el = rail.value
+  if (!el) return
+  el.scrollBy({ left: direction * (el.clientWidth * 0.8), behavior: 'smooth' })
+}
+
+onMounted(() => {
+  measure()
+  window.addEventListener('resize', measure, { passive: true })
+})
+
+onBeforeUnmount(() => window.removeEventListener('resize', measure))
 </script>
 
 <template>
   <section class="rail-section">
-    <h2 class="rail-section__title">{{ section.title }}</h2>
+    <header class="rail-section__header">
+      <h2 class="rail-section__title">{{ section.title }}</h2>
 
-    <ul class="rail">
+      <div class="rail-section__controls">
+        <button
+          type="button"
+          class="arrow"
+          :disabled="!canScrollLeft"
+          aria-label="Scroll left"
+          @click="scrollBy(-1)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="arrow"
+          :disabled="!canScrollRight"
+          aria-label="Scroll right"
+          @click="scrollBy(1)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <ul ref="rail" class="rail" @scroll.passive="measure">
       <li v-for="item in section.items" :key="item.media.id" class="card">
         <NuxtLink :to="`/media/${item.media.id}`" class="card__link">
           <UiMediaPoster
@@ -62,16 +117,75 @@ defineProps<{ section: DiscoverSection }>()
 
 <style scoped>
 .rail-section {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-10);
+}
+
+.rail-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .rail-section__title {
-  margin-bottom: var(--space-3);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
 }
 
+.rail-section__controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/*
+ * Touch devices scroll the rail directly, so the arrows would be clutter.
+ * `hover: hover` is the honest test -- it asks whether there is a pointer,
+ * not how wide the screen is.
+ */
+.arrow {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .arrow {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    background: var(--surface-overlay);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      opacity var(--duration-fast) var(--ease-out);
+  }
+
+  .arrow:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
+
+  .arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+
+.arrow svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/*
+ * Card width.
+ *
+ * The design shows posters as the substance of the screen, not as icons beside
+ * text. These scale with the viewport between a phone-friendly floor and a
+ * size that still fits several per row on a desktop.
+ */
 .card {
-  width: 7.5rem;
+  width: clamp(8.5rem, 22vw, 11.5rem);
 }
 
 .card__link {
@@ -88,7 +202,7 @@ defineProps<{ section: DiscoverSection }>()
 }
 
 .card__meta {
-  font-size: var(--text-2xs);
+  font-size: var(--text-xs);
   color: var(--text-tertiary);
 }
 
