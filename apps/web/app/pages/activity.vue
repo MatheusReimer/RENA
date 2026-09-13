@@ -66,6 +66,30 @@ function describe(notification: Notification): string {
   }
 }
 
+/**
+ * Friend requests are answered here rather than only on a profile (SPEC 12).
+ *
+ * The notification is where people actually see the request, so making them
+ * navigate elsewhere to act on it is a step that exists for no reason. The
+ * friendship id is the notification's entityId.
+ */
+const friendRequests = ref(new Map<string, 'accepted' | 'rejected'>())
+const pendingId = ref<string | null>(null)
+
+async function respond(notificationId: string, friendshipId: string, action: 'accept' | 'reject') {
+  if (pendingId.value) return
+  pendingId.value = notificationId
+  try {
+    await api.friends.respond(friendshipId, action)
+    // Resolved in place rather than refetching: the row stays put and says
+    // what happened, instead of vanishing under the reader's cursor.
+    friendRequests.value.set(notificationId, action === 'accept' ? 'accepted' : 'rejected')
+    friendRequests.value = new Map(friendRequests.value)
+  } finally {
+    pendingId.value = null
+  }
+}
+
 const ICONS: Record<string, string> = {
   friend_request: '\u{1F464}',
   friend_request_accepted: '\u{1F91D}',
@@ -140,6 +164,36 @@ useHead({ title: 'Activity' })
               {{ relativeTime(notification.createdAt) }}
             </time>
           </span>
+
+          <span
+            v-if="notification.type === 'friend_request' && notification.entityId"
+            class="row__actions"
+            @click.stop.prevent
+          >
+            <template v-if="friendRequests.get(notification.id)">
+              <span class="row__resolved">
+                {{ friendRequests.get(notification.id) === 'accepted' ? 'Accepted' : 'Rejected' }}
+              </span>
+            </template>
+            <template v-else>
+              <UiAppButton
+                variant="primary"
+                size="sm"
+                :loading="pendingId === notification.id"
+                @click="respond(notification.id, notification.entityId, 'accept')"
+              >
+                Accept
+              </UiAppButton>
+              <UiAppButton
+                variant="ghost"
+                size="sm"
+                :disabled="pendingId === notification.id"
+                @click="respond(notification.id, notification.entityId, 'reject')"
+              >
+                Reject
+              </UiAppButton>
+            </template>
+          </span>
         </component>
       </div>
     </div>
@@ -209,6 +263,20 @@ useHead({ title: 'Activity' })
 
 .row__time {
   font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.row__resolved {
+  font-size: var(--text-xs);
+  font-weight: 600;
   color: var(--text-tertiary);
 }
 

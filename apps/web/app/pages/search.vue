@@ -220,7 +220,7 @@ useHead({ title: 'Search' })
         </template>
       </UiEmptyState>
 
-      <!-- Idle: browse instead of a blank screen (SPEC 21, 36) -->
+      <!-- Idle: one trending rail, then point at Discover (SPEC 21, 36) -->
       <template v-else-if="!searched && !query.trim()">
         <div v-if="discoverLoading" class="discover-loading">
           <UiSkeletonBlock width="40%" height="1.25rem" />
@@ -235,19 +235,28 @@ useHead({ title: 'Search' })
           </div>
         </div>
 
-        <UiEmptyState
-          v-else-if="discoverSections.length === 0"
-          icon="🔎"
-          title="Find movies, series, books and games."
-          description="Search the catalogue to rate something, add it to a list, or see what your friends thought."
-        />
+        <template v-else>
+          <!-- A single rail, not the whole of Discover: this screen is for
+               searching, and Discover is now its own destination. -->
+          <DiscoverRail
+            v-if="discoverSections[0]"
+            :key="discoverSections[0].key"
+            :section="discoverSections[0]"
+          />
 
-        <DiscoverRail
-          v-for="section in discoverSections"
-          v-else
-          :key="section.key"
-          :section="section"
-        />
+          <UiEmptyState
+            v-else
+            icon="🔎"
+            title="Find movies, series, books and games."
+            description="Search the catalogue to rate something, add it to a list, or see what your friends thought."
+          />
+
+          <div class="discover-link">
+            <UiAppButton variant="secondary" @click="navigateTo('/discover')">
+              Browse Discover
+            </UiAppButton>
+          </div>
+        </template>
       </template>
 
       <!-- No matches (SPEC 37) -->
@@ -473,6 +482,12 @@ useHead({ title: 'Search' })
   display: flex;
   gap: var(--space-3);
   overflow: hidden;
+}
+
+.discover-link {
+  display: grid;
+  place-items: center;
+  padding-block: var(--space-4) var(--space-8);
 }
 
 .result__lines {

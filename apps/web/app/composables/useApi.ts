@@ -156,6 +156,11 @@ export function useApi() {
 
       signOut: () => request<unknown>('/api/auth/sign-out', { method: 'POST' }),
 
+      currently: () =>
+        request<{
+          currently: Array<{ status: MediaStatus; media: Media; updatedAt: string }>
+        }>('/api/me/currently'),
+
       checkUsername: (username: string) =>
         request<{ available: boolean }>('/api/users/check-username', {
           query: { username },

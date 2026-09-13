@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Activity } from '@revy/shared/types'
+import { BRAND } from '@revy/shared/constants'
+import type { Activity, Media, MediaStatus } from '@revy/shared/types'
 
 /**
  * Home feed (SPEC 18).
@@ -47,14 +48,44 @@ async function loadMore() {
   }
 }
 
+/**
+ * "Continue watching / reading", beside the feed on desktop (SPEC 22).
+ *
+ * Fetched separately from the feed so a slow catalogue query cannot hold up
+ * the thing people actually came for.
+ */
+const { data: currentlyData } = await useAsyncData(
+  'home-currently',
+  async () => {
+    if (!auth.isSignedIn) {
+      return { currently: [] as Array<{ status: MediaStatus; media: Media; updatedAt: string }> }
+    }
+    return api.auth.currently()
+  },
+  {
+    default: () => ({
+      currently: [] as Array<{ status: MediaStatus; media: Media; updatedAt: string }>,
+    }),
+  },
+)
+
+const currently = computed(() => currentlyData.value?.currently ?? [])
+
 useHead({ title: 'Home' })
 </script>
 
 <template>
   <div class="page">
-    <div class="page__tabs">
-      <UiTabNav v-model="scope" :tabs="tabs" />
-    </div>
+    <header v-if="auth.isSignedIn" class="hero">
+      <h1 class="hero__title">Stories<br />connect us.</h1>
+      <p class="hero__subtitle">{{ BRAND.tagline }}</p>
+    </header>
+
+    <div class="columns">
+      <div class="columns__main">
+        <div class="page__tabs">
+          <UiTabNav v-model="scope" :tabs="tabs" />
+        </div>
 
     <!-- Signed out: the feed is meaningless without a graph, so say what the
          product is rather than showing an empty list. -->
@@ -121,14 +152,67 @@ useHead({ title: 'Home' })
           Load more
         </UiAppButton>
       </div>
+        </div>
+      </div>
+
+      <aside v-if="currently.length" class="columns__side">
+        <FeedContinuePanel :entries="currently" />
+      </aside>
     </div>
   </div>
 </template>
 
 <style scoped>
 .page {
-  max-width: var(--content-max);
+  max-width: var(--page-max);
   margin-inline: auto;
+}
+
+.hero {
+  padding: var(--space-8) var(--space-4) var(--space-6);
+}
+
+.hero__title {
+  font-size: clamp(2rem, 6vw, var(--text-4xl));
+  line-height: 1.05;
+  letter-spacing: var(--tracking-tight);
+}
+
+.hero__subtitle {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-tertiary);
+}
+
+/*
+ * One column on phones, two from the tablet breakpoint. The side panel comes
+ * second in the DOM so the feed is what a screen reader and a narrow screen
+ * reach first -- it is the reason the page exists.
+ */
+.columns {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.columns__main {
+  min-width: 0;
+}
+
+@media (min-width: 60rem) {
+  .columns {
+    grid-template-columns: minmax(0, var(--content-max)) 16rem;
+    align-items: start;
+    padding-inline: var(--space-4);
+  }
+
+  .columns__side {
+    position: sticky;
+    top: var(--space-6);
+    padding-top: var(--space-10);
+  }
 }
 
 .page__tabs {

@@ -253,7 +253,8 @@ would resolve against it.
 - Ratings, consumption status, reviews, likes
 - Activity feed, friend requests and the friend graph, notifications
 - XP and badge evaluation
-- Design system and the Home, Search, Media, Profile, Activity and auth screens
+- Design system and the Home, Search, Discover, Friends, Lists, Media, Profile,
+  Notifications and auth screens
 
 **Done — Phase 5, discussions (§14):**
 

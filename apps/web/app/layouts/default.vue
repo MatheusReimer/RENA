@@ -30,9 +30,10 @@ await useAsyncData('session', async () => {
 const navItems = [
   { to: '/', icon: 'home', label: 'Home', sidebarOnly: false },
   { to: '/search', icon: 'search', label: 'Search', sidebarOnly: false },
-  { to: '/add', icon: 'add', label: 'Add', sidebarOnly: false },
+  { to: '/discover', icon: 'discover', label: 'Discover', sidebarOnly: false },
+  { to: '/friends', icon: 'friends', label: 'Friends', sidebarOnly: true },
   { to: '/lists', icon: 'lists', label: 'Lists', sidebarOnly: true },
-  { to: '/activity', icon: 'activity', label: 'Activity', sidebarOnly: false },
+  { to: '/activity', icon: 'activity', label: 'Notifications', sidebarOnly: false },
 ] as const
 
 const tabBarItems = navItems.filter((item) => !item.sidebarOnly)
