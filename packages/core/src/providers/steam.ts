@@ -28,6 +28,19 @@ import {
 const SEARCH_URL = 'https://store.steampowered.com/api/storesearch'
 const DETAILS_URL = 'https://store.steampowered.com/api/appdetails'
 
+/**
+ * Search terms walked for bulk import.
+ *
+ * Steam's only keyless "popular" surface is its featured carousel, which is a
+ * few dozen entries skewed to whatever is on sale. Sweeping broad genre terms
+ * reaches far more of the catalogue, and the page number picks the term.
+ */
+const IMPORT_TERMS = [
+  'rpg', 'strategy', 'adventure', 'roguelike', 'simulation', 'platformer',
+  'shooter', 'puzzle', 'horror', 'racing', 'survival', 'metroidvania',
+  'city builder', 'soulslike', 'deckbuilder', 'open world',
+]
+
 interface SteamSearchItem {
   id: number
   name?: string
@@ -156,6 +169,37 @@ export function createSteamProvider(options: SteamProviderOptions = {}): MediaPr
           releaseDate: null,
           coverImageUrl: item.tiny_image ?? null,
           subtitle: null,
+        }))
+    },
+
+    /**
+     * A page of games (SPEC 8).
+     *
+     * Unlike TMDB, Steam's search payload carries no genres or dates, so these
+     * rows are deliberately thin: id, title and art. That is enough to browse
+     * and rate; opening one resolves the full record through
+     * `getByExternalId`, which is where the type check lives anyway.
+     */
+    async listPopular(mediaType, page): Promise<ProviderMedia[]> {
+      if (mediaType !== 'game') return []
+
+      const term = IMPORT_TERMS[(page - 1) % IMPORT_TERMS.length]!
+      const url = `${SEARCH_URL}/?term=${encodeURIComponent(term)}&cc=us&l=en`
+      const data = await request<SteamSearchResponse>(url)
+
+      return (data.items ?? [])
+        .filter((item) => item.name && looksLikeAGame(item.name) && item.tiny_image)
+        .map((item) => ({
+          externalId: String(item.id),
+          provider: 'steam',
+          mediaType: 'game' as const,
+          title: item.name!,
+          originalTitle: null,
+          description: null,
+          releaseDate: null,
+          coverImageUrl: item.tiny_image ?? null,
+          backdropImageUrl: item.tiny_image ?? null,
+          metadata: {},
         }))
     },
 

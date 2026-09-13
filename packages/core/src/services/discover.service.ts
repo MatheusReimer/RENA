@@ -7,6 +7,7 @@ import {
   discoverRepository,
   friendshipRepository,
   mediaRepository,
+  newReleases,
   similarToUserTaste,
 } from '../repositories'
 import { ProviderError } from '../providers'
@@ -20,7 +21,14 @@ import { ProviderError } from '../providers'
  * nothing.
  */
 
-const RAIL_SIZE = 12
+/**
+ * Items per rail.
+ *
+ * The design shows a row that runs off the edge of the screen, so this is
+ * sized to keep scrolling rather than to fit: at 7.5rem a card, twenty-four
+ * is several screens wide on a phone and two on a desktop.
+ */
+const RAIL_SIZE = 24
 
 export const discoverService = {
   /**
@@ -47,6 +55,10 @@ export const discoverService = {
           : Promise.resolve([]),
       ])
 
+    // Catalogue-driven, so it fills even when almost nothing has been rated --
+    // which is the state of any freshly imported catalogue.
+    const recent = await newReleases(ctx.db, null, RAIL_SIZE)
+
     const sections: DiscoverSection[] = [
       { key: 'trending', title: 'Trending this week', items: trending },
       {
@@ -64,6 +76,16 @@ export const discoverService = {
             ratingCount: row.ratingCount ?? 0,
             friends: [],
           })),
+      },
+      {
+        key: 'new-releases',
+        title: 'New releases',
+        items: recent.map((row) => ({
+          media: toMedia(row.media),
+          averageRating: row.average === null ? null : Number(row.average),
+          ratingCount: row.ratingCount ?? 0,
+          friends: [],
+        })),
       },
       {
         key: 'popular',
@@ -102,15 +124,37 @@ export const discoverService = {
 
   /** One type's rail, for the per-type tabs on the search screen. */
   async getForType(ctx: ServiceContext, mediaType: MediaType): Promise<DiscoverSection[]> {
-    const [trending, highestRated] = await Promise.all([
+    const [trending, highestRated, recent, popular] = await Promise.all([
       this.trending(ctx, mediaType),
       discoverRepository.highestRated(ctx.db, mediaType, RAIL_SIZE),
+      newReleases(ctx.db, mediaType, RAIL_SIZE),
+      discoverRepository.popular(ctx.db, mediaType, RAIL_SIZE),
     ])
 
     const label = MEDIA_TYPE_LABELS[mediaType].toLowerCase()
 
     return [
       { key: `trending-${mediaType}`, title: `Trending ${label}s`, items: trending },
+      {
+        key: `new-${mediaType}`,
+        title: `New ${label}s`,
+        items: recent.map((row) => ({
+          media: toMedia(row.media),
+          averageRating: row.average === null ? null : Number(row.average),
+          ratingCount: row.ratingCount ?? 0,
+          friends: [],
+        })),
+      },
+      {
+        key: `popular-${mediaType}`,
+        title: `Popular ${label}s`,
+        items: popular.map((row) => ({
+          media: toMedia(row.media),
+          averageRating: row.average === null ? null : Number(row.average),
+          ratingCount: row.ratingCount,
+          friends: [],
+        })),
+      },
       {
         key: `top-${mediaType}`,
         title: `Highest rated ${label}s`,

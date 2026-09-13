@@ -253,3 +253,45 @@ export async function similarToUserTaste(
     )
     .limit(limit)
 }
+
+/**
+ * Recent additions to the catalogue (SPEC 21).
+ *
+ * Every other rail is driven by ratings, which means a freshly imported
+ * catalogue of a thousand titles shows almost nothing -- the aggregates only
+ * exist for titles someone has rated. This one is ordered purely by release
+ * date, so browsing works from the moment the catalogue is populated and keeps
+ * working as it grows.
+ */
+export async function newReleases(
+  db: Executor,
+  mediaType: MediaType | null,
+  limit: number,
+) {
+  const conditions = [
+    // A card with no art is a grey rectangle; there are plenty with art.
+    sql`${schema.media.coverImageUrl} IS NOT NULL`,
+    sql`${schema.media.releaseDate} IS NOT NULL`,
+    // Nothing unreleased: "new" should mean out, not announced.
+    sql`${schema.media.releaseDate} <= CURRENT_DATE`,
+  ]
+  if (mediaType) conditions.push(eq(schema.media.mediaType, mediaType))
+
+  return db
+    .select({
+      media: schema.media,
+      ratingCount: schema.mediaRatingStats.ratingCount,
+      average: sql<number | null>`
+        CASE WHEN coalesce(${schema.mediaRatingStats.ratingCount}, 0) = 0 THEN NULL
+             ELSE round(
+               ${schema.mediaRatingStats.ratingSum}::numeric
+               / ${schema.mediaRatingStats.ratingCount} / 2, 1)
+        END
+      `,
+    })
+    .from(schema.media)
+    .leftJoin(schema.mediaRatingStats, eq(schema.mediaRatingStats.mediaId, schema.media.id))
+    .where(and(...conditions))
+    .orderBy(desc(schema.media.releaseDate))
+    .limit(limit)
+}

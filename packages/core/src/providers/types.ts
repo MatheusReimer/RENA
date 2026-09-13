@@ -72,6 +72,20 @@ export interface MediaProvider {
    * endpoint simply omit it and the section falls back to local popularity.
    */
   getTrending?(mediaType: MediaType, limit: number): Promise<ProviderSearchResult[]>
+
+  /**
+   * A page of popular titles, as full records ready to persist.
+   *
+   * Exists for bulk catalogue import, which is a different job from search:
+   * search answers a question, this fills an empty database. It returns
+   * `ProviderMedia` rather than search results precisely so the importer does
+   * not have to fetch details per row -- most catalogues include everything
+   * needed in the list payload, and one request per page beats one per title
+   * by a factor of twenty.
+   *
+   * Pages are 1-indexed. An empty array means there are no more.
+   */
+  listPopular?(mediaType: MediaType, page: number): Promise<ProviderMedia[]>
 }
 
 /** Thrown by providers on transport failure; mapped to PROVIDER_UNAVAILABLE. */

@@ -37,6 +37,27 @@ export interface OpenLibraryProviderOptions {
   fetchImpl?: typeof fetch
 }
 
+/**
+ * Subjects walked for bulk import.
+ *
+ * Open Library has no "popular books" endpoint, so breadth comes from asking
+ * for well-populated subjects and paging through each. Chosen to span fiction
+ * and non-fiction rather than to be exhaustive -- a catalogue that is all
+ * science fiction is not a catalogue.
+ */
+const IMPORT_SUBJECTS = [
+  'science_fiction',
+  'fantasy',
+  'fiction',
+  'history',
+  'biography',
+  'philosophy',
+  'mystery',
+  'horror',
+  'poetry',
+  'psychology',
+]
+
 export function createOpenLibraryProvider(
   options: OpenLibraryProviderOptions = {},
 ): MediaProvider {
@@ -115,6 +136,57 @@ export function createOpenLibraryProvider(
         .map(toSearchResult)
         .filter((result): result is ProviderSearchResult => result !== null)
         .slice(0, limit)
+    },
+
+    /**
+     * A page of books from one subject (SPEC 8).
+     *
+     * The page number selects the subject as well as the offset, so walking
+     * pages 1..N sweeps across subjects rather than exhausting one.
+     */
+    async listPopular(mediaType, page): Promise<ProviderMedia[]> {
+      if (mediaType !== 'book') return []
+
+      const subject = IMPORT_SUBJECTS[(page - 1) % IMPORT_SUBJECTS.length]!
+      const round = Math.floor((page - 1) / IMPORT_SUBJECTS.length)
+
+      const data = await request<OpenLibrarySearchResponse>('/search.json', {
+        q: `subject:${subject}`,
+        limit: '50',
+        offset: String(round * 50),
+        sort: 'readinglog',
+        fields:
+          'key,title,author_name,first_publish_year,cover_i,number_of_pages_median,publisher,subject',
+      })
+
+      return (data.docs ?? [])
+        .map((doc): ProviderMedia | null => {
+          const externalId = toExternalId(doc.key)
+          // A book with no cover is a row nobody will click. At import scale
+          // there are plenty with one, so skip rather than pad.
+          if (!externalId || !doc.title || !doc.cover_i) return null
+
+          return {
+            externalId,
+            provider: 'open-library',
+            mediaType: 'book' as const,
+            title: doc.title,
+            originalTitle: null,
+            description: null,
+            releaseDate: toReleaseDate(doc.first_publish_year),
+            coverImageUrl: coverUrl(doc.cover_i, 'L'),
+            backdropImageUrl: null,
+            metadata: {
+              authors: doc.author_name ?? [],
+              genres: doc.subject?.slice(0, 6) ?? [],
+              ...(doc.number_of_pages_median
+                ? { pageCount: doc.number_of_pages_median }
+                : {}),
+              ...(doc.publisher?.[0] ? { publisher: doc.publisher[0] } : {}),
+            },
+          }
+        })
+        .filter((item): item is ProviderMedia => item !== null)
     },
 
     async getByExternalId(externalId, mediaType): Promise<ProviderMedia | null> {

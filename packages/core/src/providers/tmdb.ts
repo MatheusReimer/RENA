@@ -42,6 +42,11 @@ interface TmdbMovie {
 
 interface TmdbSearchResponse {
   results?: TmdbMovie[]
+  total_pages?: number
+}
+
+interface TmdbGenreResponse {
+  genres?: Array<{ id: number; name: string }>
 }
 
 export interface TmdbProviderOptions {
@@ -69,6 +74,15 @@ export function createTmdbProvider(options: TmdbProviderOptions): MediaProvider 
   const doFetch = options.fetchImpl ?? fetch
   const useBearer = isReadAccessToken(options.apiKey)
 
+  /**
+   * Genre id -> name, fetched once per type.
+   *
+   * List endpoints return `genre_ids` while detail endpoints return named
+   * `genres`. Caching this map is what lets bulk import build complete records
+   * from a list payload instead of one detail request per title.
+   */
+  const genreCache = new Map<string, Map<number, string>>()
+
   async function request<T>(path: string, params: Record<string, string>): Promise<T> {
     const url = new URL(`${API_BASE}${path}`)
     if (!useBearer) url.searchParams.set('api_key', options.apiKey)
@@ -93,6 +107,18 @@ export function createTmdbProvider(options: TmdbProviderOptions): MediaProvider 
     }
 
     return (await response.json()) as T
+  }
+
+  async function genreMap(mediaType: 'movie' | 'series'): Promise<Map<number, string>> {
+    const cached = genreCache.get(mediaType)
+    if (cached) return cached
+
+    const path = mediaType === 'movie' ? '/genre/movie/list' : '/genre/tv/list'
+    const data = await request<TmdbGenreResponse>(path, {})
+    const map = new Map((data.genres ?? []).map((genre) => [genre.id, genre.name]))
+
+    genreCache.set(mediaType, map)
+    return map
   }
 
   function imageUrl(path: string | null | undefined, size: string): string | null {
@@ -204,6 +230,43 @@ export function createTmdbProvider(options: TmdbProviderOptions): MediaProvider 
           ...(item.number_of_episodes ? { episodeCount: item.number_of_episodes } : {}),
         },
       }
+    },
+
+    /**
+     * A page of popular titles as complete records (SPEC 8).
+     *
+     * TMDB's list endpoints carry overview, both images and genre ids, so one
+     * request yields twenty finished rows. Fetching details per title would be
+     * twenty times the requests for the same data.
+     */
+    async listPopular(mediaType, page): Promise<ProviderMedia[]> {
+      if (mediaType !== 'movie' && mediaType !== 'series') return []
+
+      const path = mediaType === 'movie' ? '/movie/popular' : '/tv/popular'
+      const [data, genres] = await Promise.all([
+        request<TmdbSearchResponse>(path, { page: String(page) }),
+        genreMap(mediaType),
+      ])
+
+      return (data.results ?? [])
+        .filter((item) => (mediaType === 'movie' ? item.title : item.name))
+        .map((item) => ({
+          externalId: String(item.id),
+          provider: 'tmdb',
+          mediaType,
+          title: titleOf(item, mediaType),
+          originalTitle:
+            (mediaType === 'movie' ? item.original_title : item.original_name) ?? null,
+          description: item.overview && item.overview.length > 0 ? item.overview : null,
+          releaseDate: releaseOf(item, mediaType),
+          coverImageUrl: imageUrl(item.poster_path, POSTER_SIZE),
+          backdropImageUrl: imageUrl(item.backdrop_path, BACKDROP_SIZE),
+          metadata: {
+            genres: (item.genre_ids ?? [])
+              .map((id) => genres.get(id))
+              .filter((name): name is string => typeof name === 'string'),
+          },
+        }))
     },
 
     async getTrending(mediaType, limit): Promise<ProviderSearchResult[]> {
