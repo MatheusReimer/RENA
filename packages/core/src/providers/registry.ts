@@ -86,7 +86,9 @@ export function createProviderRegistry(options: ProviderRegistryOptions): Provid
       const failed: string[] = []
 
       const settled = await Promise.allSettled(
-        targets.map((provider) => provider.search({ query, limit })),
+        targets.map((provider) =>
+          provider.search({ query, limit, ...(mediaType ? { mediaType } : {}) }),
+        ),
       )
 
       const results: ProviderSearchResult[] = []

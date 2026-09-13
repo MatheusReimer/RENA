@@ -45,24 +45,43 @@ interface TmdbSearchResponse {
 }
 
 export interface TmdbProviderOptions {
+  /**
+   * Either credential TMDB issues:
+   *
+   *  - a v3 API key (32 hex characters), sent as `?api_key=`
+   *  - a v4 Read Access Token (a JWT), sent as `Authorization: Bearer`
+   *
+   * TMDB's own settings page offers both and does not make the difference
+   * obvious, so the provider detects which one it was given rather than
+   * failing with a 401 that looks like a bad key.
+   */
   apiKey: string
   /** Injected so tests can stub HTTP without a network. */
   fetchImpl?: typeof fetch
 }
 
+/** v4 tokens are JWTs; v3 keys are plain hex. */
+function isReadAccessToken(credential: string): boolean {
+  return credential.startsWith('eyJ') && credential.split('.').length === 3
+}
+
 export function createTmdbProvider(options: TmdbProviderOptions): MediaProvider {
   const doFetch = options.fetchImpl ?? fetch
+  const useBearer = isReadAccessToken(options.apiKey)
 
   async function request<T>(path: string, params: Record<string, string>): Promise<T> {
     const url = new URL(`${API_BASE}${path}`)
-    url.searchParams.set('api_key', options.apiKey)
+    if (!useBearer) url.searchParams.set('api_key', options.apiKey)
     for (const [key, value] of Object.entries(params)) {
       url.searchParams.set(key, value)
     }
 
+    const headers: Record<string, string> = { accept: 'application/json' }
+    if (useBearer) headers.authorization = `Bearer ${options.apiKey}`
+
     let response: Response
     try {
-      response = await doFetch(url, { headers: { accept: 'application/json' } })
+      response = await doFetch(url, { headers })
     } catch (cause) {
       throw new ProviderError('tmdb', 'Could not reach TMDB.', { cause })
     }
@@ -108,20 +127,47 @@ export function createTmdbProvider(options: TmdbProviderOptions): MediaProvider 
     key: 'tmdb',
     mediaTypes: ['movie', 'series'],
 
-    async search({ query, limit }: ProviderSearchParams): Promise<ProviderSearchResult[]> {
+    async search({
+      query,
+      limit,
+      mediaType,
+    }: ProviderSearchParams): Promise<ProviderSearchResult[]> {
       // One call per type keeps results attributable to a media type; TMDB's
       // /search/multi mixes in people, which we do not model as media.
-      const [movies, series] = await Promise.all([
-        request<TmdbSearchResponse>('/search/movie', { query, include_adult: 'false' }),
-        request<TmdbSearchResponse>('/search/tv', { query, include_adult: 'false' }),
-      ])
+      //
+      // When a type is requested we query only that endpoint. Querying both
+      // and slicing afterwards put every movie ahead of every series, so a
+      // series search with a small limit returned nothing at all.
+      const wanted: Array<'movie' | 'series'> =
+        mediaType === 'movie' || mediaType === 'series' ? [mediaType] : ['movie', 'series']
 
-      const results = [
-        ...(movies.results ?? []).map((item) => toSearchResult(item, 'movie')),
-        ...(series.results ?? []).map((item) => toSearchResult(item, 'series')),
-      ]
+      const responses = await Promise.all(
+        wanted.map((type) =>
+          request<TmdbSearchResponse>(type === 'movie' ? '/search/movie' : '/search/tv', {
+            query,
+            include_adult: 'false',
+          }).then((data) => ({ type, data })),
+        ),
+      )
 
-      return results.slice(0, limit)
+      // Interleaved rather than concatenated, so an unfiltered search cannot
+      // fill the whole page with one type either.
+      const byType = responses.map(({ type, data }) =>
+        (data.results ?? []).map((item) => toSearchResult(item, type)),
+      )
+
+      const results: ProviderSearchResult[] = []
+      for (let i = 0; results.length < limit; i++) {
+        const before = results.length
+        for (const bucket of byType) {
+          const item = bucket[i]
+          if (item) results.push(item)
+          if (results.length === limit) break
+        }
+        if (results.length === before) break
+      }
+
+      return results
     },
 
     async getByExternalId(externalId, mediaType): Promise<ProviderMedia | null> {

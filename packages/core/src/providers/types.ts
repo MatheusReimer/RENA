@@ -41,6 +41,14 @@ export interface ProviderSearchResult {
 export interface ProviderSearchParams {
   query: string
   limit: number
+  /**
+   * Narrows the search to one media type, when the caller asked for one.
+   *
+   * A provider serving several types must honour this rather than searching
+   * everything and letting the caller filter: filtering after a limit has been
+   * applied silently drops whole types. Omitted means "everything you serve".
+   */
+  mediaType?: MediaType
 }
 
 /**
