@@ -78,30 +78,58 @@ function toApiError(error: unknown): ApiError {
   return new ApiError('INTERNAL_ERROR', 'Something went wrong. Please try again.', status)
 }
 
-async function request<T>(path: string, options: Parameters<typeof $fetch>[1] = {}): Promise<T> {
-  // On web `apiBase` is empty and the path stays relative. In the Capacitor
-  // build it is the deployed origin, because the WebView's own origin
-  // (capacitor://localhost) has no API behind it.
-  const base = useRuntimeConfig().public.apiBase
-  const url = base ? `${base}${path}` : path
-
+/**
+ * Picks the fetch implementation for the current environment.
+ *
+ * During SSR the server calls its own API over HTTP, and plain `$fetch` sends
+ * no cookies -- so the session would look signed out on the server and hydrate
+ * into a signed-out UI even for a signed-in user. `useRequestFetch` forwards
+ * the incoming request's headers, which is what makes SSR see the real session.
+ *
+ * It needs a Nuxt instance, so it is resolved once when `useApi()` is called
+ * (in setup) rather than inside each request, and falls back to `$fetch` if
+ * called from somewhere without context.
+ */
+function resolveFetcher(): typeof $fetch {
+  if (import.meta.client) return $fetch
   try {
-    // Cast because `$fetch` widens a generic return into Nitro's
-    // TypedInternalResponse wrapper, which does not narrow back to a bare `T`.
-    // The real contract is the handler's return type, which these call sites
-    // declare explicitly below.
-    return (await $fetch(url, {
-      ...options,
-      // Sessions are cookie-based, and a cross-origin native request drops
-      // cookies unless credentials are sent explicitly.
-      credentials: 'include',
-    })) as T
-  } catch (error) {
-    throw toApiError(error)
+    return useRequestFetch() as typeof $fetch
+  } catch {
+    return $fetch
+  }
+}
+
+function createRequest(fetcher: typeof $fetch) {
+  return async function request<T>(
+    path: string,
+    options: Parameters<typeof $fetch>[1] = {},
+  ): Promise<T> {
+    // On web `apiBase` is empty and the path stays relative. In the Capacitor
+    // build it is the deployed origin, because the WebView's own origin
+    // (capacitor://localhost) has no API behind it.
+    const base = useRuntimeConfig().public.apiBase
+    const url = base ? `${base}${path}` : path
+
+    try {
+      // Cast because `$fetch` widens a generic return into Nitro's
+      // TypedInternalResponse wrapper, which does not narrow back to a bare
+      // `T`. The real contract is the handler's return type, which these call
+      // sites declare explicitly below.
+      return (await fetcher(url, {
+        ...options,
+        // Sessions are cookie-based, and a cross-origin native request drops
+        // cookies unless credentials are sent explicitly.
+        credentials: 'include',
+      })) as T
+    } catch (error) {
+      throw toApiError(error)
+    }
   }
 }
 
 export function useApi() {
+  const request = createRequest(resolveFetcher())
+
   return {
     /* -------------------------------------------------------------- *
      * Session (SPEC 26)

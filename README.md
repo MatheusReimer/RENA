@@ -14,20 +14,29 @@ reports 22.x.
 
 ```bash
 pnpm install
-cp .env.example .env        # then fill it in, see below
-pnpm db:migrate             # create the schema
-pnpm db:seed                # 10 users, 20 titles, ratings, reviews, discussions
+cp .env.example .env        # works as-is: defaults to the embedded database
+pnpm db:seed                # creates, migrates and fills it
 pnpm dev                    # http://localhost:3000
 ```
 
-After seeding you can sign in as `matheus@example.com` / `password123`
-(every seeded account uses that password).
+That runs with **no database to install**. `DATABASE_URL` defaults to
+`pglite://.data/revy`, which is Postgres compiled to WebAssembly running inside
+the Node process — no Docker, no server, no account. Point `DATABASE_URL` at
+Neon or any Postgres when you want a real one, and use `pnpm db:migrate`
+instead of letting the seed apply migrations.
+
+The embedded database is development only: PGlite holds a single connection
+from a single process, so the dev server and `pnpm db:seed` cannot run at the
+same time.
+
+After seeding, sign in as `matheus@example.com` / `password123` (every seeded
+account uses that password).
 
 ### Filling in `.env`
 
 | Variable | Required | What it is |
 | --- | --- | --- |
-| `DATABASE_URL` | **yes** | Postgres connection string. For [Neon](https://console.neon.tech): create a project and copy the **pooled** URL (the host containing `-pooler`). |
+| `DATABASE_URL` | **yes** | `pglite://.data/revy` for the embedded database (default, zero setup). For [Neon](https://console.neon.tech): create a project and copy the **pooled** URL (the host containing `-pooler`). |
 | `AUTH_SECRET` | **yes** | Session signing key. Generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. |
 | `TMDB_API_KEY` | no | Free key from [TMDB](https://www.themoviedb.org/settings/api). Without it the app runs and **book** search works, but movie and series search returns nothing. |
 | `NUXT_PUBLIC_APP_URL` | no | Deployed origin. Leave blank locally. |
@@ -48,6 +57,7 @@ pnpm db:generate    # generate a migration from schema changes
 pnpm db:migrate     # apply migrations
 pnpm db:push        # push schema directly (dev only, skips migration history)
 pnpm db:seed        # reset and reseed development data
+pnpm db:verify      # check rating aggregates still match the ratings table
 pnpm db:studio      # Drizzle Studio
 ```
 
@@ -127,6 +137,11 @@ so a crafted request cannot graft a comment from one discussion onto another.
 **User content is never trusted as HTML.** It is stored raw and escaped at
 render time — sanitising on input mangles legitimate text and gives false
 confidence. `vue/no-v-html` is an error in the lint config.
+
+**SSR forwards the session cookie.** Server-rendering calls our own API over
+HTTP, and plain `$fetch` sends no cookies — so a signed-in user would render
+signed-out and hydrate that way. `useApi` resolves `useRequestFetch` on the
+server, which forwards the incoming request's headers.
 
 **Errors have a stable contract.** Every failure returns
 `{ "error": { "code", "message", "fields"? } }` with a machine-readable code.

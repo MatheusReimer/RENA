@@ -1,4 +1,14 @@
+import { toAbsoluteEmbeddedUrl } from '@revy/db'
 import { BRAND } from '@revy/shared/constants'
+import { fileURLToPath } from 'node:url'
+
+/**
+ * The repository root. This file is loaded from apps/web and is never bundled,
+ * so `import.meta.url` is reliable here in a way it is not inside the server
+ * bundle -- which is why the embedded database path is made absolute now
+ * rather than later.
+ */
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url))
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -30,7 +40,7 @@ export default defineNuxtConfig({
    * nothing sensitive is baked into the build.
    */
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL ?? '',
+    databaseUrl: toAbsoluteEmbeddedUrl(process.env.DATABASE_URL ?? '', REPO_ROOT),
     authSecret: process.env.AUTH_SECRET ?? '',
     tmdbApiKey: process.env.TMDB_API_KEY ?? '',
     logQueries: process.env.NUXT_LOG_QUERIES ?? '',

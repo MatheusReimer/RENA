@@ -15,13 +15,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@revy/shared": "workspace:*",
     "drizzle-orm": "^0.44.0",
     "postgres": "^3.4.5"
   },
   "devDependencies": {
+    "dotenv": "^16.4.7",
     "drizzle-kit": "^0.31.0",
-    "tsx": "^4.19.2",
-    "dotenv": "^16.4.7"
+    "tsx": "^4.19.2"
   }
 }

@@ -1,6 +1,18 @@
-import 'dotenv/config'
+import { config as loadEnv } from 'dotenv'
+import { fileURLToPath } from 'node:url'
+
+// The single .env lives at the repo root, but pnpm runs this script with the
+// package as cwd, so dotenv needs an explicit path rather than its default.
+loadEnv({ path: fileURLToPath(new URL('../../../.env', import.meta.url)) })
+
 import { badgeService, createProviderRegistry, type ProviderRegistry } from '@revy/core'
-import { createDatabase, type Database } from '@revy/db'
+import {
+  createDatabase,
+  embeddedDataDir,
+  isEmbedded,
+  toAbsoluteEmbeddedUrl,
+  type Database,
+} from '@revy/db'
 import { schema } from '@revy/db'
 import { hashPassword } from 'better-auth/crypto'
 import { eq, sql } from 'drizzle-orm'
@@ -65,13 +77,31 @@ function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 }
 
+/** Resolved relative to this file so the script works from any cwd. */
+const MIGRATIONS_DIR = fileURLToPath(new URL('../../db/migrations', import.meta.url))
+
 type SeededUser = { id: string; username: string }
 type SeededMedia = { id: string }
 
 async function main() {
-  const db = createDatabase({ connectionString: connectionString!, maxConnections: 1 })
+  // Made absolute against the repo root so the seed and the dev server always
+  // open the same data directory, whatever their working directory is.
+  const url = toAbsoluteEmbeddedUrl(
+    connectionString!,
+    fileURLToPath(new URL('../../..', import.meta.url)),
+  )
+  const db = createDatabase({ connectionString: url, maxConnections: 1 })
 
   console.log('\n  Seeding database...\n')
+
+  if (isEmbedded(url)) {
+    // drizzle-kit cannot reach the embedded database -- it opens its own
+    // connection and PGlite allows exactly one -- so migrations are applied
+    // programmatically here. A real Postgres uses `pnpm db:migrate` instead.
+    console.log(`  Embedded Postgres at ${embeddedDataDir(url)} - applying migrations`)
+    const { migrate } = await import('drizzle-orm/pglite/migrator')
+    await migrate(db as never, { migrationsFolder: MIGRATIONS_DIR })
+  }
 
   await clear(db)
 
@@ -335,19 +365,32 @@ async function seedRatingsAndReviews(
 
   // Rebuild the denormalised aggregates once from the rows we just wrote,
   // rather than maintaining them incrementally through thousands of inserts.
+  //
+  // Totals and the histogram are computed in two separate groupings and then
+  // joined. Deriving the totals from the already-grouped histogram rows is the
+  // obvious shortcut and it is wrong: count(*) would count distinct scores
+  // rather than ratings, and sum(score) would ignore how many people gave each
+  // score.
   await db.execute(sql`
     INSERT INTO media_rating_stats (media_id, rating_count, rating_sum, distribution)
-    SELECT
-      r.media_id,
-      count(*)::int,
-      sum(r.score)::int,
-      jsonb_object_agg(r.score::text, r.n)
+    SELECT totals.media_id, totals.rating_count, totals.rating_sum, histogram.distribution
     FROM (
-      SELECT media_id, score, count(*)::int AS n
+      SELECT
+        media_id,
+        count(*)::int AS rating_count,
+        sum(score)::int AS rating_sum
       FROM ratings
-      GROUP BY media_id, score
-    ) r
-    GROUP BY r.media_id
+      GROUP BY media_id
+    ) totals
+    JOIN (
+      SELECT media_id, jsonb_object_agg(score::text, n) AS distribution
+      FROM (
+        SELECT media_id, score, count(*)::int AS n
+        FROM ratings
+        GROUP BY media_id, score
+      ) buckets
+      GROUP BY media_id
+    ) histogram ON histogram.media_id = totals.media_id
     ON CONFLICT (media_id) DO UPDATE SET
       rating_count = EXCLUDED.rating_count,
       rating_sum = EXCLUDED.rating_sum,

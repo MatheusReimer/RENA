@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify": "tsx src/verify.ts"
   },
   "dependencies": {
     "@revy/core": "workspace:*",
@@ -15,6 +16,7 @@
     "drizzle-orm": "^0.44.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "dotenv": "^16.4.7",
     "tsx": "^4.19.2"
   }

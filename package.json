@@ -21,6 +21,7 @@
     "db:migrate": "pnpm --filter @revy/db migrate",
     "db:push": "pnpm --filter @revy/db push",
     "db:seed": "pnpm --filter @revy/seed start",
+    "db:verify": "pnpm --filter @revy/seed verify",
     "db:studio": "pnpm --filter @revy/db studio"
   },
   "devDependencies": {
