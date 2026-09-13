@@ -189,6 +189,7 @@ async function loadViewerState(
     score: rating ? toScore(rating.score) : null,
     hasReview: review !== null,
     inListIds: listsByMedia.get(mediaId) ?? [],
+    progress: status?.progress ?? null,
   }
 }
 

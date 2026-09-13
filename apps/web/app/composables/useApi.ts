@@ -249,8 +249,11 @@ export function useApi() {
       remove: (mediaId: string) =>
         request<{ ok: true }>('/api/ratings', { method: 'DELETE', query: { mediaId } }),
 
-      setStatus: (mediaId: string, status: MediaStatus | null) =>
-        request<{ ok: true }>('/api/status', { method: 'POST', body: { mediaId, status } }),
+      setStatus: (mediaId: string, status: MediaStatus | null, progress?: number | null) =>
+        request<{ ok: true }>('/api/status', {
+          method: 'POST',
+          body: { mediaId, status, ...(progress !== undefined ? { progress } : {}) },
+        }),
     },
 
     /* -------------------------------------------------------------- *

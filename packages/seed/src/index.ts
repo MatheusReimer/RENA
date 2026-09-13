@@ -81,7 +81,12 @@ function daysAgo(days: number): Date {
 const MIGRATIONS_DIR = fileURLToPath(new URL('../../db/migrations', import.meta.url))
 
 type SeededUser = { id: string; username: string }
-type SeededMedia = { id: string }
+type SeededMedia = {
+  id: string
+  mediaType: string
+  episodeCount?: number
+  pageCount?: number
+}
 
 async function main() {
   // Made absolute against the repo root so the seed and the dev server always
@@ -233,9 +238,19 @@ async function seedMedia(db: Database): Promise<SeededMedia[]> {
         metadata: hydrated?.metadata ?? item.metadata,
         syncedAt: hydrated ? new Date() : null,
       })
-      .returning({ id: schema.media.id })
+      .returning({
+        id: schema.media.id,
+        mediaType: schema.media.mediaType,
+        metadata: schema.media.metadata,
+      })
 
-    created.push(row!)
+    const metadata = (row!.metadata ?? {}) as { episodeCount?: number; pageCount?: number }
+    created.push({
+      id: row!.id,
+      mediaType: row!.mediaType,
+      ...(metadata.episodeCount ? { episodeCount: metadata.episodeCount } : {}),
+      ...(metadata.pageCount ? { pageCount: metadata.pageCount } : {}),
+    })
   }
 
   return created
@@ -289,6 +304,28 @@ async function seedFriendships(db: Database, users: SeededUser[]): Promise<numbe
   return rows.length
 }
 
+/**
+ * A believable position within a title, or null.
+ *
+ * Series and books have a countable total; a movie or a game does not, so they
+ * get no position rather than a meaningless one. The value stays inside the
+ * real total so the UI never has to clamp seeded data.
+ */
+function progressFor(item: { mediaType: string; episodeCount?: number; pageCount?: number }):
+  | number
+  | null {
+  const total =
+    item.mediaType === 'series'
+      ? item.episodeCount
+      : item.mediaType === 'book'
+        ? item.pageCount
+        : undefined
+
+  if (!total || total < 2) return null
+  // Somewhere in the first 80%, so nothing looks all but finished.
+  return 1 + Math.floor(random() * Math.floor(total * 0.8))
+}
+
 async function seedRatingsAndReviews(
   db: Database,
   users: SeededUser[],
@@ -315,12 +352,19 @@ async function seedRatingsAndReviews(
       if (!rating) continue
       ratingCount++
 
+      const finished = random() > 0.25
+
       await db.insert(schema.userMedia).values({
         userId: user.id,
         mediaId: item.id,
-        status: random() > 0.25 ? 'completed' : 'in_progress',
+        status: finished ? 'completed' : 'in_progress',
         startedAt: createdAt,
-        completedAt: random() > 0.25 ? createdAt : null,
+        completedAt: finished ? createdAt : null,
+        // Only things in progress have a position, and only where a position
+        // means something. A finished title showing "page 300 of 412" would be
+        // a bug, and "episode 37" of an 18-episode series is worse -- seeded
+        // data that is visibly wrong teaches people to distrust the screen.
+        progress: finished ? null : progressFor(item),
       })
 
       // About a fifth of ratings also carry a review.

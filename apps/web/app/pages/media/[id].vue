@@ -99,6 +99,52 @@ const savingStatus = ref(false)
 
 const statusOptions = computed<MediaStatus[]>(() => ['planned', 'in_progress', 'completed'])
 
+/**
+ * Where the viewer is: episode for a series, page for a book.
+ *
+ * Only offered for types where a position means something and we know the
+ * total, because the number is only useful next to a denominator.
+ */
+const progressDraft = ref<number | null>(null)
+const savingProgress = ref(false)
+
+const progressUnit = computed(() => {
+  if (!media.value) return null
+  if (media.value.mediaType === 'series') {
+    return { label: 'Episode', total: media.value.metadata.episodeCount }
+  }
+  if (media.value.mediaType === 'book') {
+    return { label: 'Page', total: media.value.metadata.pageCount }
+  }
+  return null
+})
+
+const showProgress = computed(
+  () =>
+    auth.isSignedIn &&
+    media.value?.viewerState?.status === 'in_progress' &&
+    progressUnit.value !== null,
+)
+
+watch(
+  media,
+  (next) => {
+    progressDraft.value = next?.viewerState?.progress ?? null
+  },
+  { immediate: true },
+)
+
+async function saveProgress() {
+  if (!media.value || savingProgress.value) return
+  savingProgress.value = true
+  try {
+    await api.ratings.setStatus(media.value.id, 'in_progress', progressDraft.value ?? 0)
+    await refresh()
+  } finally {
+    savingProgress.value = false
+  }
+}
+
 async function setStatus(next: MediaStatus) {
   if (!auth.isSignedIn) return navigateTo('/signin')
   if (!media.value || savingStatus.value) return
@@ -275,6 +321,25 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
           >
             {{ MEDIA_STATUS_LABELS[media.mediaType][option] }}
           </button>
+        </div>
+
+        <div v-if="showProgress && progressUnit" class="progress">
+          <label class="progress__label" :for="`progress-${media.id}`">
+            {{ progressUnit.label }}
+          </label>
+          <input
+            :id="`progress-${media.id}`"
+            v-model.number="progressDraft"
+            type="number"
+            min="0"
+            :max="progressUnit.total ?? 32767"
+            class="progress__input"
+            @change="saveProgress"
+          />
+          <span v-if="progressUnit.total" class="progress__total">
+            of {{ progressUnit.total }}
+          </span>
+          <span v-if="savingProgress" class="progress__saving">Saving…</span>
         </div>
 
         <UiTabNav v-model="tab" :tabs="tabs" class="body__tabs" />
@@ -639,6 +704,47 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 
 .status-chip:disabled {
   opacity: 0.6;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+}
+
+.progress__label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-tertiary);
+}
+
+.progress__input {
+  width: 5rem;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--surface-base);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress__input:focus {
+  outline: none;
+  border-color: var(--border-strong);
+}
+
+.progress__total,
+.progress__saving {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
 }
 
 .body__tabs {

@@ -10,8 +10,45 @@ import type { Media, MediaStatus } from '@revy/shared/types'
  * -- the heading comes from the shared verb table.
  */
 const props = defineProps<{
-  entries: Array<{ status: MediaStatus; media: Media; updatedAt: string }>
+  entries: Array<{
+    status: MediaStatus
+    media: Media
+    progress?: number | null
+    updatedAt: string
+  }>
 }>()
+
+/**
+ * How far through, as a fraction, when we can say honestly.
+ *
+ * Needs both a position and a total: episodes for a series, pages for a book.
+ * Games have neither, and a movie is not something you are "40% through" in
+ * any way we track -- so those get the label without a bar rather than a bar
+ * built on a guess.
+ */
+function ratio(entry: (typeof props.entries)[number]): number | null {
+  const position = entry.progress
+  if (!position || position <= 0) return null
+
+  const total =
+    entry.media.mediaType === 'series'
+      ? entry.media.metadata.episodeCount
+      : entry.media.mediaType === 'book'
+        ? entry.media.metadata.pageCount
+        : undefined
+
+  if (!total || total <= 0) return null
+  return Math.min(1, position / total)
+}
+
+/** 'S2 · E3' style label, or 'Page 214'. */
+function positionLabel(entry: (typeof props.entries)[number]): string | null {
+  if (!entry.progress || entry.progress <= 0) return null
+
+  if (entry.media.mediaType === 'series') return `Episode ${entry.progress}`
+  if (entry.media.mediaType === 'book') return `Page ${entry.progress}`
+  return null
+}
 
 /**
  * Grouped by the present-tense verb rather than by media type, so movies and
@@ -58,8 +95,21 @@ const groups = computed(() => {
 
         <div class="item__text">
           <span class="item__title clamp-2">{{ entry.media.title }}</span>
+
           <span class="item__status">
-            {{ MEDIA_STATUS_LABELS[entry.media.mediaType][entry.status] }}
+            {{ positionLabel(entry) ?? MEDIA_STATUS_LABELS[entry.media.mediaType][entry.status] }}
+          </span>
+
+          <span
+            v-if="ratio(entry) !== null"
+            class="item__track"
+            role="progressbar"
+            :aria-valuenow="Math.round(ratio(entry)! * 100)"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :aria-label="`${entry.media.title} progress`"
+          >
+            <span class="item__fill" :style="{ width: `${ratio(entry)! * 100}%` }" />
           </span>
         </div>
       </NuxtLink>
@@ -121,5 +171,23 @@ const groups = computed(() => {
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
   color: var(--accent);
+}
+
+.item__track {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-overlay);
+  overflow: hidden;
+}
+
+.item__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  transition: width var(--duration-base) var(--ease-out);
 }
 </style>

@@ -127,6 +127,8 @@ export interface ViewerMediaState {
   score: number | null
   hasReview: boolean
   inListIds: string[]
+  /** Episode for series, page for books. Null when not tracked. */
+  progress: number | null
 }
 
 export interface FriendRating {

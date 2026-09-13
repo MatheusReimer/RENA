@@ -95,6 +95,7 @@ export const userService = {
     return rows.map((row) => ({
       status: row.userMedia.status,
       media: row.media,
+      progress: row.userMedia.progress,
       updatedAt: row.userMedia.updatedAt.toISOString(),
     }))
   },

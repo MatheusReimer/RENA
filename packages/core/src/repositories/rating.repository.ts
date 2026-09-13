@@ -107,7 +107,7 @@ export const ratingRepository = {
     userId: string,
     mediaId: string,
     status: UserMediaRow['status'],
-    timestamps: { startedAt?: Date | null; completedAt?: Date | null },
+    fields: { startedAt?: Date | null; completedAt?: Date | null; progress?: number | null },
   ): Promise<UserMediaRow> {
     const [row] = await db
       .insert(schema.userMedia)
@@ -115,15 +115,19 @@ export const ratingRepository = {
         userId,
         mediaId,
         status,
-        startedAt: timestamps.startedAt ?? null,
-        completedAt: timestamps.completedAt ?? null,
+        startedAt: fields.startedAt ?? null,
+        completedAt: fields.completedAt ?? null,
+        progress: fields.progress ?? null,
       })
       .onConflictDoUpdate({
         target: [schema.userMedia.userId, schema.userMedia.mediaId],
         set: {
           status,
-          ...(timestamps.startedAt !== undefined ? { startedAt: timestamps.startedAt } : {}),
-          ...(timestamps.completedAt !== undefined ? { completedAt: timestamps.completedAt } : {}),
+          ...(fields.startedAt !== undefined ? { startedAt: fields.startedAt } : {}),
+          ...(fields.completedAt !== undefined ? { completedAt: fields.completedAt } : {}),
+          // Undefined leaves the stored value alone, so setting a status does
+          // not silently wipe how far someone had got.
+          ...(fields.progress !== undefined ? { progress: fields.progress } : {}),
           updatedAt: new Date(),
         },
       })

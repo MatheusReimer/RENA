@@ -114,6 +114,13 @@ export const ratingService = {
       await ratingRepository.setStatus(tx, auth.viewerId, input.mediaId, status, {
         startedAt,
         completedAt,
+        // Finishing something clears the position -- "page 412 of 412" is not
+        // useful, and it would show a full bar on a completed item forever.
+        ...(status === 'completed'
+          ? { progress: null }
+          : input.progress !== undefined
+            ? { progress: input.progress }
+            : {}),
       })
 
       // Only finishing something is feed-worthy. 'Want to watch' is a private

@@ -254,6 +254,7 @@ would resolve against it.
 - Activity feed, friend requests and the friend graph, notifications
 - XP and badge evaluation
 - Communities: join/leave, member lists, and a directory ranked by activity
+- Progress tracking: episode for series, page for books, with bars on Home
 - Design system and the Home, Search, Discover, Community, Friends, Lists,
   Media, Profile, Notifications and auth screens
 

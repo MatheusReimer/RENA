@@ -86,6 +86,14 @@ export const setMediaStatusSchema = z.object({
   mediaId: uuidSchema,
   /** Null clears the status entirely. */
   status: mediaStatusSchema.nullable(),
+  /**
+   * How far in: episode number for series, page for books.
+   *
+   * Capped at a smallint because the column is one, and because a "page
+   * 900000" is a typo rather than a book. Null leaves the existing value
+   * alone; 0 clears it.
+   */
+  progress: z.number().int().min(0).max(32767).nullish(),
 })
 export type SetMediaStatusInput = z.infer<typeof setMediaStatusSchema>
 
