@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { MEDIA_STATUS_LABELS } from '@revy/shared/constants'
+import type { ListSummary } from '@revy/shared/types'
 import { xpProgressRatio } from '@revy/shared/utils'
 
 /**
@@ -25,12 +26,36 @@ const profile = computed(() => data.value?.profile ?? null)
 const activity = computed(() => data.value?.activity.items ?? [])
 const currently = computed(() => data.value?.currently ?? [])
 
-const tab = ref<'activity' | 'currently'>('activity')
+const tab = ref<'activity' | 'currently' | 'lists'>('activity')
 
 const tabs = [
   { value: 'activity', label: 'Activity' },
   { value: 'currently', label: 'Currently' },
+  { value: 'lists', label: 'Lists' },
 ] as const
+
+/**
+ * Lists load on first visit to their tab (SPEC 22).
+ *
+ * The API filters by visibility, so this returns only what the viewer is
+ * allowed to see -- a stranger gets the public ones, a friend also gets
+ * friends-only, the owner gets everything.
+ */
+const lists = ref<ListSummary[]>([])
+const listsLoaded = ref(false)
+const listsLoading = ref(false)
+
+watch(tab, async (value) => {
+  if (value !== 'lists' || listsLoaded.value) return
+  listsLoading.value = true
+  try {
+    const result = await api.lists.forUser(username.value)
+    lists.value = result.lists
+    listsLoaded.value = true
+  } finally {
+    listsLoading.value = false
+  }
+})
 
 /**
  * Built here rather than inline in the template: the copy contains an
@@ -190,6 +215,31 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
           </UiEmptyState>
 
           <FeedActivityCard v-for="item in activity" v-else :key="item.id" :activity="item" />
+        </section>
+
+        <section v-else-if="tab === 'lists'" class="section section--padded">
+          <div v-if="listsLoading" class="lists-loading">
+            <UiSkeletonBlock v-for="i in 3" :key="i" width="100%" height="3.5rem" />
+          </div>
+
+          <UiEmptyState
+            v-else-if="lists.length === 0"
+            icon="📁"
+            :title="profile.isSelf ? 'You have no lists yet.' : 'No lists to show.'"
+            :description="
+              profile.isSelf
+                ? 'Collections you create show up here.'
+                : 'This person has no lists you can see.'
+            "
+          >
+            <template v-if="profile.isSelf" #action>
+              <UiAppButton variant="primary" @click="navigateTo('/lists')">
+                Create a list
+              </UiAppButton>
+            </template>
+          </UiEmptyState>
+
+          <ListCard v-for="list in lists" v-else :key="list.id" :list="list" />
         </section>
 
         <section v-else class="section section--padded">
@@ -376,5 +426,11 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
   font-size: var(--text-base);
   font-weight: 600;
   line-height: var(--leading-snug);
+}
+
+.lists-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 </style>

@@ -6,6 +6,8 @@ import type {
   DiscussionCommentNode,
   DiscussionThread,
   FriendRequest,
+  ListSummary,
+  MediaList,
   Media,
   MediaDetail,
   MediaSearchResult,
@@ -18,11 +20,14 @@ import type {
   UserSummary,
 } from '@revy/shared/types'
 import type {
+  AddListItemInput,
   CreateCommentInput,
+  CreateListInput,
   CreateReviewInput,
   CreateThreadInput,
   FeedQueryInput,
   NotificationQueryInput,
+  UpdateListInput,
   UpdateProfileInput,
 } from '@revy/shared/schemas'
 
@@ -288,6 +293,46 @@ export function useApi() {
 
       remove: (userId: string) =>
         request<{ ok: true }>(`/api/friends/${userId}`, { method: 'DELETE' }),
+    },
+
+    /* -------------------------------------------------------------- *
+     * Lists (SPEC 15)
+     * -------------------------------------------------------------- */
+    lists: {
+      mine: () => request<{ lists: ListSummary[] }>('/api/lists'),
+
+      forUser: (username: string) =>
+        request<{ lists: ListSummary[] }>(
+          `/api/users/${encodeURIComponent(username)}/lists`,
+        ),
+
+      get: (id: string) => request<{ list: MediaList }>(`/api/lists/${id}`),
+
+      create: (body: CreateListInput) =>
+        request<{ list: ListSummary }>('/api/lists', { method: 'POST', body }),
+
+      update: (id: string, body: UpdateListInput) =>
+        request<{ list: ListSummary }>(`/api/lists/${id}`, { method: 'PATCH', body }),
+
+      remove: (id: string) => request<{ ok: true }>(`/api/lists/${id}`, { method: 'DELETE' }),
+
+      addItem: (id: string, body: AddListItemInput) =>
+        request<{ added: boolean; itemCount: number }>(`/api/lists/${id}/items`, {
+          method: 'POST',
+          body,
+        }),
+
+      removeItem: (id: string, mediaId: string) =>
+        request<{ removed: boolean; itemCount: number }>(
+          `/api/lists/${id}/items/${mediaId}`,
+          { method: 'DELETE' },
+        ),
+
+      reorder: (id: string, itemIds: string[]) =>
+        request<{ ok: true }>(`/api/lists/${id}/reorder`, {
+          method: 'POST',
+          body: { itemIds },
+        }),
     },
 
     /* -------------------------------------------------------------- *

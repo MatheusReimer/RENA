@@ -13,6 +13,7 @@ import { ProviderError } from '../providers'
 import {
   discussionRepository,
   friendshipRepository,
+  listRepository,
   mediaRepository,
   ratingRepository,
   reviewRepository,
@@ -162,18 +163,18 @@ async function loadViewerState(
 ): Promise<ViewerMediaState | null> {
   if (!ctx.viewerId) return null
 
-  const [rating, status, review] = await Promise.all([
+  const [rating, status, review, listsByMedia] = await Promise.all([
     ratingRepository.find(ctx.db, ctx.viewerId, mediaId),
     ratingRepository.findStatus(ctx.db, ctx.viewerId, mediaId),
     reviewRepository.findByUserAndMedia(ctx.db, ctx.viewerId, mediaId),
+    listRepository.listIdsContaining(ctx.db, ctx.viewerId, [mediaId]),
   ])
 
   return {
     status: status?.status ?? null,
     score: rating ? toScore(rating.score) : null,
     hasReview: review !== null,
-    // Populated with Phase 6 lists; empty is the correct answer until then.
-    inListIds: [],
+    inListIds: listsByMedia.get(mediaId) ?? [],
   }
 }
 

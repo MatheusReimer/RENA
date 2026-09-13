@@ -167,10 +167,21 @@ export const createListSchema = z.object({
 })
 export type CreateListInput = z.infer<typeof createListSchema>
 
-export const updateListSchema = createListSchema.partial().refine(
-  (value) => Object.keys(value).length > 0,
-  { error: 'Nothing to update.' },
-)
+/**
+ * Declared explicitly rather than as `createListSchema.partial()`.
+ *
+ * `.partial()` makes fields optional but does NOT strip their defaults, so
+ * `visibility`'s `.default('private')` survived it: a PATCH with an empty body
+ * parsed to `{ visibility: 'private' }`, quietly making a public list private.
+ * An update schema must never invent a value the caller did not send.
+ */
+export const updateListSchema = z
+  .object({
+    name: userText(LIMITS.listName.min, LIMITS.listName.max, 'List name').optional(),
+    description: userText(1, LIMITS.listDescription.max, 'Description').nullish(),
+    visibility: z.enum(LIST_VISIBILITIES).optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, { error: 'Nothing to update.' })
 export type UpdateListInput = z.infer<typeof updateListSchema>
 
 export const addListItemSchema = z.object({

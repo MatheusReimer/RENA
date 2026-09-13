@@ -125,6 +125,17 @@ const reviewsLoading = ref(false)
 const composeOpen = ref(false)
 
 /* ------------------------------------------------------------------ *
+ * Lists (SPEC 15)
+ * ------------------------------------------------------------------ */
+
+const addToListOpen = ref(false)
+
+function openAddToList() {
+  if (!auth.isSignedIn) return navigateTo('/signin')
+  addToListOpen.value = true
+}
+
+/* ------------------------------------------------------------------ *
  * Discussions (SPEC 14)
  * ------------------------------------------------------------------ */
 
@@ -243,6 +254,11 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
               size="sm"
             />
             {{ media.viewerState?.score ? `Your rating · ${media.viewerState.score.toFixed(1)}` : 'Rate this' }}
+          </UiAppButton>
+
+          <UiAppButton variant="secondary" size="lg" @click="openAddToList">
+            <span class="actions__plus" aria-hidden="true">+</span>
+            {{ media.viewerState?.inListIds.length ? 'In your lists' : 'Add to list' }}
           </UiAppButton>
         </div>
 
@@ -386,6 +402,16 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
         :saving="savingRating"
         :error="rateError"
         @save="saveRating"
+      />
+
+      <!-- Add to list -->
+      <ListAddToListSheet
+        v-if="addToListOpen"
+        :media-id="media.id"
+        :media-title="media.title"
+        :in-list-ids="media.viewerState?.inListIds ?? []"
+        @close="addToListOpen = false"
+        @changed="refresh"
       />
 
       <!-- New discussion -->
@@ -565,6 +591,11 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 
 .actions > * {
   flex: 1;
+}
+
+.actions__plus {
+  font-size: var(--text-lg);
+  line-height: 1;
 }
 
 .statuses {

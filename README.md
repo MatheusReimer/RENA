@@ -134,6 +134,15 @@ anything past the limit — a client-supplied depth would be a client-supplied w
 past it. A reply is also checked to actually belong to the thread it claims,
 so a crafted request cannot graft a comment from one discussion onto another.
 
+**A hidden list reports 404, not 403.** Confirming that a private list exists
+is itself a small leak, so an unauthorised read is indistinguishable from a
+missing one (OWASP A01).
+
+**An update schema never invents a value.** `updateListSchema` is written out
+rather than derived from `createListSchema.partial()` — `.partial()` keeps
+field defaults, so an empty PATCH body parsed to `{ visibility: 'private' }`
+and quietly made public lists private.
+
 **User content is never trusted as HTML.** It is stored raw and escaped at
 render time — sanitising on input mangles legitimate text and gives false
 confidence. `vue/no-v-html` is an error in the lint config.
@@ -189,9 +198,15 @@ would resolve against it.
 - Reply notifications, XP and the Discussion Starter badge
 - Discussions tab on the media page, plus a dedicated thread page
 
+**Done — lists (§15) and games:**
+
+- Lists with private / friends / public visibility, enforced in the query so a
+  private list never leaves the database for the wrong viewer
+- Add to list from any media page, reorder, per-item notes
+- Games as a fourth media type, via RAWG
+
 **Not built yet:**
 
-- Lists (§15) — schema, indexes and API types exist; services and UI do not
 - Discover page (§21)
 - Integration and E2E tests (§43) — unit tests cover the pure logic only
 - Rate limiting (§39) and avatar upload

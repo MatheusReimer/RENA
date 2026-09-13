@@ -13,14 +13,29 @@ import { BRAND } from '@revy/shared/constants'
 const auth = useAuthStore()
 const route = useRoute()
 
-await useAsyncData('session', () => auth.load())
+// Returns a value rather than void: a handler resolving to `undefined` makes
+// Nuxt refetch on the client, duplicating the session lookup on every page.
+await useAsyncData('session', async () => {
+  await auth.load()
+  return { loaded: true }
+})
 
+/**
+ * Primary navigation.
+ *
+ * `sidebarOnly` items appear in the desktop sidebar but not the mobile tab
+ * bar: five tabs is the practical ceiling on a phone, and Lists is reachable
+ * from the profile and from any media page.
+ */
 const navItems = [
-  { to: '/', icon: 'home', label: 'Home' },
-  { to: '/search', icon: 'search', label: 'Search' },
-  { to: '/add', icon: 'add', label: 'Add' },
-  { to: '/activity', icon: 'activity', label: 'Activity' },
+  { to: '/', icon: 'home', label: 'Home', sidebarOnly: false },
+  { to: '/search', icon: 'search', label: 'Search', sidebarOnly: false },
+  { to: '/add', icon: 'add', label: 'Add', sidebarOnly: false },
+  { to: '/lists', icon: 'lists', label: 'Lists', sidebarOnly: true },
+  { to: '/activity', icon: 'activity', label: 'Activity', sidebarOnly: false },
 ] as const
+
+const tabBarItems = navItems.filter((item) => !item.sidebarOnly)
 
 /** The profile tab points at the signed-in user, or sign-in when signed out. */
 const profileTarget = computed(() =>
@@ -110,7 +125,7 @@ const profileActive = computed(() => route.path.startsWith('/u/'))
     <!-- Mobile tab bar (SPEC 32) -->
     <nav class="tabbar safe-bottom" aria-label="Main">
       <NuxtLink
-        v-for="item in navItems"
+        v-for="item in tabBarItems"
         :key="item.to"
         :to="item.to"
         class="tabbar__link"
