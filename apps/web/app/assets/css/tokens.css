@@ -1,0 +1,138 @@
+/**
+ * Design tokens (SPEC 30).
+ *
+ * Dark-first and single-theme by intent: the product is a media app where
+ * artwork is the content, and a dark ground is what lets posters carry the
+ * page. Every colour, space and radius used anywhere in the app is named here
+ * -- a raw hex value in a component is a bug.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ---------------------------------------------------------------- *
+   * Surfaces. Four steps, each a deliberate elevation rather than a
+   * gradient, so cards read as layered without any shadow work.
+   * ---------------------------------------------------------------- */
+  --surface-base: #0a0a0c;
+  --surface-raised: #121215;
+  --surface-overlay: #1a1a1f;
+  --surface-hover: #202027;
+
+  /* Scrims for text over artwork. */
+  --scrim-strong: rgb(10 10 12 / 0.92);
+  --scrim-soft: rgb(10 10 12 / 0.55);
+
+  /* ---------------------------------------------------------------- *
+   * Text. Three weights of emphasis is enough; a fourth always ends up
+   * being used where one of these belonged.
+   * ---------------------------------------------------------------- */
+  --text-primary: #f7f7f8;
+  --text-secondary: #9b9ba4;
+  --text-tertiary: #6b6b74;
+  --text-inverse: #0a0a0c;
+
+  /* ---------------------------------------------------------------- *
+   * Accent. One brand colour, used for the primary action and the active
+   * navigation state and nothing else -- that is what keeps it meaning
+   * "this is the thing to press".
+   * ---------------------------------------------------------------- */
+  --accent: #e8352b;
+  --accent-hover: #f2463c;
+  --accent-active: #cf2b22;
+  --accent-soft: rgb(232 53 43 / 0.12);
+  --accent-border: rgb(232 53 43 / 0.32);
+
+  /* Ratings are gold, never the accent: a score is information, not an
+     action, and colouring both the same flattens the hierarchy. */
+  --star: #f5a623;
+  --star-empty: #3a3a42;
+
+  /* Status colours, used sparingly. */
+  --success: #2fb344;
+  --danger: #e5484d;
+  --info: #4a9eff;
+
+  /* ---------------------------------------------------------------- *
+   * Borders. Deliberately near-invisible (SPEC 30: "subtle borders").
+   * ---------------------------------------------------------------- */
+  --border-subtle: rgb(255 255 255 / 0.07);
+  --border-default: rgb(255 255 255 / 0.11);
+  --border-strong: rgb(255 255 255 / 0.18);
+
+  /* ---------------------------------------------------------------- *
+   * Typography. One family, a 1.2-ish modular scale.
+   * ---------------------------------------------------------------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --text-2xs: 0.6875rem; /* 11px -- metadata, timestamps */
+  --text-xs: 0.75rem; /* 12px -- labels, captions */
+  --text-sm: 0.8125rem; /* 13px -- secondary body */
+  --text-base: 0.9375rem; /* 15px -- body */
+  --text-lg: 1.0625rem; /* 17px -- card titles */
+  --text-xl: 1.25rem; /* 20px -- section headings */
+  --text-2xl: 1.5rem; /* 24px -- screen titles */
+  --text-3xl: 2rem; /* 32px -- profile name, big numbers */
+  --text-4xl: 2.75rem; /* 44px -- hero rating */
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.06em;
+  --tracking-widest: 0.16em; /* the wordmark tagline */
+
+  /* ---------------------------------------------------------------- *
+   * Spacing. A 4px base scale.
+   * ---------------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ---------------------------------------------------------------- *
+   * Radii. Generous on cards, pill on chips (SPEC 30: "rounded cards").
+   * ---------------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  /* ---------------------------------------------------------------- *
+   * Elevation. Two levels only. SPEC 30 warns off heavy shadows, so these
+   * exist for genuinely floating things (menus, the compose button).
+   * ---------------------------------------------------------------- */
+  --shadow-menu: 0 8px 28px rgb(0 0 0 / 0.55);
+  --shadow-float: 0 6px 20px rgb(0 0 0 / 0.4);
+
+  /* Motion. Short and consistent; nothing decorative. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+
+  /* Layout */
+  --nav-height: 3.5rem;
+  --sidebar-width: 15rem;
+  --content-max: 40rem;
+  --page-max: 75rem;
+
+  /* Poster aspect ratios, so cards never disagree about proportion. */
+  --poster-ratio: 2 / 3;
+  --backdrop-ratio: 16 / 9;
+
+  --z-nav: 40;
+  --z-sticky: 30;
+  --z-menu: 60;
+  --z-modal: 80;
+  --z-toast: 100;
+}

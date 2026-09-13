@@ -1,0 +1,21 @@
+{
+  "name": "@revy/seed",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@revy/core": "workspace:*",
+    "@revy/db": "workspace:*",
+    "@revy/shared": "workspace:*",
+    "better-auth": "^1.2.0",
+    "drizzle-orm": "^0.44.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2"
+  }
+}

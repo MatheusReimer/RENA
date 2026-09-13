@@ -1,0 +1,21 @@
+{
+  "name": "@revy/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./providers": "./src/providers/index.ts",
+    "./services": "./src/services/index.ts",
+    "./repositories": "./src/repositories/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@revy/db": "workspace:*",
+    "@revy/shared": "workspace:*",
+    "drizzle-orm": "^0.44.0",
+    "zod": "^4.1.12"
+  }
+}

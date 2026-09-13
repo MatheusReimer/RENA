@@ -1,0 +1,60 @@
+import { relations, sql } from 'drizzle-orm'
+import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import { authUser } from './auth'
+
+/**
+ * The application's user domain (SPEC 6).
+ *
+ * Deliberately separate from `auth_user`: credentials and sessions belong to
+ * Better Auth, while username / bio / avatar belong to the product. Swapping
+ * auth providers later means repointing `auth_user_id`, not rewriting the
+ * social graph.
+ */
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** 1:1 link to the auth provider's user record. */
+    authUserId: text('auth_user_id')
+      .notNull()
+      .unique()
+      .references(() => authUser.id, { onDelete: 'cascade' }),
+    username: text('username').notNull(),
+    displayName: text('display_name').notNull(),
+    avatarUrl: text('avatar_url'),
+    bio: text('bio'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // Usernames are displayed as typed but must be unique case-insensitively,
+    // so "Pedro" cannot be registered alongside "pedro".
+    uniqueIndex('users_username_lower_idx').on(sql`lower(${table.username})`),
+    index('users_display_name_idx').on(table.displayName),
+  ],
+)
+
+/**
+ * Running XP total (SPEC 16).
+ *
+ * Kept in its own table rather than a column on `users` so XP writes -- which
+ * happen on nearly every action -- do not contend with profile reads.
+ */
+export const userXp = pgTable('user_xp', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  totalXp: integer('total_xp').notNull().default(0),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const usersRelations = relations(users, ({ one }) => ({
+  authUser: one(authUser, {
+    fields: [users.authUserId],
+    references: [authUser.id],
+  }),
+  xp: one(userXp, {
+    fields: [users.id],
+    references: [userXp.userId],
+  }),
+}))

@@ -1,0 +1,34 @@
+{
+  "name": "@revy/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --dotenv ../../.env",
+    "build": "nuxt build --dotenv ../../.env",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview --dotenv ../../.env",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "cap:sync": "nuxt generate && cap sync",
+    "cap:ios": "cap open ios",
+    "cap:android": "cap open android"
+  },
+  "dependencies": {
+    "@revy/core": "workspace:*",
+    "@revy/db": "workspace:*",
+    "@revy/shared": "workspace:*",
+    "better-auth": "^1.2.0",
+    "drizzle-orm": "^0.44.7",
+    "pinia": "^3.0.0",
+    "vue": "^3.5.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@pinia/nuxt": "^0.11.0",
+    "nuxt": "^4.0.0",
+    "vue-tsc": "^2.2.0"
+  }
+}

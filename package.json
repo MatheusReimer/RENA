@@ -1,0 +1,40 @@
+{
+  "name": "revy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.0.0 <23"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @revy/web dev",
+    "build": "pnpm --filter @revy/web build",
+    "preview": "pnpm --filter @revy/web preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:generate": "pnpm --filter @revy/db generate",
+    "db:migrate": "pnpm --filter @revy/db migrate",
+    "db:push": "pnpm --filter @revy/db push",
+    "db:seed": "pnpm --filter @revy/seed start",
+    "db:studio": "pnpm --filter @revy/db studio"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@revy/core": "workspace:*",
+    "@revy/db": "workspace:*",
+    "@revy/shared": "workspace:*",
+    "@types/node": "^22.20.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-vue": "^9.33.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^3.2.7",
+    "vue-eslint-parser": "^9.4.3",
+    "vue-tsc": "^2.2.12"
+  }
+}

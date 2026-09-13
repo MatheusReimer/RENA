@@ -1,0 +1,10 @@
+{
+  "//": "Nuxt generates the real configs into .nuxt on `nuxt prepare`; this file just points at them (project references), which is what `nuxt typecheck` and editors look for.",
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
+}

@@ -1,0 +1,11 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+allowBuilds:
+  esbuild: set this to true or false
+
+# Build scripts are blocked by default in pnpm 10+; esbuild needs its
+# postinstall to fetch the platform binary that Vite/Nitro compile with.
+onlyBuiltDependencies:
+  - esbuild

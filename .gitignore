@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# nuxt / nitro
+.nuxt/
+.output/
+.data/
+dist/
+.vercel/
+
+# capacitor native projects (generated)
+apps/web/ios/
+apps/web/android/
+
+# env + secrets
+.env
+.env.*
+!.env.example
+
+# editors / os
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# test + build artifacts
+coverage/
+*.tsbuildinfo
+test-results/
+playwright-report/
+playwright/.cache/
