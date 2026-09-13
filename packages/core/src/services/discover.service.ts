@@ -7,6 +7,7 @@ import {
   discoverRepository,
   friendshipRepository,
   mediaRepository,
+  similarToUserTaste,
 } from '../repositories'
 import { ProviderError } from '../providers'
 
@@ -34,17 +35,36 @@ export const discoverService = {
       ? await friendshipRepository.listFriendIds(ctx.db, ctx.viewerId)
       : []
 
-    const [trending, popular, highestRated, friendsWatching, friendsRated] =
+    const [trending, popular, highestRated, friendsWatching, friendsRated, forYou] =
       await Promise.all([
         this.trending(ctx, null),
         discoverRepository.popular(ctx.db, null, RAIL_SIZE),
         discoverRepository.highestRated(ctx.db, null, RAIL_SIZE),
         discoverRepository.friendsConsuming(ctx.db, friendIds, RAIL_SIZE * 3),
         discoverRepository.friendsRecentlyRated(ctx.db, friendIds, RAIL_SIZE * 3),
+        ctx.viewerId
+          ? similarToUserTaste(ctx.db, ctx.viewerId, RAIL_SIZE)
+          : Promise.resolve([]),
       ])
 
     const sections: DiscoverSection[] = [
       { key: 'trending', title: 'Trending this week', items: trending },
+      {
+        key: 'for-you',
+        // Named for what it actually does. It is genre overlap with what the
+        // viewer already rates highly -- not a model, and the heading should
+        // not imply one (SPEC 21, 49.6).
+        title: 'More in genres you rate highly',
+        items: forYou
+          // A title sharing no genres is not a suggestion, it is filler.
+          .filter((row) => row.overlap > 0)
+          .map((row) => ({
+            media: toMedia(row.media),
+            averageRating: row.average === null ? null : Number(row.average),
+            ratingCount: row.ratingCount ?? 0,
+            friends: [],
+          })),
+      },
       {
         key: 'popular',
         title: `Popular on ${BRAND.name}`,

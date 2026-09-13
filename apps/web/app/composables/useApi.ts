@@ -98,19 +98,34 @@ function toApiError(error: unknown): ApiError {
  * (in setup) rather than inside each request, and falls back to `$fetch` if
  * called from somewhere without context.
  */
-function resolveFetcher(): typeof $fetch {
-  if (import.meta.client) return $fetch
+/**
+ * A deliberately untyped view of `$fetch`.
+ *
+ * `$fetch`'s own signature infers a response type by matching the URL against
+ * a literal union of every registered Nitro route. That inference is recursive
+ * and its cost grows with the route count -- past a few dozen routes it
+ * exceeds TypeScript's recursion limit and fails with TS2321, in a wrapper
+ * that passes a runtime string and therefore cannot benefit from it anyway.
+ *
+ * Narrowing the parameter to `string` stops the route matching. The response
+ * type is not lost: every method below declares it explicitly, which is the
+ * contract this module exists to provide.
+ */
+type UrlFetch = (url: string, options?: Record<string, unknown>) => Promise<unknown>
+
+function resolveFetcher(): UrlFetch {
+  if (import.meta.client) return $fetch as unknown as UrlFetch
   try {
-    return useRequestFetch() as typeof $fetch
+    return useRequestFetch() as unknown as UrlFetch
   } catch {
-    return $fetch
+    return $fetch as unknown as UrlFetch
   }
 }
 
-function createRequest(fetcher: typeof $fetch) {
+function createRequest(fetcher: UrlFetch) {
   return async function request<T>(
     path: string,
-    options: Parameters<typeof $fetch>[1] = {},
+    options: Record<string, unknown> = {},
   ): Promise<T> {
     // On web `apiBase` is empty and the path stays relative. In the Capacitor
     // build it is the deployed origin, because the WebView's own origin
@@ -119,10 +134,6 @@ function createRequest(fetcher: typeof $fetch) {
     const url = base ? `${base}${path}` : path
 
     try {
-      // Cast because `$fetch` widens a generic return into Nitro's
-      // TypedInternalResponse wrapper, which does not narrow back to a bare
-      // `T`. The real contract is the handler's return type, which these call
-      // sites declare explicitly below.
       return (await fetcher(url, {
         ...options,
         // Sessions are cookie-based, and a cross-origin native request drops

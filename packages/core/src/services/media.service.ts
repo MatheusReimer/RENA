@@ -43,6 +43,13 @@ export const mediaService = {
       ctx.providers.searchAll(query, input.limit, input.type),
     ])
 
+    // Scores for the local hits, in one query rather than one per row.
+    const stats = await mediaRepository.getRatingStatsForMany(
+      ctx.db,
+      local.map((row) => row.id),
+    )
+    const statsByMedia = new Map(stats.map((row) => [row.mediaId, row]))
+
     const results: MediaSearchResult[] = []
     // Keyed by provider + external id, so a local row and the provider result
     // for the same title collapse into one entry -- with the local id kept.
@@ -50,6 +57,8 @@ export const mediaService = {
 
     for (const row of local) {
       seen.add(`${row.provider}:${row.externalId}`)
+      const summary = toRatingSummary(statsByMedia.get(row.id))
+
       results.push({
         id: row.id,
         externalId: row.externalId,
@@ -59,6 +68,8 @@ export const mediaService = {
         releaseDate: row.releaseDate,
         coverImageUrl: row.coverImageUrl,
         subtitle: subtitleFor(row.mediaType, row.metadata),
+        averageRating: summary.average,
+        ratingCount: summary.count,
       })
     }
 
@@ -75,6 +86,9 @@ export const mediaService = {
         releaseDate: item.releaseDate,
         coverImageUrl: item.coverImageUrl,
         subtitle: item.subtitle,
+        // Not in the catalogue yet, so there is no community score to show.
+        averageRating: null,
+        ratingCount: 0,
       })
     }
 

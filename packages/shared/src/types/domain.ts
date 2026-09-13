@@ -148,6 +148,15 @@ export interface MediaSearchResult {
   coverImageUrl: string | null
   /** Author(s) for books, network/director hint otherwise. Display only. */
   subtitle: string | null
+  /**
+   * Aggregate score, when the title is already in the catalogue.
+   *
+   * Null for a provider-only result: nobody here has rated it yet, and
+   * borrowing the provider's own score would present someone else's number as
+   * this community's opinion.
+   */
+  averageRating: number | null
+  ratingCount: number
 }
 
 /* ------------------------------------------------------------------ *

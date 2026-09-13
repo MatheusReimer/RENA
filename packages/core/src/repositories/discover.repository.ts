@@ -179,3 +179,77 @@ export const discoverRepository = {
       .limit(limit)
   },
 }
+
+/**
+ * Titles similar to what a user rates highly (SPEC 21).
+ *
+ * Deliberately not a recommendation model -- SPEC 21 and SPEC 49.6 rule those
+ * out, and SPEC 40 puts anything cleverer in the AI phase. This is genre
+ * overlap: take the genres on the things you scored 4.0 or better, find other
+ * titles sharing them, exclude what you have already rated, and rank by how
+ * many genres match and then by community score.
+ *
+ * The honest framing matters. It is arithmetic over a jsonb array, and the UI
+ * should not imply more than that.
+ */
+export async function similarToUserTaste(
+  db: Executor,
+  userId: string,
+  limit: number,
+) {
+  /** Ratings of 4.0 and up, i.e. 8 half-steps. */
+  const LIKED_THRESHOLD = 8
+
+  return db
+    .select({
+      media: schema.media,
+      ratingCount: schema.mediaRatingStats.ratingCount,
+      average: sql<number | null>`
+        CASE WHEN ${schema.mediaRatingStats.ratingCount} = 0 THEN NULL
+             ELSE round(
+               ${schema.mediaRatingStats.ratingSum}::numeric
+               / ${schema.mediaRatingStats.ratingCount} / 2, 1)
+        END
+      `,
+      overlap: sql<number>`(
+        SELECT count(*)::int
+        FROM jsonb_array_elements_text(${schema.media.metadata} -> 'genres') AS g(genre)
+        WHERE g.genre IN (
+          SELECT jsonb_array_elements_text(liked.metadata -> 'genres')
+          FROM ${schema.ratings} r
+          JOIN ${schema.media} liked ON liked.id = r.media_id
+          WHERE r.user_id = ${userId} AND r.score >= ${LIKED_THRESHOLD}
+        )
+      )`,
+    })
+    .from(schema.media)
+    .leftJoin(
+      schema.mediaRatingStats,
+      eq(schema.mediaRatingStats.mediaId, schema.media.id),
+    )
+    // Nothing already rated: "you might like this" about something you have
+    // scored is not a suggestion, it is a reminder.
+    .where(
+      sql`
+        ${schema.media.id} NOT IN (
+          SELECT media_id FROM ${schema.ratings} WHERE user_id = ${userId}
+        )
+        AND jsonb_typeof(${schema.media.metadata} -> 'genres') = 'array'
+      `,
+    )
+    .orderBy(
+      desc(sql`(
+        SELECT count(*)::int
+        FROM jsonb_array_elements_text(${schema.media.metadata} -> 'genres') AS g(genre)
+        WHERE g.genre IN (
+          SELECT jsonb_array_elements_text(liked.metadata -> 'genres')
+          FROM ${schema.ratings} r
+          JOIN ${schema.media} liked ON liked.id = r.media_id
+          WHERE r.user_id = ${userId} AND r.score >= ${LIKED_THRESHOLD}
+        )
+      )`),
+      desc(sql`coalesce(${schema.mediaRatingStats.ratingSum}::numeric
+        / nullif(${schema.mediaRatingStats.ratingCount}, 0), 0)`),
+    )
+    .limit(limit)
+}

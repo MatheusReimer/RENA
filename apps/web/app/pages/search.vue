@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { MEDIA_TYPE_LABELS } from '@revy/shared/constants'
 import type { DiscoverSection, MediaSearchResult, UserSummary } from '@revy/shared/types'
-import { releaseYear } from '@revy/shared/utils'
 
 /**
  * Search (SPEC 20).
@@ -150,9 +148,24 @@ const visibleMedia = computed(() =>
 
 const showPeople = computed(() => tab.value === 'all' || tab.value === 'people')
 
-onMounted(() => {
+/**
+ * Server-renders the results when the page is opened with a query.
+ *
+ * Previously the first search ran in onMounted, which does not execute during
+ * SSR -- so a shared /search?q=dune link arrived empty and filled in only after
+ * hydration. Typing still goes through the debounced client path; this covers
+ * the one case that has a query before the page exists.
+ */
+await useAsyncData('search-initial', async () => {
   const initial = query.value.trim()
-  if (initial) runSearch(initial)
+  if (!initial) return { done: true }
+
+  const searchType = tab.value === 'all' || tab.value === 'people' ? undefined : tab.value
+  const result = await api.media.search(initial, searchType)
+  media.value = result.media
+  people.value = result.people
+  searched.value = true
+  return { done: true }
 })
 
 // The Add screen links here with a type preselected.
@@ -268,34 +281,21 @@ useHead({ title: 'Search' })
       />
 
       <div v-else class="results">
+        <h2 v-if="visibleMedia.length" class="results__heading">Top results</h2>
+
         <button
           v-for="result in visibleMedia"
           :key="`${result.provider}:${result.externalId}`"
           type="button"
-          class="result"
+          class="result-button"
           :disabled="opening === result.externalId"
           @click="open(result)"
         >
-          <div class="result__poster">
-            <UiMediaPoster
-              :src="result.coverImageUrl"
-              :title="result.title"
-              :media-type="result.mediaType"
-            />
-          </div>
-          <div class="result__text">
-            <span class="result__title clamp-2">{{ result.title }}</span>
-            <span class="result__meta">
-              {{ MEDIA_TYPE_LABELS[result.mediaType] }}
-              <template v-if="releaseYear(result.releaseDate)">
-                · {{ releaseYear(result.releaseDate) }}
-              </template>
-            </span>
-            <span v-if="result.subtitle" class="result__subtitle clamp-1">
-              {{ result.subtitle }}
-            </span>
-          </div>
-          <span v-if="opening === result.externalId" class="result__spinner" aria-label="Opening" />
+          <SearchResultRow
+            :result="result"
+            :average-rating="result.averageRating"
+            :opening="opening === result.externalId"
+          />
         </button>
 
         <template v-if="showPeople && people.length">
@@ -406,6 +406,12 @@ useHead({ title: 'Search' })
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
   color: var(--text-tertiary);
+}
+
+.result-button {
+  display: block;
+  width: 100%;
+  text-align: left;
 }
 
 .result {
