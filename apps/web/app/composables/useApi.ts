@@ -4,6 +4,7 @@ import type {
   ApiErrorCode,
   DiscussionComment,
   DiscussionCommentNode,
+  DiscoverSection,
   DiscussionThread,
   FriendRequest,
   ListSummary,
@@ -293,6 +294,16 @@ export function useApi() {
 
       remove: (userId: string) =>
         request<{ ok: true }>(`/api/friends/${userId}`, { method: 'DELETE' }),
+    },
+
+    /* -------------------------------------------------------------- *
+     * Discover (SPEC 21)
+     * -------------------------------------------------------------- */
+    discover: {
+      sections: (type?: string) =>
+        request<{ sections: DiscoverSection[] }>('/api/discover', {
+          query: type ? { type } : {},
+        }),
     },
 
     /* -------------------------------------------------------------- *

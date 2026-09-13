@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MEDIA_TYPE_LABELS } from '@revy/shared/constants'
-import type { MediaSearchResult, UserSummary } from '@revy/shared/types'
+import type { DiscoverSection, MediaSearchResult, UserSummary } from '@revy/shared/types'
 import { releaseYear } from '@revy/shared/utils'
 
 /**
@@ -14,15 +14,51 @@ const route = useRoute()
 const router = useRouter()
 
 const query = ref(String(route.query.q ?? ''))
-const tab = ref<'all' | 'movie' | 'series' | 'book' | 'people'>('all')
+const tab = ref<'all' | 'movie' | 'series' | 'book' | 'game' | 'people'>('all')
 
 const tabs = [
   { value: 'all', label: 'All' },
   { value: 'movie', label: 'Movies' },
   { value: 'series', label: 'Series' },
   { value: 'book', label: 'Books' },
+  { value: 'game', label: 'Games' },
   { value: 'people', label: 'People' },
 ] as const
+
+/**
+ * Discover rails fill the idle state (SPEC 21).
+ *
+ * The mockup puts trending and popular on this screen rather than a separate
+ * Discover tab, and the navigation has no slot for one -- so browsing and
+ * searching share a surface, which is also where someone with nothing typed
+ * actually is.
+ */
+const discoverType = ref<string | undefined>(undefined)
+
+/**
+ * Fetched through useAsyncData rather than onMounted so the rails are in the
+ * server-rendered HTML. onMounted does not run during SSR, which left the
+ * landing state of a main screen painting as skeletons before filling in.
+ *
+ * It runs even when the page opens with a query, which costs one unused
+ * aggregate query -- worth it so clearing the search box reveals the rails
+ * instantly rather than flashing a spinner.
+ */
+const {
+  data: discoverData,
+  status: discoverStatus,
+  error: discoverError,
+} = await useAsyncData(
+  'discover',
+  () => api.discover.sections(discoverType.value),
+  { watch: [discoverType], default: () => ({ sections: [] as DiscoverSection[] }) },
+)
+
+// Discover is supplementary: a failure here leaves search fully usable.
+const discoverSections = computed(() =>
+  discoverError.value ? [] : (discoverData.value?.sections ?? []),
+)
+const discoverLoading = computed(() => discoverStatus.value === 'pending')
 
 const media = ref<MediaSearchResult[]>([])
 const people = ref<UserSummary[]>([])
@@ -53,10 +89,16 @@ watch(query, (value) => {
 })
 
 // Re-running on tab change lets a type filter narrow the provider call rather
-// than filtering results we already paid to fetch.
+// than filtering results we already paid to fetch. With nothing typed, the tab
+// instead re-filters the Discover rails.
 watch(tab, () => {
   const trimmed = query.value.trim()
-  if (trimmed.length > 0) runSearch(trimmed)
+  if (trimmed.length > 0) {
+    runSearch(trimmed)
+    return
+  }
+  discoverType.value =
+    tab.value === 'all' || tab.value === 'people' ? undefined : tab.value
 })
 
 async function runSearch(q: string) {
@@ -109,8 +151,15 @@ const visibleMedia = computed(() =>
 const showPeople = computed(() => tab.value === 'all' || tab.value === 'people')
 
 onMounted(() => {
-  if (query.value.trim()) runSearch(query.value.trim())
+  const initial = query.value.trim()
+  if (initial) runSearch(initial)
 })
+
+// The Add screen links here with a type preselected.
+if (route.query.type && typeof route.query.type === 'string') {
+  const preset = route.query.type as typeof tab.value
+  if (['movie', 'series', 'book', 'game'].includes(preset)) tab.value = preset
+}
 
 useHead({ title: 'Search' })
 </script>
@@ -171,13 +220,35 @@ useHead({ title: 'Search' })
         </template>
       </UiEmptyState>
 
-      <!-- Idle: no query typed yet -->
-      <UiEmptyState
-        v-else-if="!searched && !query.trim()"
-        icon="🔎"
-        title="Find movies, series, books and people."
-        description="Search the catalogue to rate something, add it to a list, or see what your friends thought."
-      />
+      <!-- Idle: browse instead of a blank screen (SPEC 21, 36) -->
+      <template v-else-if="!searched && !query.trim()">
+        <div v-if="discoverLoading" class="discover-loading">
+          <UiSkeletonBlock width="40%" height="1.25rem" />
+          <div class="discover-loading__rail">
+            <UiSkeletonBlock
+              v-for="i in 5"
+              :key="i"
+              width="7.5rem"
+              height="11.25rem"
+              radius="var(--radius-md)"
+            />
+          </div>
+        </div>
+
+        <UiEmptyState
+          v-else-if="discoverSections.length === 0"
+          icon="🔎"
+          title="Find movies, series, books and games."
+          description="Search the catalogue to rate something, add it to a list, or see what your friends thought."
+        />
+
+        <DiscoverRail
+          v-for="section in discoverSections"
+          v-else
+          :key="section.key"
+          :section="section"
+        />
+      </template>
 
       <!-- No matches (SPEC 37) -->
       <UiEmptyState
@@ -389,6 +460,19 @@ useHead({ title: 'Search' })
 
 .result--skeleton {
   pointer-events: none;
+}
+
+.discover-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.discover-loading__rail {
+  display: flex;
+  gap: var(--space-3);
+  overflow: hidden;
 }
 
 .result__lines {

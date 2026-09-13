@@ -143,6 +143,13 @@ rather than derived from `createListSchema.partial()` — `.partial()` keeps
 field defaults, so an empty PATCH body parsed to `{ visibility: 'private' }`
 and quietly made public lists private.
 
+**Highest Rated is a weighted average, not a raw one.** Each title's mean is
+pulled toward the global mean in proportion to how few ratings it has
+(a Bayesian average). Without it, one person rating something 5.0 outranks a
+4.6 from ten thousand people — with the seed data, a raw average puts a title
+with 3 ratings above one with 8. Still arithmetic, not a recommendation model,
+which §21 rules out.
+
 **User content is never trusted as HTML.** It is stored raw and escaped at
 render time — sanitising on input mangles legitimate text and gives false
 confidence. `vue/no-v-html` is an error in the lint config.
@@ -205,9 +212,17 @@ would resolve against it.
 - Add to list from any media page, reorder, per-item notes
 - Games as a fourth media type, via RAWG
 
+**Done — discover (§21):**
+
+- Trending, Popular, Highest rated, Friends are watching, Friends recently rated
+- Lives on the Search screen's idle state, following the mockup — the nav has
+  no Discover slot, and browsing belongs where someone with nothing typed is
+- Friend sections are omitted, not shown empty, when signed out or friendless
+
+That completes the MVP as §48 defines it.
+
 **Not built yet:**
 
-- Discover page (§21)
 - Integration and E2E tests (§43) — unit tests cover the pure logic only
 - Rate limiting (§39) and avatar upload
 
