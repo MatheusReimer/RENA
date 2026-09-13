@@ -173,9 +173,26 @@ useHead({ title: 'Home' })
 }
 
 .hero__title {
-  font-size: clamp(2rem, 6vw, var(--text-4xl));
-  line-height: 1.05;
-  letter-spacing: var(--tracking-tight);
+  /*
+   * Deliberately oversized. The screen shows very few things, so the ones it
+   * does show should be unambiguous about what this place is -- which is the
+   * whole argument of the design.
+   */
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+/* The one flourish: a short accent rule under the statement. */
+.hero__title::after {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin-top: var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--accent);
 }
 
 .hero__subtitle {

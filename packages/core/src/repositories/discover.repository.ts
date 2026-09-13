@@ -295,3 +295,39 @@ export async function newReleases(
     .orderBy(desc(schema.media.releaseDate))
     .limit(limit)
 }
+
+
+/**
+ * Most recently added to the catalogue (SPEC 21).
+ *
+ * The fallback for a type where `newReleases` has nothing to order by. Steam
+ * gives no release date at list scale, so a release-ordered rail of games is
+ * empty -- but the titles are there, and "recently added" is a claim the data
+ * actually supports.
+ */
+export async function recentlyAdded(
+  db: Executor,
+  mediaType: MediaType | null,
+  limit: number,
+) {
+  const conditions = [sql`${schema.media.coverImageUrl} IS NOT NULL`]
+  if (mediaType) conditions.push(eq(schema.media.mediaType, mediaType))
+
+  return db
+    .select({
+      media: schema.media,
+      ratingCount: schema.mediaRatingStats.ratingCount,
+      average: sql<number | null>`
+        CASE WHEN coalesce(${schema.mediaRatingStats.ratingCount}, 0) = 0 THEN NULL
+             ELSE round(
+               ${schema.mediaRatingStats.ratingSum}::numeric
+               / ${schema.mediaRatingStats.ratingCount} / 2, 1)
+        END
+      `,
+    })
+    .from(schema.media)
+    .leftJoin(schema.mediaRatingStats, eq(schema.mediaRatingStats.mediaId, schema.media.id))
+    .where(and(...conditions))
+    .orderBy(desc(schema.media.createdAt))
+    .limit(limit)
+}

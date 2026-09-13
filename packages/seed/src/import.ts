@@ -4,7 +4,14 @@ import { fileURLToPath } from 'node:url'
 loadEnv({ path: fileURLToPath(new URL('../../../.env', import.meta.url)) })
 
 import { createProviderRegistry, mediaRepository, type ProviderRegistry } from '@revy/core'
-import { createDatabase, schema, toAbsoluteEmbeddedUrl, type Database } from '@revy/db'
+import {
+  createDatabase,
+  embeddedDataDir,
+  isEmbedded,
+  schema,
+  toAbsoluteEmbeddedUrl,
+  type Database,
+} from '@revy/db'
 import { MEDIA_TYPES } from '@revy/shared/constants'
 import type { MediaType } from '@revy/shared/types'
 import { sql } from 'drizzle-orm'
@@ -115,6 +122,18 @@ async function main() {
 
   const pages = parsePages()
   const db = createDatabase({ connectionString: url, maxConnections: 1 })
+
+  // The import runs before the seed now, so it is the first thing to touch a
+  // fresh database and has to be able to create the schema. drizzle-kit cannot
+  // reach the embedded database -- it opens its own connection and PGlite
+  // allows exactly one -- so migrations are applied programmatically.
+  if (isEmbedded(url)) {
+    console.log(`\n  Embedded Postgres at ${embeddedDataDir(url)} - applying migrations`)
+    const { migrate } = await import('drizzle-orm/pglite/migrator')
+    await migrate(db as never, {
+      migrationsFolder: fileURLToPath(new URL('../../db/migrations', import.meta.url)),
+    })
+  }
 
   const registry = createProviderRegistry({
     tmdbApiKey: process.env.TMDB_API_KEY || undefined,

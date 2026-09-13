@@ -4,6 +4,7 @@ import {
   MEDIA_STATUS_LABELS,
   MEDIA_TYPES,
   MEDIA_TYPE_LABELS,
+  MEDIA_TYPE_PLURALS,
   MEDIA_TYPE_VERBS,
 } from '@revy/shared/constants'
 import { mediaTypeLabel, statusLabel } from '@revy/shared/utils'
@@ -84,5 +85,28 @@ describe('per-type badges', () => {
         expect(badge.requirementMediaType, `${badge.slug} has no media type`).toBeDefined()
       }
     }
+  })
+})
+
+describe('plural labels', () => {
+  it('every media type has one', () => {
+    for (const type of MEDIA_TYPES) {
+      expect(MEDIA_TYPE_PLURALS[type], `no plural for "${type}"`).toBeTruthy()
+    }
+  })
+
+  it('does not produce "seriess"', () => {
+    // The bug this exists to prevent: appending "s" to the singular label.
+    // English has enough irregular plurals that deriving them is a trap.
+    expect(MEDIA_TYPE_PLURALS.series).toBe('Series')
+    for (const type of MEDIA_TYPES) {
+      expect(MEDIA_TYPE_PLURALS[type]).not.toMatch(/ss$/)
+    }
+  })
+
+  it('differs from the singular where English says it should', () => {
+    expect(MEDIA_TYPE_PLURALS.movie).not.toBe(MEDIA_TYPE_LABELS.movie)
+    expect(MEDIA_TYPE_PLURALS.book).not.toBe(MEDIA_TYPE_LABELS.book)
+    expect(MEDIA_TYPE_PLURALS.game).not.toBe(MEDIA_TYPE_LABELS.game)
   })
 })

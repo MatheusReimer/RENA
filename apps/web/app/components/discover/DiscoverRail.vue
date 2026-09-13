@@ -129,7 +129,13 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
 }
 
 .rail-section__title {
-  font-size: var(--text-xl);
+  /*
+   * Section headings carry the structure of the screen, so they are sized to
+   * be read from across the room rather than to be polite. Tight tracking
+   * keeps a long heading from sprawling.
+   */
+  font-size: clamp(var(--text-lg), 2.4vw, var(--text-2xl));
+  letter-spacing: var(--tracking-tight);
 }
 
 .rail-section__controls {
@@ -194,11 +200,34 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
   gap: var(--space-1);
 }
 
+/*
+ * The only motion on the card, and it is on the artwork alone.
+ *
+ * Lifting the whole card moves its text, which is harder to read mid-hover;
+ * scaling just the poster inside a fixed frame keeps the grid still while
+ * making the target feel live.
+ */
+.card :deep(.poster) {
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
+}
+
+.card__link:hover :deep(.poster) {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+}
+
+.card__link:hover .card__title {
+  color: var(--accent);
+}
+
 .card__title {
   margin-top: var(--space-2);
   font-size: var(--text-sm);
   font-weight: 600;
   line-height: var(--leading-snug);
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .card__meta {

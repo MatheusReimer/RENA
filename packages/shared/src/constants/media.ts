@@ -56,6 +56,19 @@ export const MEDIA_TYPE_LABELS = {
   game: 'Game',
 } as const
 
+/**
+ * Plural forms, for headings like "Trending series".
+ *
+ * Spelled out rather than derived, because appending an "s" produces
+ * "seriess" -- and English will keep finding ways to punish that assumption.
+ */
+export const MEDIA_TYPE_PLURALS = {
+  movie: 'Movies',
+  series: 'Series',
+  book: 'Books',
+  game: 'Games',
+} as const
+
 /** Verb used when describing consumption in activity copy. */
 export const MEDIA_TYPE_VERBS = {
   movie: { present: 'watching', past: 'watched' },

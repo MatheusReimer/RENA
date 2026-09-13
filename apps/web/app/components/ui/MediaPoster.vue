@@ -9,7 +9,7 @@ import type { MediaType } from '@revy/shared/types'
  * not reflow as covers pop in -- the single biggest source of layout shift in
  * an artwork-led design.
  */
-withDefaults(
+const props = withDefaults(
   defineProps<{
     src: string | null
     title: string
@@ -22,23 +22,57 @@ withDefaults(
 )
 
 const failed = ref(false)
+
+// A list can reuse a component instance for a different item; without this a
+// single broken cover would poison every card that scrolled through the slot.
+watch(
+  () => props.src,
+  () => {
+    failed.value = false
+  },
+)
+
+const showFallback = computed(() => !props.src || failed.value)
+
+/**
+ * A stable hue per title.
+ *
+ * Some titles genuinely have no artwork -- an obscure show, a book nobody has
+ * scanned. A grey box reads as broken; a deliberate, coloured card reads as a
+ * design. Deriving the hue from the title means the same title is always the
+ * same colour, so a shelf of them still looks composed rather than random.
+ */
+const hue = computed(() => {
+  let hash = 0
+  for (const char of props.title) hash = (hash * 31 + char.charCodeAt(0)) % 360
+  return hash
+})
+
+/** Trimmed so a long title does not shrink to unreadable. */
+const displayTitle = computed(() =>
+  props.title.length > 48 ? `${props.title.slice(0, 46).trimEnd()}…` : props.title,
+)
 </script>
 
 <template>
   <div class="poster" :class="`poster--${rounded}`">
     <img
-      v-if="src && !failed"
-      :src="src"
+      v-if="!showFallback"
+      :src="src!"
       :alt="`${title} cover art`"
       :loading="loading"
       decoding="async"
       class="poster__img"
       @error="failed = true"
     />
-    <!-- Fallback carries the title rather than a generic icon: a missing
-         cover should still tell you what the item is. -->
-    <div v-else class="poster__fallback">
-      <span class="poster__fallback-title clamp-3">{{ title }}</span>
+
+    <!--
+      The fallback carries the title rather than a generic icon: a missing
+      cover should still tell you what the item is, and at a glance.
+    -->
+    <div v-else class="poster__fallback" :style="{ '--poster-hue': hue }">
+      <span class="poster__grain" aria-hidden="true" />
+      <span class="poster__fallback-title clamp-3">{{ displayTitle }}</span>
       <span v-if="mediaType" class="poster__fallback-type">
         {{ MEDIA_TYPE_LABELS[mediaType] }}
       </span>
@@ -70,25 +104,60 @@ const failed = ref(false)
   object-fit: cover;
 }
 
+/* ------------------------------------------------------------------ *
+ * Fallback
+ * ------------------------------------------------------------------ */
+
 .poster__fallback {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
   height: 100%;
   padding: var(--space-3);
+  /* Dark and desaturated: this sits in a grid beside real artwork and must
+     not shout louder than it. */
+  background:
+    linear-gradient(
+      160deg,
+      hsl(var(--poster-hue) 32% 22%) 0%,
+      hsl(var(--poster-hue) 28% 12%) 55%,
+      var(--surface-overlay) 100%
+    );
+}
+
+/* A faint diagonal texture, so the card reads as a surface rather than a
+   flat swatch. Cheap: one repeating gradient, no image. */
+.poster__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.035) 0px,
+    rgb(255 255 255 / 0.035) 1px,
+    transparent 1px,
+    transparent 7px
+  );
 }
 
 .poster__fallback-title {
+  position: relative;
   font-size: var(--text-sm);
-  font-weight: 600;
-  line-height: var(--leading-snug);
-  color: var(--text-secondary);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+  color: hsl(var(--poster-hue) 25% 92%);
 }
 
 .poster__fallback-type {
+  position: relative;
+  margin-top: var(--space-2);
   font-size: var(--text-2xs);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  color: var(--text-tertiary);
+  color: hsl(var(--poster-hue) 20% 68%);
 }
 </style>

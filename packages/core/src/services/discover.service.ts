@@ -1,4 +1,4 @@
-import { BRAND, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
+import { BRAND, MEDIA_TYPES, MEDIA_TYPE_PLURALS } from '@revy/shared/constants'
 import type { DiscoverItem, DiscoverSection, MediaType, UserSummary } from '@revy/shared/types'
 import { toScore } from '@revy/shared/utils'
 import type { ServiceContext } from '../context'
@@ -8,6 +8,7 @@ import {
   friendshipRepository,
   mediaRepository,
   newReleases,
+  recentlyAdded,
   similarToUserTaste,
 } from '../repositories'
 import { ProviderError } from '../providers'
@@ -43,24 +44,65 @@ export const discoverService = {
       ? await friendshipRepository.listFriendIds(ctx.db, ctx.viewerId)
       : []
 
-    const [trending, popular, highestRated, friendsWatching, friendsRated, forYou] =
-      await Promise.all([
-        this.trending(ctx, null),
-        discoverRepository.popular(ctx.db, null, RAIL_SIZE),
-        discoverRepository.highestRated(ctx.db, null, RAIL_SIZE),
-        discoverRepository.friendsConsuming(ctx.db, friendIds, RAIL_SIZE * 3),
-        discoverRepository.friendsRecentlyRated(ctx.db, friendIds, RAIL_SIZE * 3),
-        ctx.viewerId
-          ? similarToUserTaste(ctx.db, ctx.viewerId, RAIL_SIZE)
-          : Promise.resolve([]),
-      ])
+    /*
+     * One rail per media type, rather than rails that mix them.
+     *
+     * A row holding a film, a novel and a game together asks the reader to
+     * re-orient at every card -- different shapes of thing, different reasons
+     * to care. Splitting by type means a rail has one subject, and the heading
+     * says what it is.
+     *
+     * The exceptions are the two rails about people. "Friends are watching" is
+     * about whose taste it is, not what medium it is in, so mixing is the
+     * point there.
+     */
+    const perType = await Promise.all(
+      MEDIA_TYPES.map(async (mediaType) => {
+        const plural = MEDIA_TYPE_PLURALS[mediaType].toLowerCase()
+        const [trending, recent] = await Promise.all([
+          this.trending(ctx, mediaType),
+          newReleases(ctx.db, mediaType, RAIL_SIZE),
+        ])
 
-    // Catalogue-driven, so it fills even when almost nothing has been rated --
-    // which is the state of any freshly imported catalogue.
-    const recent = await newReleases(ctx.db, null, RAIL_SIZE)
+        // Steam supplies no release dates at list scale, so a release-ordered
+        // rail of games is empty while the games themselves are right there.
+        // Falling back to catalogue order keeps the rail useful and keeps the
+        // heading truthful about what it is showing.
+        const second = recent.length > 0
+          ? { key: `new-${mediaType}`, title: `New ${plural}`, items: recent.map(toDiscoverItem) }
+          : {
+              key: `added-${mediaType}`,
+              title: `More ${plural}`,
+              items: (await recentlyAdded(ctx.db, mediaType, RAIL_SIZE)).map(toDiscoverItem),
+            }
+
+        return [
+          {
+            key: `trending-${mediaType}`,
+            title: `Trending ${plural}`,
+            items: trending,
+          },
+          second,
+        ]
+      }),
+    )
+
+    const [highestRated, friendsWatching, friendsRated, forYou] = await Promise.all([
+      discoverRepository.highestRated(ctx.db, null, RAIL_SIZE),
+      discoverRepository.friendsConsuming(ctx.db, friendIds, RAIL_SIZE * 3),
+      discoverRepository.friendsRecentlyRated(ctx.db, friendIds, RAIL_SIZE * 3),
+      ctx.viewerId
+        ? similarToUserTaste(ctx.db, ctx.viewerId, RAIL_SIZE)
+        : Promise.resolve([]),
+    ])
 
     const sections: DiscoverSection[] = [
-      { key: 'trending', title: 'Trending this week', items: trending },
+      // People first: whose taste it is beats what the catalogue holds.
+      {
+        key: 'friends-watching',
+        title: 'Friends are watching',
+        items: groupByMedia(friendsWatching),
+      },
       {
         key: 'for-you',
         // Named for what it actually does. It is genre overlap with what the
@@ -70,48 +112,14 @@ export const discoverService = {
         items: forYou
           // A title sharing no genres is not a suggestion, it is filler.
           .filter((row) => row.overlap > 0)
-          .map((row) => ({
-            media: toMedia(row.media),
-            averageRating: row.average === null ? null : Number(row.average),
-            ratingCount: row.ratingCount ?? 0,
-            friends: [],
-          })),
-      },
-      {
-        key: 'new-releases',
-        title: 'New releases',
-        items: recent.map((row) => ({
-          media: toMedia(row.media),
-          averageRating: row.average === null ? null : Number(row.average),
-          ratingCount: row.ratingCount ?? 0,
-          friends: [],
-        })),
-      },
-      {
-        key: 'popular',
-        title: `Popular on ${BRAND.name}`,
-        items: popular.map((row) => ({
-          media: toMedia(row.media),
-          averageRating: row.average === null ? null : Number(row.average),
-          ratingCount: row.ratingCount,
-          friends: [],
-        })),
+          .map(toDiscoverItem),
       },
       {
         key: 'highest-rated',
-        title: 'Highest rated',
-        items: highestRated.map((row) => ({
-          media: toMedia(row.media),
-          averageRating: row.average === null ? null : Number(row.average),
-          ratingCount: row.ratingCount,
-          friends: [],
-        })),
+        title: `Highest rated on ${BRAND.name}`,
+        items: highestRated.map(toDiscoverItem),
       },
-      {
-        key: 'friends-watching',
-        title: 'Friends are watching',
-        items: groupByMedia(friendsWatching),
-      },
+      ...perType.flat(),
       {
         key: 'friends-rated',
         title: 'Friends recently rated',
@@ -131,13 +139,13 @@ export const discoverService = {
       discoverRepository.popular(ctx.db, mediaType, RAIL_SIZE),
     ])
 
-    const label = MEDIA_TYPE_LABELS[mediaType].toLowerCase()
+    const plural = MEDIA_TYPE_PLURALS[mediaType].toLowerCase()
 
     return [
-      { key: `trending-${mediaType}`, title: `Trending ${label}s`, items: trending },
+      { key: `trending-${mediaType}`, title: `Trending ${plural}`, items: trending },
       {
         key: `new-${mediaType}`,
-        title: `New ${label}s`,
+        title: `New ${plural}`,
         items: recent.map((row) => ({
           media: toMedia(row.media),
           averageRating: row.average === null ? null : Number(row.average),
@@ -147,7 +155,7 @@ export const discoverService = {
       },
       {
         key: `popular-${mediaType}`,
-        title: `Popular ${label}s`,
+        title: `Popular ${plural}`,
         items: popular.map((row) => ({
           media: toMedia(row.media),
           averageRating: row.average === null ? null : Number(row.average),
@@ -157,7 +165,7 @@ export const discoverService = {
       },
       {
         key: `top-${mediaType}`,
-        title: `Highest rated ${label}s`,
+        title: `Highest rated ${plural}`,
         items: highestRated.map((row) => ({
           media: toMedia(row.media),
           averageRating: row.average === null ? null : Number(row.average),
@@ -192,6 +200,20 @@ export const discoverService = {
 
     return [...items, ...remote.filter((item) => !seen.has(item.media.id))].slice(0, RAIL_SIZE)
   },
+}
+
+/** Shapes a ranking row into a card. Repeated in every rail otherwise. */
+function toDiscoverItem(row: {
+  media: Parameters<typeof toMedia>[0]
+  average: number | string | null
+  ratingCount?: number | null
+}): DiscoverItem {
+  return {
+    media: toMedia(row.media),
+    averageRating: row.average === null ? null : Number(row.average),
+    ratingCount: row.ratingCount ?? 0,
+    friends: [],
+  }
 }
 
 /**

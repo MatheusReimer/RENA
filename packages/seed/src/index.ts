@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 // package as cwd, so dotenv needs an explicit path rather than its default.
 loadEnv({ path: fileURLToPath(new URL('../../../.env', import.meta.url)) })
 
-import { badgeService, createProviderRegistry, type ProviderRegistry } from '@revy/core'
+import { badgeService } from '@revy/core'
 import {
   createDatabase,
   embeddedDataDir,
@@ -20,12 +20,10 @@ import { randomUUID } from 'node:crypto'
 import {
   SEED_COMMENTS,
   SEED_LISTS,
-  SEED_MEDIA,
   SEED_PASSWORD,
   SEED_REVIEWS,
   SEED_THREADS,
   SEED_USERS,
-  type SeedMedia,
 } from './fixtures'
 
 /**
@@ -117,8 +115,17 @@ async function main() {
   const users = await seedUsers(db)
   console.log(`  ${users.length} users`)
 
-  const media = await seedMedia(db)
-  console.log(`  ${media.length} media items`)
+  const media = await pickCatalogue(db, 60)
+
+  if (media.length === 0) {
+    console.error(
+      '\n  The catalogue is empty, so there is nothing to rate.' +
+        '\n  Run `pnpm db:import` first, then seed again.\n',
+    )
+    process.exit(1)
+  }
+
+  console.log(`  ${media.length} catalogue titles selected`)
 
   const friendships = await seedFriendships(db, users)
   console.log(`  ${friendships} friendships`)
@@ -145,7 +152,13 @@ async function main() {
 }
 
 /**
- * Clears seeded data.
+ * Clears seeded data, but never the catalogue.
+ *
+ * `media` is deliberately absent from this list. It is populated by
+ * `pnpm db:import` from the providers, takes a minute to rebuild, and belongs
+ * to nobody -- wiping a thousand imported titles to reset ten demo users was
+ * the wrong trade, and it also left fixture rows duplicating real ones.
+ * media_rating_stats does go, because it summarises ratings, which go too.
  *
  * One TRUNCATE ... CASCADE rather than ordered DELETEs: the foreign key graph
  * is deep enough that a hand-maintained delete order would silently rot as
@@ -159,7 +172,7 @@ async function clear(db: Database) {
       community_members,
       list_items, lists,
       reviews, review_likes, ratings,
-      user_media, media_rating_stats, media,
+      user_media, media_rating_stats,
       friendships, user_badges, user_xp, users,
       auth_session, auth_account, auth_verification, auth_user
     RESTART IDENTITY CASCADE
@@ -207,70 +220,38 @@ async function seedUsers(db: Database): Promise<SeededUser[]> {
   return created
 }
 
-async function seedMedia(db: Database): Promise<SeededMedia[]> {
-  const tmdbApiKey = process.env.TMDB_API_KEY
+/**
+ * Picks titles to build demo activity on top of.
+ *
+ * Reads the catalogue rather than creating media. Fixture rows were how this
+ * worked before the importer existed, and they were actively harmful once it
+ * did: three of them failed to match a provider and sat in the catalogue with
+ * no artwork, duplicating the real "Dune" and "Shogun" beside them.
+ *
+ * Only titles with cover art are eligible. A demo built on rows that render as
+ * a grey rectangle demonstrates the wrong thing.
+ */
+async function pickCatalogue(db: Database, limit: number): Promise<SeededMedia[]> {
+  const rows = await db
+    .select({
+      id: schema.media.id,
+      mediaType: schema.media.mediaType,
+      metadata: schema.media.metadata,
+    })
+    .from(schema.media)
+    .where(sql`${schema.media.coverImageUrl} IS NOT NULL`)
+    .orderBy(sql`random()`)
+    .limit(limit)
 
-  // Hydrating through the real provider gives the seeded database genuine
-  // artwork and descriptions, and exercises the provider path on every setup.
-  const registry = createProviderRegistry({ tmdbApiKey: tmdbApiKey || undefined })
-
-  if (!tmdbApiKey) {
-    console.log('  (TMDB_API_KEY not set - movies and series seed without cover art)')
-  }
-
-  const created: SeededMedia[] = []
-
-  for (const item of SEED_MEDIA) {
-    const hydrated = await hydrate(registry, item)
-
-    const [row] = await db
-      .insert(schema.media)
-      .values({
-        externalId: hydrated?.externalId ?? item.fallbackExternalId,
-        provider: hydrated?.provider ?? 'seed',
-        mediaType: item.mediaType,
-        title: hydrated?.title ?? item.title,
-        originalTitle: hydrated?.originalTitle ?? null,
-        description: hydrated?.description ?? (item.description || null),
-        releaseDate: hydrated?.releaseDate ?? item.releaseDate,
-        coverImageUrl: hydrated?.coverImageUrl ?? null,
-        backdropImageUrl: hydrated?.backdropImageUrl ?? null,
-        metadata: hydrated?.metadata ?? item.metadata,
-        syncedAt: hydrated ? new Date() : null,
-      })
-      .returning({
-        id: schema.media.id,
-        mediaType: schema.media.mediaType,
-        metadata: schema.media.metadata,
-      })
-
-    const metadata = (row!.metadata ?? {}) as { episodeCount?: number; pageCount?: number }
-    created.push({
-      id: row!.id,
-      mediaType: row!.mediaType,
+  return rows.map((row) => {
+    const metadata = (row.metadata ?? {}) as { episodeCount?: number; pageCount?: number }
+    return {
+      id: row.id,
+      mediaType: row.mediaType,
       ...(metadata.episodeCount ? { episodeCount: metadata.episodeCount } : {}),
       ...(metadata.pageCount ? { pageCount: metadata.pageCount } : {}),
-    })
-  }
-
-  return created
-}
-
-/** Looks a title up through the provider registry, tolerating failure. */
-async function hydrate(registry: ProviderRegistry, item: SeedMedia) {
-  try {
-    const provider = registry.forType(item.mediaType)
-    if (!provider) return null
-
-    const { results } = await registry.searchAll(item.query, 1, item.mediaType)
-    const match = results[0]
-    if (!match) return null
-
-    return await provider.getByExternalId(match.externalId, item.mediaType)
-  } catch {
-    // A provider hiccup should degrade the seed, not fail it.
-    return null
-  }
+    }
+  })
 }
 
 /**

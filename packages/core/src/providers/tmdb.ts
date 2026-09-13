@@ -249,7 +249,10 @@ export function createTmdbProvider(options: TmdbProviderOptions): MediaProvider 
       ])
 
       return (data.results ?? [])
-        .filter((item) => (mediaType === 'movie' ? item.title : item.name))
+        // A title with no poster is a grey rectangle in every rail it appears
+        // in. TMDB's popular pages carry plenty with art, so skip rather than
+        // pad -- this is what put "CITV Breakfast" in the catalogue.
+        .filter((item) => (mediaType === 'movie' ? item.title : item.name) && item.poster_path)
         .map((item) => ({
           externalId: String(item.id),
           provider: 'tmdb',

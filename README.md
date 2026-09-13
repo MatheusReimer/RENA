@@ -15,16 +15,17 @@ reports 22.x.
 ```bash
 pnpm install
 cp .env.example .env        # works as-is: defaults to the embedded database
-pnpm db:seed                # creates, migrates and fills it with demo data
-pnpm db:import              # pulls ~1000 real titles from the providers
+pnpm db:import              # creates the schema, pulls ~1000 titles
+pnpm db:seed                # adds ten people and their activity on top
 pnpm dev                    # http://localhost:3000
 ```
 
-**Order matters.** `db:seed` truncates the media table, so it wipes an earlier
-import. Always seed first, import second. The import itself is additive and
-idempotent — it upserts on `(provider, external_id, media_type)`, so running it
-again refreshes rather than duplicates, and it never touches ratings, reviews
-or anything a person created.
+**Import first.** The seed builds demo activity on real catalogue rows rather
+than inventing its own, so it needs titles to exist. It no longer touches the
+`media` table at all — re-seeding resets the people and their ratings and
+leaves your catalogue alone. The import is additive and idempotent, upserting
+on `(provider, external_id, media_type)`, so re-running refreshes rather than
+duplicates.
 
 That runs with **no database to install**. `DATABASE_URL` defaults to
 `pglite://.data/revy`, which is Postgres compiled to WebAssembly running inside
@@ -76,7 +77,7 @@ pnpm lint           # eslint
 pnpm db:generate    # generate a migration from schema changes
 pnpm db:migrate     # apply migrations
 pnpm db:push        # push schema directly (dev only, skips migration history)
-pnpm db:seed        # reset and reseed development data (wipes the catalogue)
+pnpm db:seed        # reset demo users and activity (leaves the catalogue)
 pnpm db:import      # bulk-import the catalogue from the providers
                     #   --pages 30   to pull more per media type
 pnpm db:verify      # check rating aggregates still match the ratings table
