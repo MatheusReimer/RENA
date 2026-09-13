@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MEDIA_STATUS_LABELS, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
-import type { MediaStatus, Review } from '@revy/shared/types'
+import type { DiscussionThread, MediaStatus, Review } from '@revy/shared/types'
 import { formatAverage, formatRatingCount, formatRuntime, releaseYear } from '@revy/shared/utils'
 
 /**
@@ -24,11 +24,16 @@ const { data, status, error, refresh } = await useAsyncData(
 
 const media = computed(() => data.value?.media ?? null)
 
-const tab = ref<'overview' | 'reviews' | 'friends'>('overview')
+const tab = ref<'overview' | 'reviews' | 'discussions' | 'friends'>('overview')
 
 const tabs = computed(() => [
   { value: 'overview', label: 'Overview' },
   { value: 'reviews', label: 'Reviews', badge: media.value?.reviewCount || undefined },
+  {
+    value: 'discussions',
+    label: 'Discussions',
+    badge: media.value?.discussionCount || undefined,
+  },
   { value: 'friends', label: 'Friends', badge: media.value?.friendRatings.length || undefined },
 ])
 
@@ -117,19 +122,50 @@ const reviews = ref<Review[]>([])
 const reviewsLoaded = ref(false)
 const reviewsLoading = ref(false)
 
-watch(tab, async (value) => {
-  if (value !== 'reviews' || reviewsLoaded.value || !media.value) return
-  reviewsLoading.value = true
+const composeOpen = ref(false)
+
+/* ------------------------------------------------------------------ *
+ * Discussions (SPEC 14)
+ * ------------------------------------------------------------------ */
+
+const threads = ref<DiscussionThread[]>([])
+const threadsLoaded = ref(false)
+const threadsLoading = ref(false)
+const threadComposerOpen = ref(false)
+
+async function loadThreads() {
+  if (!media.value) return
+  threadsLoading.value = true
   try {
-    const page = await api.media.reviews(media.value.id)
-    reviews.value = page.items
-    reviewsLoaded.value = true
+    const page = await api.media.discussions(media.value.id)
+    threads.value = page.items
+    threadsLoaded.value = true
   } finally {
-    reviewsLoading.value = false
+    threadsLoading.value = false
+  }
+}
+
+// Both lists load on first visit to their tab rather than with the page, so
+// opening a media item is one request instead of three.
+watch(tab, async (value) => {
+  if (!media.value) return
+
+  if (value === 'reviews' && !reviewsLoaded.value) {
+    reviewsLoading.value = true
+    try {
+      const page = await api.media.reviews(media.value.id)
+      reviews.value = page.items
+      reviewsLoaded.value = true
+    } finally {
+      reviewsLoading.value = false
+    }
+    return
+  }
+
+  if (value === 'discussions' && !threadsLoaded.value) {
+    await loadThreads()
   }
 })
-
-const composeOpen = ref(false)
 
 useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 </script>
@@ -283,6 +319,37 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
           />
         </section>
 
+        <!-- Discussions (SPEC 14) -->
+        <section v-else-if="tab === 'discussions'" class="section">
+          <div class="section__actions">
+            <UiAppButton
+              variant="secondary"
+              size="sm"
+              @click="auth.isSignedIn ? (threadComposerOpen = true) : navigateTo('/signin')"
+            >
+              Start a discussion
+            </UiAppButton>
+          </div>
+
+          <div v-if="threadsLoading" class="section__loading">
+            <UiSkeletonBlock v-for="i in 3" :key="i" width="100%" height="3.5rem" />
+          </div>
+
+          <UiEmptyState
+            v-else-if="threads.length === 0"
+            icon="💬"
+            title="Be the first person to start a discussion."
+            description="Ask a question, share a theory, or argue about the ending."
+          />
+
+          <DiscussionThreadRow
+            v-for="thread in threads"
+            v-else
+            :key="thread.id"
+            :thread="thread"
+          />
+        </section>
+
         <!-- Friends tab -->
         <section v-else class="section">
           <UiEmptyState
@@ -319,6 +386,15 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
         :saving="savingRating"
         :error="rateError"
         @save="saveRating"
+      />
+
+      <!-- New discussion -->
+      <DiscussionThreadComposer
+        v-if="threadComposerOpen"
+        :media-id="media.id"
+        :media-title="media.title"
+        @close="threadComposerOpen = false"
+        @created="(threadId) => navigateTo(`/discussions/${threadId}`)"
       />
 
       <!-- Review composer -->

@@ -2,6 +2,9 @@ import type {
   Activity,
   ApiErrorBody,
   ApiErrorCode,
+  DiscussionComment,
+  DiscussionCommentNode,
+  DiscussionThread,
   FriendRequest,
   Media,
   MediaDetail,
@@ -15,7 +18,9 @@ import type {
   UserSummary,
 } from '@revy/shared/types'
 import type {
+  CreateCommentInput,
   CreateReviewInput,
+  CreateThreadInput,
   FeedQueryInput,
   NotificationQueryInput,
   UpdateProfileInput,
@@ -145,6 +150,38 @@ export function useApi() {
         request<Paginated<Review>>(`/api/media/${id}/reviews`, {
           query: cursor ? { cursor } : {},
         }),
+
+      discussions: (id: string, cursor?: string | null) =>
+        request<Paginated<DiscussionThread>>(`/api/media/${id}/discussions`, {
+          query: cursor ? { cursor } : {},
+        }),
+    },
+
+    /* -------------------------------------------------------------- *
+     * Discussions (SPEC 14)
+     * -------------------------------------------------------------- */
+    discussions: {
+      create: (body: CreateThreadInput) =>
+        request<{ thread: DiscussionThread }>('/api/discussions', { method: 'POST', body }),
+
+      get: (id: string) =>
+        request<{
+          thread: DiscussionThread
+          media: Media
+          comments: DiscussionCommentNode[]
+        }>(`/api/discussions/${id}`),
+
+      remove: (id: string) =>
+        request<{ ok: true }>(`/api/discussions/${id}`, { method: 'DELETE' }),
+
+      comment: (threadId: string, body: CreateCommentInput) =>
+        request<{ comment: DiscussionComment }>(`/api/discussions/${threadId}/comments`, {
+          method: 'POST',
+          body,
+        }),
+
+      removeComment: (commentId: string) =>
+        request<{ ok: true }>(`/api/comments/${commentId}`, { method: 'DELETE' }),
     },
 
     /* -------------------------------------------------------------- *

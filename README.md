@@ -118,6 +118,12 @@ that would race.
 provider is one file plus a line in the registry; a provider outage degrades
 search rather than failing it.
 
+**Comment depth is derived, never accepted.** `createCommentSchema` has no
+`depth` field at all. The server reads the parent's depth, adds one, and rejects
+anything past the limit — a client-supplied depth would be a client-supplied way
+past it. A reply is also checked to actually belong to the thread it claims,
+so a crafted request cannot graft a comment from one discussion onto another.
+
 **User content is never trusted as HTML.** It is stored raw and escaped at
 render time — sanitising on input mangles legitimate text and gives false
 confidence. `vue/no-v-html` is an error in the lint config.
@@ -160,13 +166,20 @@ would resolve against it.
 - XP and badge evaluation
 - Design system and the Home, Search, Media, Profile, Activity and auth screens
 
+**Done — Phase 5, discussions (§14):**
+
+- Threads per media item, ordered by last activity
+- Nested replies to `COMMENT_MAX_DEPTH`, with depth derived server-side
+- Spoiler flags on both threads and comments, masked until revealed
+- Reply notifications, XP and the Discussion Starter badge
+- Discussions tab on the media page, plus a dedicated thread page
+
 **Not built yet:**
 
-- Discussions (§14) — schema, indexes and API types exist; services and UI do not
-- Lists (§15) — same
+- Lists (§15) — schema, indexes and API types exist; services and UI do not
 - Discover page (§21)
 - Integration and E2E tests (§43) — unit tests cover the pure logic only
 - Rate limiting (§39) and avatar upload
 
-`discussionCount` and `inListIds` are returned as `0` / `[]` on the media detail
-payload so those fields do not change shape when the features land.
+`inListIds` is returned as `[]` on the media detail payload so the field does
+not change shape when lists land.

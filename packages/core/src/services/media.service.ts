@@ -11,6 +11,7 @@ import type { ServiceContext } from '../context'
 import { toMedia, toRatingSummary, toUserSummary } from '../mappers'
 import { ProviderError } from '../providers'
 import {
+  discussionRepository,
   friendshipRepository,
   mediaRepository,
   ratingRepository,
@@ -135,9 +136,10 @@ export const mediaService = {
     const row = await mediaRepository.findById(ctx.db, mediaId)
     if (!row) throw errors.mediaNotFound()
 
-    const [stats, reviewCount, viewerState, friendRatings] = await Promise.all([
+    const [stats, reviewCount, discussionCount, viewerState, friendRatings] = await Promise.all([
       mediaRepository.getRatingStats(ctx.db, mediaId),
       reviewRepository.countForMedia(ctx.db, mediaId),
+      discussionRepository.countThreadsForMedia(ctx.db, mediaId),
       loadViewerState(ctx, mediaId),
       loadFriendRatings(ctx, mediaId),
     ])
@@ -148,9 +150,7 @@ export const mediaService = {
       viewerState,
       friendRatings,
       reviewCount,
-      // Discussion counts arrive with Phase 5; the field exists now so the
-      // client contract does not change when they do.
-      discussionCount: 0,
+      discussionCount,
     }
   },
 }

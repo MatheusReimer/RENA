@@ -1,4 +1,5 @@
 export * from './badge.service'
+export * from './discussion.service'
 export * from './feed.service'
 export * from './friendship.service'
 export * from './media.service'
