@@ -57,6 +57,8 @@ export default defineNuxtConfig({
     authSecret: process.env.AUTH_SECRET ?? '',
     tmdbApiKey: process.env.TMDB_API_KEY ?? '',
     rawgApiKey: process.env.RAWG_API_KEY ?? '',
+    igdbClientId: process.env.IGDB_CLIENT_ID ?? '',
+    igdbClientSecret: process.env.IGDB_CLIENT_SECRET ?? '',
     logQueries: process.env.NUXT_LOG_QUERIES ?? '',
     public: {
       brandName: BRAND.name,

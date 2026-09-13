@@ -1,3 +1,4 @@
+export * from './igdb'
 export * from './open-library'
 export * from './rawg'
 export * from './registry'

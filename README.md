@@ -85,16 +85,25 @@ at, so the app keeps working if a provider is down.
 | --- | --- | --- |
 | Movies, series | [TMDB](https://www.themoviedb.org) | `TMDB_API_KEY` |
 | Books | [Open Library](https://openlibrary.org) | none |
-| Games | [Steam](https://store.steampowered.com) by default, [RAWG](https://rawg.io) with a key | none |
+| Games | [IGDB](https://igdb.com) → [RAWG](https://rawg.io) → [Steam](https://store.steampowered.com) | none (best with IGDB) |
 
 Keys are optional and independent: a type without a configured provider simply
 returns no search results instead of breaking the app. Books and games work
 with no key at all.
 
-Games fall back to Steam's storefront endpoints, which need no credentials.
-RAWG is still worth adding: a Steam-only catalogue has no console exclusives —
-no Zelda, no Mario, no PlayStation title that never came to PC. The registry
-prefers RAWG whenever `RAWG_API_KEY` is set.
+Games try three catalogues in order of coverage, and always have one:
+
+1. **IGDB** — every platform back to the 1970s, including console and retro.
+   Authenticates through Twitch (`IGDB_CLIENT_ID` + `IGDB_CLIENT_SECRET`); the
+   token exchange is handled for you.
+2. **RAWG** — broad and console-aware, one key (`RAWG_API_KEY`).
+3. **Steam** — keyless, so games always work, but PC storefront only: no
+   Zelda, no Mario, no PlayStation exclusive.
+
+Set IGDB if you want the whole history of games. Twitch credentials take about
+two minutes: https://dev.twitch.tv/console/apps → Register Your Application →
+redirect `http://localhost`, category "Application Integration" → copy the
+Client ID, then Manage → New Secret.
 
 TMDB issues two credentials and does not make the difference obvious. Either
 works: the v3 "API Key" or the v4 "API Read Access Token" (a long JWT). The

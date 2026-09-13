@@ -22,6 +22,8 @@ function useProviders() {
       // search works; the corresponding media types simply return no results.
       tmdbApiKey: config.tmdbApiKey || undefined,
       rawgApiKey: config.rawgApiKey || undefined,
+      igdbClientId: config.igdbClientId || undefined,
+      igdbClientSecret: config.igdbClientSecret || undefined,
     })
   }
   return registry

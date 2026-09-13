@@ -1,6 +1,7 @@
 import { MEDIA_TYPES } from '@revy/shared/constants'
 import type { MediaType } from '@revy/shared/types'
 import { createOpenLibraryProvider } from './open-library'
+import { createIgdbProvider } from './igdb'
 import { createRawgProvider } from './rawg'
 import { createSteamProvider } from './steam'
 import { createTmdbProvider } from './tmdb'
@@ -17,6 +18,9 @@ import type { MediaProvider, ProviderSearchResult } from './types'
 export interface ProviderRegistryOptions {
   tmdbApiKey?: string | undefined
   rawgApiKey?: string | undefined
+  /** Twitch application credentials, which is how IGDB authenticates. */
+  igdbClientId?: string | undefined
+  igdbClientSecret?: string | undefined
   fetchImpl?: typeof fetch
 }
 
@@ -57,23 +61,18 @@ export function createProviderRegistry(options: ProviderRegistryOptions): Provid
   )
   byType.set('book', openLibrary)
 
-  // Games: RAWG when a key is configured, Steam otherwise.
+  // Games, best catalogue first.
   //
-  // RAWG is the better catalogue -- it covers console exclusives, which a
-  // Steam-only source cannot -- but it needs a key. Steam needs nothing, so
-  // games work on a fresh clone and improve when a key appears. Unlike movies
-  // and series, this type is never left without a provider.
-  byType.set(
-    'game',
-    options.rawgApiKey
-      ? createRawgProvider({
-          apiKey: options.rawgApiKey,
-          ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
-        })
-      : createSteamProvider(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
-  )
+  //   IGDB   every platform back to the 1970s, including console and retro.
+  //          Needs Twitch client credentials.
+  //   RAWG   broad and console-aware. Needs one API key.
+  //   Steam  keyless, so games always work -- but PC storefront only, which
+  //          means no Zelda, no Mario, no PlayStation exclusive.
+  //
+  // Unlike movies and series, this type is never left without a provider.
+  byType.set('game', createGameProvider(options))
 
-  function all(): MediaProvider[] {
+    function all(): MediaProvider[] {
     return [...new Set(byType.values())]
   }
 
@@ -138,4 +137,28 @@ function interleave(results: ProviderSearchResult[], limit: number): ProviderSea
     round++
   }
   return output
+}
+
+/**
+ * Picks the best game catalogue the configuration allows.
+ *
+ * Separate from the registry body so the precedence is stated once, in order,
+ * rather than as a nested ternary.
+ */
+function createGameProvider(options: ProviderRegistryOptions): MediaProvider {
+  const fetchOption = options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}
+
+  if (options.igdbClientId && options.igdbClientSecret) {
+    return createIgdbProvider({
+      clientId: options.igdbClientId,
+      clientSecret: options.igdbClientSecret,
+      ...fetchOption,
+    })
+  }
+
+  if (options.rawgApiKey) {
+    return createRawgProvider({ apiKey: options.rawgApiKey, ...fetchOption })
+  }
+
+  return createSteamProvider(fetchOption)
 }
