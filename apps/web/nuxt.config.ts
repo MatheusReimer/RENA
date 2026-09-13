@@ -32,6 +32,19 @@ export default defineNuxtConfig({
     externals: {
       inline: ['@revy/shared', '@revy/core', '@revy/db'],
     },
+
+    /**
+     * Storage backing the rate limiter (SPEC 39).
+     *
+     * In-memory by default, which is exact on a single server and weaker on
+     * serverless -- each instance keeps its own counters. A real deployment
+     * repoints this mount at Redis or Vercel KV; no application code changes.
+     *
+     *   ratelimit: { driver: 'redis', url: process.env.REDIS_URL }
+     */
+    storage: {
+      ratelimit: { driver: 'memory' },
+    },
   },
 
   /**

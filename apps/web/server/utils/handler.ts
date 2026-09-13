@@ -36,6 +36,21 @@ export function defineApiHandler<T extends EventHandlerRequest, D>(
   })
 }
 
+/**
+ * Applies the error envelope from outside `defineApiHandler`.
+ *
+ * Middleware and the Better Auth catch-all are plain event handlers, so a
+ * thrown DomainError would otherwise escape as Nitro's own error shape --
+ * which buries our `code` and, in development, includes a stack trace. SPEC 39
+ * says internals never reach a client, and "except on three routes" is not a
+ * version of that worth having.
+ */
+export function sendDomainError(event: H3Event, error: unknown): ApiErrorBody {
+  const { status, body } = toErrorResponse(error)
+  setResponseStatus(event, status)
+  return body
+}
+
 function toErrorResponse(error: unknown): { status: number; body: ApiErrorBody } {
   // Zod threw before a service was reached: surface which fields failed.
   if (error instanceof z.ZodError) {

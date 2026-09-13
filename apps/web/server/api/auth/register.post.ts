@@ -4,6 +4,7 @@ import { signUpSchema } from '@revy/shared/schemas'
 import { errors } from '@revy/shared/utils'
 import { eq } from 'drizzle-orm'
 import { useAuth } from '../../utils/auth'
+import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
 import { useServiceContext } from '../../utils/context'
 import { defineApiHandler, readValidatedBodyOrThrow } from '../../utils/handler'
 
@@ -28,6 +29,9 @@ import { defineApiHandler, readValidatedBodyOrThrow } from '../../utils/handler'
  * rather than ignored.
  */
 export default defineApiHandler(async (event) => {
+  // Before any work: account creation is the expensive, abusable path.
+  await assertRateLimit(event, RATE_LIMITS.register)
+
   const input = await readValidatedBodyOrThrow(event, signUpSchema)
   const ctx = await useServiceContext(event)
 

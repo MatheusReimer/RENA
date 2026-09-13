@@ -1,6 +1,7 @@
 import { mediaService, userService } from '@revy/core'
 import { mediaSearchSchema } from '@revy/shared/schemas'
 import { useServiceContext } from '../../utils/context'
+import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
 import { defineApiHandler, readValidatedQueryOrThrow } from '../../utils/handler'
 
 /**
@@ -10,6 +11,10 @@ import { defineApiHandler, readValidatedQueryOrThrow } from '../../utils/handler
  * All / Movies / Series / Books / People tabs are one request rather than five.
  */
 export default defineApiHandler(async (event) => {
+  // Search reaches external catalogues, so this protects our provider quota
+  // as much as our own server.
+  await assertRateLimit(event, RATE_LIMITS.search)
+
   const input = readValidatedQueryOrThrow(event, mediaSearchSchema)
   const ctx = await useServiceContext(event)
 

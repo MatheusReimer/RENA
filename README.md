@@ -41,6 +41,17 @@ account uses that password).
 | `TMDB_API_KEY` | no | Free key from [TMDB](https://www.themoviedb.org/settings/api). Without it the app runs and **book** search works, but movie and series search returns nothing. |
 | `NUXT_PUBLIC_APP_URL` | no | Deployed origin. Leave blank locally. |
 | `NUXT_PUBLIC_API_BASE` | no | Absolute API origin. Blank on web; **required** for the Capacitor build. |
+| `RAWG_API_KEY` | no | Free key from [RAWG](https://rawg.io/apidocs), for games. Without it game search returns nothing. |
+
+### Before going public
+
+Rate limiting uses Nitro's in-memory store by default, which is exact on a
+single server but per-instance on serverless. Repoint the `ratelimit` mount in
+`nuxt.config.ts` at Redis or Vercel KV — no application code changes:
+
+```ts
+storage: { ratelimit: { driver: 'redis', url: process.env.REDIS_URL } }
+```
 
 ---
 
@@ -159,6 +170,16 @@ HTTP, and plain `$fetch` sends no cookies — so a signed-in user would render
 signed-out and hydrate that way. `useApi` resolves `useRequestFetch` on the
 server, which forwards the incoming request's headers.
 
+**Rate limits key on the user where there is one.** Signed-in writes count
+against the user id, not the IP, so everyone behind one office NAT does not
+share a budget — which means those limits are applied *after* the session is
+resolved, not before. Unauthenticated traffic falls back to IP, and the global
+backstop bounds what that costs.
+
+**The limiter fails open.** If the storage backend is unreachable the request
+is allowed and the failure logged. A broken limiter turning into a total outage
+is a worse failure than a briefly unenforced ceiling.
+
 **Errors have a stable contract.** Every failure returns
 `{ "error": { "code", "message", "fields"? } }` with a machine-readable code.
 Anything that is not a `DomainError` is logged server-side and reported as a
@@ -221,10 +242,16 @@ would resolve against it.
 
 That completes the MVP as §48 defines it.
 
+**Done — rate limiting (§39):**
+
+- Global backstop on every `/api` route, plus stricter rules on the credential
+  endpoints, registration, search and content creation
+- Standard `X-RateLimit-*` headers on every response, `Retry-After` on refusals
+
 **Not built yet:**
 
 - Integration and E2E tests (§43) — unit tests cover the pure logic only
-- Rate limiting (§39) and avatar upload
+- Avatar upload
 
 `inListIds` is returned as `[]` on the media detail payload so the field does
 not change shape when lists land.
