@@ -2,6 +2,7 @@ import { MEDIA_TYPES } from '@revy/shared/constants'
 import type { MediaType } from '@revy/shared/types'
 import { createOpenLibraryProvider } from './open-library'
 import { createRawgProvider } from './rawg'
+import { createSteamProvider } from './steam'
 import { createTmdbProvider } from './tmdb'
 import type { MediaProvider, ProviderSearchResult } from './types'
 
@@ -56,18 +57,21 @@ export function createProviderRegistry(options: ProviderRegistryOptions): Provid
   )
   byType.set('book', openLibrary)
 
-  // Games, when a RAWG key is configured. Same soft dependency as TMDB: a
-  // missing key leaves the type searchable-but-empty rather than breaking the
-  // app, and `searchAll` already tolerates a type with no provider.
-  if (options.rawgApiKey) {
-    byType.set(
-      'game',
-      createRawgProvider({
-        apiKey: options.rawgApiKey,
-        ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
-      }),
-    )
-  }
+  // Games: RAWG when a key is configured, Steam otherwise.
+  //
+  // RAWG is the better catalogue -- it covers console exclusives, which a
+  // Steam-only source cannot -- but it needs a key. Steam needs nothing, so
+  // games work on a fresh clone and improve when a key appears. Unlike movies
+  // and series, this type is never left without a provider.
+  byType.set(
+    'game',
+    options.rawgApiKey
+      ? createRawgProvider({
+          apiKey: options.rawgApiKey,
+          ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+        })
+      : createSteamProvider(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+  )
 
   function all(): MediaProvider[] {
     return [...new Set(byType.values())]

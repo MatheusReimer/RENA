@@ -85,12 +85,20 @@ at, so the app keeps working if a provider is down.
 | --- | --- | --- |
 | Movies, series | [TMDB](https://www.themoviedb.org) | `TMDB_API_KEY` |
 | Books | [Open Library](https://openlibrary.org) | none |
-| Games | [RAWG](https://rawg.io) | `RAWG_API_KEY` |
+| Games | [Steam](https://store.steampowered.com) by default, [RAWG](https://rawg.io) with a key | none |
 
 Keys are optional and independent: a type without a configured provider simply
-returns no search results instead of breaking the app. Out of the box that
-means **book search is live** and movies, series and games show only the 24
-seeded titles until you add the keys.
+returns no search results instead of breaking the app. Books and games work
+with no key at all.
+
+Games fall back to Steam's storefront endpoints, which need no credentials.
+RAWG is still worth adding: a Steam-only catalogue has no console exclusives —
+no Zelda, no Mario, no PlayStation title that never came to PC. The registry
+prefers RAWG whenever `RAWG_API_KEY` is set.
+
+TMDB issues two credentials and does not make the difference obvious. Either
+works: the v3 "API Key" or the v4 "API Read Access Token" (a long JWT). The
+provider detects which one it was given.
 
 Per TMDB's terms, an app using their data must display an attribution notice.
 

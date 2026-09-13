@@ -1,5 +1,6 @@
 export * from './open-library'
 export * from './rawg'
 export * from './registry'
+export * from './steam'
 export * from './tmdb'
 export * from './types'
