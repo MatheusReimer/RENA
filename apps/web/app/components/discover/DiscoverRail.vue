@@ -6,7 +6,7 @@ import { formatAverage, releaseYear } from '@revy/shared/utils'
 /**
  * A horizontally scrolling row of media cards (SPEC 21).
  *
- * The "Trending this week" / "Popular on VYBE" rails from the mockup. Uses the
+ * The "Trending this week" / "Popular on ..." rails from the mockup. Uses the
  * shared `.rail` utility, which bleeds cards to the screen edge so the
  * partially-visible next card is the scroll affordance.
  */

@@ -5,8 +5,7 @@ import { BRAND } from '@revy/shared/constants'
  * The wordmark.
  *
  * Reads the brand from the shared constants rather than hardcoding it, so the
- * Revy/VYBE naming decision is a one-line change (see BRAND in
- * @revy/shared/constants).
+ * product name is a one-line change (see BRAND in @revy/shared/constants).
  */
 withDefaults(defineProps<{ size?: 'sm' | 'md' | 'lg'; tagline?: boolean }>(), {
   size: 'md',

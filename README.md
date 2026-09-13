@@ -1,4 +1,4 @@
-# Revy (VYBE)
+# Revy (RENA)
 
 A social network for rating, reviewing and discussing movies, series and books.
 
@@ -38,7 +38,7 @@ account uses that password).
 | --- | --- | --- |
 | `DATABASE_URL` | **yes** | `pglite://.data/revy` for the embedded database (default, zero setup). For [Neon](https://console.neon.tech): create a project and copy the **pooled** URL (the host containing `-pooler`). |
 | `AUTH_SECRET` | **yes** | Session signing key. Generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. |
-| `TMDB_API_KEY` | no | Free key from [TMDB](https://www.themoviedb.org/settings/api). Without it the app runs and **book** search works, but movie and series search returns nothing. |
+| `TMDB_API_KEY` | no | Free key from [TMDB](https://www.themoviedb.org/settings/api), for movies and series. |
 | `NUXT_PUBLIC_APP_URL` | no | Deployed origin. Leave blank locally. |
 | `NUXT_PUBLIC_API_BASE` | no | Absolute API origin. Blank on web; **required** for the Capacitor build. |
 | `RAWG_API_KEY` | no | Free key from [RAWG](https://rawg.io/apidocs), for games. Without it game search returns nothing. |
@@ -73,6 +73,26 @@ pnpm db:studio      # Drizzle Studio
 ```
 
 ---
+
+## Where media comes from
+
+Nothing is hardcoded — every title is fetched live from a catalogue through the
+`MediaProvider` abstraction (§8), then persisted locally the first time someone
+opens it. That local row is what ratings, reviews, lists and discussions point
+at, so the app keeps working if a provider is down.
+
+| Type | Provider | Key needed |
+| --- | --- | --- |
+| Movies, series | [TMDB](https://www.themoviedb.org) | `TMDB_API_KEY` |
+| Books | [Open Library](https://openlibrary.org) | none |
+| Games | [RAWG](https://rawg.io) | `RAWG_API_KEY` |
+
+Keys are optional and independent: a type without a configured provider simply
+returns no search results instead of breaking the app. Out of the box that
+means **book search is live** and movies, series and games show only the 24
+seeded titles until you add the keys.
+
+Per TMDB's terms, an app using their data must display an attribution notice.
 
 ## Architecture
 

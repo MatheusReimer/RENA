@@ -1,4 +1,4 @@
-import { MEDIA_TYPE_LABELS } from '@revy/shared/constants'
+import { BRAND, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
 import type { DiscoverItem, DiscoverSection, MediaType, UserSummary } from '@revy/shared/types'
 import { toScore } from '@revy/shared/utils'
 import type { ServiceContext } from '../context'
@@ -47,7 +47,7 @@ export const discoverService = {
       { key: 'trending', title: 'Trending this week', items: trending },
       {
         key: 'popular',
-        title: 'Popular on VYBE',
+        title: `Popular on ${BRAND.name}`,
         items: popular.map((row) => ({
           media: toMedia(row.media),
           averageRating: row.average === null ? null : Number(row.average),
