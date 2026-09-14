@@ -436,6 +436,10 @@ onMounted(() => {
     align-items: center;
     gap: var(--space-6);
     height: var(--topbar-height);
+    /* The same container as the page under it, so the wordmark lines up with
+       the content rather than sitting out on the window edge. */
+    max-width: var(--page-max);
+    margin-inline: auto;
     padding-inline: var(--space-6);
   }
 

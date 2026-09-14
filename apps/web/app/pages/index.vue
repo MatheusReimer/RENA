@@ -132,7 +132,7 @@ useHead({ title: 'Home' })
     <UiPageHero v-else class="opener" lead="Stories" tail="connect us." :subtitle="BRAND.tagline" />
 
     <div class="page">
-    <div class="columns">
+    <div class="columns" :class="{ 'columns--with-side': currently.length }">
       <div class="columns__main">
         <div class="page__tabs">
           <UiTabNav v-model="scope" :tabs="tabs" />
@@ -247,10 +247,22 @@ useHead({ title: 'Home' })
 }
 
 @media (min-width: 60rem) {
+  /*
+   * One column by default, two only when there is actually a panel.
+   *
+   * The second track was declared unconditionally, so a viewer with nothing
+   * in progress -- which includes everyone signed out -- got an empty 16rem
+   * reservation and a feed sitting off-centre for no reason anyone could see.
+   */
   .columns {
-    grid-template-columns: minmax(0, var(--content-max)) 16rem;
+    grid-template-columns: minmax(0, var(--content-max));
+    justify-content: center;
     align-items: start;
     padding-inline: var(--space-4);
+  }
+
+  .columns--with-side {
+    grid-template-columns: minmax(0, var(--content-max)) 16rem;
   }
 
   .columns__side {

@@ -51,6 +51,13 @@ const stats = computed(() => [
 <template>
   <section class="hero">
     <!--
+      Everything lives in one centred container, artwork included. The art
+      still bleeds to the window edge, but its LEFT edge is anchored to the
+      container -- so the distance between the headline and the picture is
+      fixed by the design rather than by how wide the monitor is.
+    -->
+    <div class="hero__inner">
+    <!--
       Decorative: the statement beside it already says everything this image
       says, so an alt description would only repeat it to a screen reader.
     -->
@@ -118,30 +125,61 @@ const stats = computed(() => [
 
       <p class="hero__sign"><span class="hero__sign-rule" aria-hidden="true" />Stories connect us.</p>
     </footer>
+    </div>
   </section>
 </template>
 
 <style scoped>
 .hero {
   position: relative;
+  overflow: hidden;
+  background: var(--surface-base);
+}
+
+.hero__inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 40rem;
+  min-height: 36rem;
+  max-width: var(--page-max);
+  margin-inline: auto;
   padding: var(--space-16) var(--space-4) var(--space-6);
-  overflow: hidden;
-  background: var(--surface-base);
-  isolation: isolate;
 }
 
 /* ------------------------------------------------------------------ *
  * Artwork
  * ------------------------------------------------------------------ */
 
+/*
+ * Painted first and never given a z-index.
+ *
+ * Both this and the content below are positioned, so they paint in DOM order
+ * and the words land on top. A negative z-index would put the art behind the
+ * section's own opaque background instead of behind the text.
+ *
+ * The negative horizontal inset cancels the container's padding, so on a phone
+ * the picture reaches the screen edges.
+ */
 .hero__art {
   position: absolute;
-  inset: 0;
-  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--space-4) * -1);
+  right: calc(var(--space-4) * -1);
+}
+
+/*
+ * <picture> is an inline box with no height of its own, so `height: 100%` on
+ * the image inside it had nothing to resolve against and fell back to the
+ * file's own proportions -- which cut the art off partway down the hero on any
+ * window narrower than about 1800px. It has to be a block that fills the frame
+ * before the image can.
+ */
+.hero__art picture {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .hero__art img {
@@ -150,7 +188,7 @@ const stats = computed(() => [
   max-width: 100%;
   object-fit: cover;
   /* Holds the lit centre of the render in frame as the crop narrows. */
-  object-position: 62% 38%;
+  object-position: 72% 38%;
 }
 
 /*
@@ -166,8 +204,8 @@ const stats = computed(() => [
   background:
     linear-gradient(
       to bottom,
-      rgb(10 10 12 / 0.55) 0%,
-      rgb(10 10 12 / 0.72) 45%,
+      rgb(10 10 12 / 0.78) 0%,
+      rgb(10 10 12 / 0.82) 45%,
       var(--surface-base) 100%
     );
 }
@@ -220,7 +258,7 @@ const stats = computed(() => [
   display: inline-flex;
   align-items: center;
   gap: var(--space-3);
-  margin-top: var(--space-7);
+  margin-top: var(--space-6);
   padding: var(--space-4) var(--space-6);
   border-radius: var(--radius-full);
   background: var(--accent);
@@ -295,7 +333,7 @@ const stats = computed(() => [
 .hero__figures {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-5) var(--space-7);
+  gap: var(--space-5) var(--space-6);
   margin: 0;
 }
 
@@ -321,19 +359,24 @@ const stats = computed(() => [
  * ------------------------------------------------------------------ */
 
 @media (min-width: 60rem) {
-  .hero {
-    min-height: min(46rem, calc(100vh - var(--topbar-height)));
-    padding: calc(var(--topbar-height) + var(--space-10)) var(--space-8) var(--space-8);
+  .hero__inner {
+    min-height: min(44rem, calc(100vh - var(--topbar-height)));
+    padding: calc(var(--topbar-height) + var(--space-10)) var(--space-8) var(--space-6);
   }
 
   /*
-   * The art is pinned to the right and bleeds off the top and side, exactly as
-   * the design has it. It is not a background on the section, because it has
-   * to be croppable independently of how tall the type column happens to be.
+   * The art starts a third of the way across the CONTAINER and runs off the
+   * right of the WINDOW.
+   *
+   * That split is the whole fix. Anchoring the left edge to the container
+   * keeps the picture the same distance from the headline on every monitor;
+   * letting the right edge escape to the window keeps it bleeding rather than
+   * ending on a visible seam. `50% - 50vw` is negative whenever the container
+   * is narrower than the window, which is exactly how far it has to reach.
    */
   .hero__art {
-    left: auto;
-    width: min(76%, 78rem);
+    left: 33%;
+    right: calc(50% - 50vw);
   }
 
   .hero__fade {
@@ -341,23 +384,25 @@ const stats = computed(() => [
       linear-gradient(
         to right,
         var(--surface-base) 0%,
-        rgb(10 10 12 / 0.82) 18%,
-        rgb(10 10 12 / 0.25) 44%,
-        transparent 70%
+        rgb(10 10 12 / 0.72) 12%,
+        rgb(10 10 12 / 0.18) 34%,
+        transparent 58%
       ),
-      linear-gradient(to bottom, transparent 55%, var(--surface-base) 100%);
+      /* Softer than it was: the old stop at 55% put a band of dead black
+         between the picture and the figures under it. */
+      linear-gradient(to bottom, transparent 72%, var(--surface-base) 100%);
   }
 
   .hero__body {
-    max-width: 30rem;
+    max-width: 32rem;
   }
 
   .hero__statement {
-    font-size: clamp(3.5rem, 5.4vw, 5rem);
+    font-size: clamp(3.5rem, 5.2vw, 5.25rem);
   }
 
-  /* The vertical note on the far right edge. Small, quiet, and the only thing
-     over the bright part of the picture. */
+  /* The vertical note, at the container's right edge rather than the window's
+     -- out on the window edge it reads as a stray fragment. */
   .hero__aside {
     position: absolute;
     top: calc(var(--topbar-height) + var(--space-10));
@@ -371,6 +416,10 @@ const stats = computed(() => [
     letter-spacing: 0.22em;
     color: var(--text-secondary);
     text-align: left;
+    /* It is the only type that sits over the lit part of the render, so it
+       carries its own shadow rather than relying on the scrim, which is at its
+       weakest exactly there. */
+    text-shadow: 0 1px 18px rgb(0 0 0 / 0.85);
   }
 
   .hero__aside::after {

@@ -171,12 +171,16 @@
   /*
    * The widest a laid-out screen gets.
    *
-   * Raised when the sidebar came out: the page had been capped at 75rem and
-   * centred inside a shell that also spent 15rem on navigation, which on a
-   * wide monitor left the content in a narrow strip down the middle with dead
-   * black either side. Artwork surfaces ignore this and run edge to edge.
+   * Everything laid out sits inside this, the top bar included. Without it a
+   * composition on a wide monitor is not "full width", it is one thing pinned
+   * to the left edge and another pinned to the right with a hole between them
+   * -- which is the failure mode, not the goal. Artwork still bleeds past it
+   * to the window edge; the type that goes with the artwork does not.
+   *
+   * 96rem is near the width the design was drawn at, so the proportions
+   * between the type column and the art hold instead of stretching.
    */
-  --page-max: 86rem;
+  --page-max: 96rem;
 
   /* Poster aspect ratios, so cards never disagree about proportion. */
   --poster-ratio: 2 / 3;
