@@ -141,7 +141,9 @@ const stats = computed(() => [
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 36rem;
+  /* Dynamic viewport units, so a phone's address bar sliding away does not
+     leave a gap under the opener. */
+  min-height: 78dvh;
   max-width: var(--page-max);
   margin-inline: auto;
   padding: var(--space-16) var(--space-4) var(--space-6);
@@ -188,7 +190,7 @@ const stats = computed(() => [
   max-width: 100%;
   object-fit: cover;
   /* Holds the lit centre of the render in frame as the crop narrows. */
-  object-position: 72% 38%;
+  object-position: 58% 46%;
 }
 
 /*
@@ -359,9 +361,18 @@ const stats = computed(() => [
  * ------------------------------------------------------------------ */
 
 @media (min-width: 60rem) {
+  /*
+   * The opener is the whole first screen.
+   *
+   * It used to cap at 44rem, which on a tall monitor left the hero floating in
+   * the top two-thirds with black underneath -- it read as a banner sitting on
+   * the page rather than as the page. The bar is fixed and overlays, so the
+   * full viewport height is the right number and the padding clears the bar
+   * from the inside.
+   */
   .hero__inner {
-    min-height: min(44rem, calc(100vh - var(--topbar-height)));
-    padding: calc(var(--topbar-height) + var(--space-10)) var(--space-8) var(--space-6);
+    min-height: 100dvh;
+    padding: calc(var(--topbar-height) + var(--space-10)) var(--space-8) var(--space-10);
   }
 
   /*
@@ -375,19 +386,38 @@ const stats = computed(() => [
    * margins outside it stay even.
    */
   .hero__art {
-    left: 33%;
+    /*
+     * Wider than the composition looks, because the frame is now much taller.
+     *
+     * `cover` on a 16:9 render in a near-square frame crops the sides hard,
+     * and the sides are where Dune and Elden Ring live. The frame is now the
+     * full height of the window, so the box needs every pixel of width the
+     * container has just to keep the scene intact -- at 1536x1010 it shows
+     * about 86% of the render, against 65% when it started a quarter of the
+     * way in. The left of it is under the gradient behind the headline, so
+     * the width costs nothing visually.
+     */
+    left: 0;
     right: 0;
   }
 
   .hero__fade {
     background:
-      /* Left: dissolves the picture into the type column. */
+      /*
+       * Left: holds a solid column for the type.
+       *
+       * The art runs the full width of the container now, so this is doing
+       * real work -- it is what the headline sits on, not just a soft edge.
+       * Solid to a fifth of the way across, then released over the next
+       * third so the picture arrives rather than starts.
+       */
       linear-gradient(
         to right,
         var(--surface-base) 0%,
-        rgb(10 10 12 / 0.72) 12%,
-        rgb(10 10 12 / 0.16) 32%,
-        transparent 54%
+        var(--surface-base) 19%,
+        rgb(10 10 12 / 0.8) 29%,
+        rgb(10 10 12 / 0.26) 45%,
+        transparent 64%
       ),
       /* Right: a short fade so ending at the container edge reads as the
          picture receding rather than as a cut. */
