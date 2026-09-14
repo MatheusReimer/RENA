@@ -76,10 +76,12 @@ useHead({ title: 'Home' })
 
 <template>
   <div class="page">
-    <header v-if="auth.isSignedIn" class="hero">
-      <h1 class="hero__title">Stories<br />connect us.</h1>
-      <p class="hero__subtitle">{{ BRAND.tagline }}</p>
-    </header>
+    <!--
+      Shown signed out as well as signed in. Without it the first thing a new
+      visitor met was a tab bar and an empty list, which says nothing about
+      what this place is.
+    -->
+    <UiPageHero lead="Stories" tail="connect us." :subtitle="BRAND.tagline" />
 
     <div class="columns">
       <div class="columns__main">
@@ -167,42 +169,6 @@ useHead({ title: 'Home' })
 .page {
   max-width: var(--page-max);
   margin-inline: auto;
-}
-
-.hero {
-  padding: var(--space-8) var(--space-4) var(--space-6);
-}
-
-.hero__title {
-  /*
-   * Deliberately oversized. The screen shows very few things, so the ones it
-   * does show should be unambiguous about what this place is -- which is the
-   * whole argument of the design.
-   */
-  font-size: clamp(2.5rem, 7vw, 4.5rem);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
-
-/* The one flourish: a short accent rule under the statement. */
-.hero__title::after {
-  content: '';
-  display: block;
-  width: 2.5rem;
-  height: 3px;
-  margin-top: var(--space-5);
-  border-radius: var(--radius-full);
-  background: var(--accent);
-}
-
-.hero__subtitle {
-  margin-top: var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-widest);
-  color: var(--text-tertiary);
 }
 
 /*

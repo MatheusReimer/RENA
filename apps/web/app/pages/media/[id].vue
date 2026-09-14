@@ -281,7 +281,16 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 
         <!-- Aggregate score (SPEC 19) -->
         <div class="score">
-          <span class="score__value">{{ formatAverage(media.ratingSummary.average) }}</span>
+          <!-- Counts up on first view when there is a real number; an unrated
+               title keeps the em-dash, which is not something to animate. -->
+          <span class="score__value">
+            <UiNumberTicker
+              v-if="media.ratingSummary.average !== null"
+              :value="media.ratingSummary.average"
+              :decimals="1"
+            />
+            <template v-else>{{ formatAverage(media.ratingSummary.average) }}</template>
+          </span>
           <div class="score__detail">
             <UiStarRating :score="media.ratingSummary.average" size="lg" />
             <span class="score__count">
@@ -293,14 +302,22 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 
         <!-- The viewer's own state comes before everything social (SPEC 19) -->
         <div class="actions">
-          <UiAppButton variant="primary" size="lg" @click="openRating">
-            <UiStarRating
-              v-if="media.viewerState?.score"
-              :score="media.viewerState.score"
-              size="sm"
-            />
-            {{ media.viewerState?.score ? `Your rating · ${media.viewerState.score.toFixed(1)}` : 'Rate this' }}
-          </UiAppButton>
+          <!--
+            The beam runs only while the title is unrated. It exists to pull the
+            eye to the one thing the viewer has not done; once they have rated,
+            the button is a status readout and should stop asking.
+          -->
+          <div class="cta" :class="{ 'cta--beamed': !media.viewerState?.score }">
+            <UiBorderBeam v-if="!media.viewerState?.score" />
+            <UiAppButton variant="primary" size="lg" block @click="openRating">
+              <UiStarRating
+                v-if="media.viewerState?.score"
+                :score="media.viewerState.score"
+                size="sm"
+              />
+              {{ media.viewerState?.score ? `Your rating · ${media.viewerState.score.toFixed(1)}` : 'Rate this' }}
+            </UiAppButton>
+          </div>
 
           <UiAppButton variant="secondary" size="lg" @click="openAddToList">
             <span class="actions__plus" aria-hidden="true">+</span>
@@ -659,6 +676,29 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 .actions {
   display: flex;
   gap: var(--space-3);
+}
+
+/*
+ * Holds the beam a hair outside the button.
+ *
+ * The 1px padding is the whole trick: the beam fills this box, its own mask
+ * covers everything from 1px inwards, and the button sits on top of that mask.
+ * What is left visible is a one-pixel ring the light travels around. Without
+ * the padding the button would cover the ring exactly.
+ */
+.cta {
+  position: relative;
+  flex: 1;
+  border-radius: var(--radius-full);
+}
+
+.cta--beamed {
+  padding: 1px;
+}
+
+.cta :deep(.btn) {
+  position: relative;
+  z-index: 1;
 }
 
 .actions > * {

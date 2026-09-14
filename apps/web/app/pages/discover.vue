@@ -36,10 +36,7 @@ useHead({ title: 'Discover' })
 
 <template>
   <div class="page">
-    <header class="hero">
-      <h1 class="hero__title">Discover<br />what moves you.</h1>
-      <p class="hero__subtitle">{{ BRAND.tagline }}</p>
-    </header>
+    <UiPageHero lead="Discover" tail="what moves you." :subtitle="BRAND.tagline" />
 
     <div class="page__tabs">
       <UiTabNav v-model="tab" :tabs="tabs" />
@@ -107,42 +104,6 @@ useHead({ title: 'Discover' })
  * artwork. Here it is typographic rather than image-backed: a hero image on a
  * browse screen competes with the posters, which are the actual content.
  */
-.hero {
-  padding: var(--space-10) var(--space-4) var(--space-8);
-}
-
-.hero__title {
-  /*
-   * Deliberately oversized. The screen shows very few things, so the ones it
-   * does show should be unambiguous about what this place is -- which is the
-   * whole argument of the design.
-   */
-  font-size: clamp(2.5rem, 7vw, 4.5rem);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
-
-/* The one flourish: a short accent rule under the statement. */
-.hero__title::after {
-  content: '';
-  display: block;
-  width: 2.5rem;
-  height: 3px;
-  margin-top: var(--space-5);
-  border-radius: var(--radius-full);
-  background: var(--accent);
-}
-
-.hero__subtitle {
-  margin-top: var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-widest);
-  color: var(--text-tertiary);
-}
-
 .page__tabs {
   position: sticky;
   top: 0;

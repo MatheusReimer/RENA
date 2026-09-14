@@ -167,15 +167,15 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
         <dl class="stats">
           <div class="stat">
             <dt class="stat__label">Ratings</dt>
-            <dd class="stat__value">{{ profile.stats.ratingCount }}</dd>
+            <dd class="stat__value"><UiNumberTicker :value="profile.stats.ratingCount" /></dd>
           </div>
           <div class="stat">
             <dt class="stat__label">Reviews</dt>
-            <dd class="stat__value">{{ profile.stats.reviewCount }}</dd>
+            <dd class="stat__value"><UiNumberTicker :value="profile.stats.reviewCount" /></dd>
           </div>
           <div class="stat">
             <dt class="stat__label">Friends</dt>
-            <dd class="stat__value">{{ profile.stats.friendCount }}</dd>
+            <dd class="stat__value"><UiNumberTicker :value="profile.stats.friendCount" /></dd>
           </div>
         </dl>
 

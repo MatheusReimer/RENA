@@ -67,8 +67,13 @@ const profileActive = computed(() => route.path.startsWith('/u/'))
           class="sidebar__link"
           :class="{ 'sidebar__link--active': isActive(item.to) }"
         >
+          <!-- The active pill, drawn per item and scaled in. Every link owns
+               one, so it grows in place rather than a single bar being
+               measured and moved -- which would break on a reflow. -->
+          <span class="sidebar__pill" aria-hidden="true" />
+          <span class="sidebar__rule" aria-hidden="true" />
           <LayoutNavIcon :name="item.icon" class="sidebar__icon" />
-          <span>{{ item.label }}</span>
+          <span class="sidebar__label">{{ item.label }}</span>
           <span
             v-if="item.to === '/activity' && auth.unreadNotifications"
             class="sidebar__badge"
@@ -313,26 +318,91 @@ const profileActive = computed(() => route.path.startsWith('/u/'))
     font-size: var(--text-base);
     font-weight: 500;
     color: var(--text-secondary);
+    isolation: isolate;
+    transition: color var(--duration-base) var(--ease-out);
+  }
+
+  /*
+   * The tinted pill behind an active item.
+   *
+   * Scaled and faded rather than toggled, so moving between items reads as the
+   * highlight growing in the new place and releasing the old, instead of
+   * blinking. Sits behind the label via z-index rather than opacity tricks.
+   */
+  .sidebar__pill {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+    opacity: 0;
+    transform: scale(0.94);
     transition:
-      background-color var(--duration-fast) var(--ease-out),
-      color var(--duration-fast) var(--ease-out);
+      opacity var(--duration-base) var(--ease-out),
+      transform var(--duration-base) var(--ease-spring);
+  }
+
+  /* A short accent bar on the leading edge -- the one piece of chrome that
+     says "you are here" without relying on colour alone. */
+  .sidebar__rule {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3px;
+    height: 1.25rem;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    transform: translateY(-50%) scaleY(0);
+    transform-origin: center;
+    transition: transform var(--duration-base) var(--ease-spring);
   }
 
   .sidebar__link:hover {
-    background: var(--surface-raised);
     color: var(--text-primary);
   }
 
+  .sidebar__link:hover .sidebar__pill {
+    opacity: 0.55;
+    transform: scale(1);
+    background: var(--surface-raised);
+  }
+
   .sidebar__link--active {
-    background: var(--accent-soft);
     color: var(--accent);
     font-weight: 600;
+  }
+
+  .sidebar__link--active .sidebar__pill,
+  .sidebar__link--active:hover .sidebar__pill {
+    opacity: 1;
+    transform: scale(1);
+    background: var(--accent-soft);
+  }
+
+  .sidebar__link--active .sidebar__rule {
+    transform: translateY(-50%) scaleY(1);
+  }
+
+  .sidebar__label {
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  /* The label shifts a hair toward the accent rule on hover: a small physical
+     cue that the row is live, without moving the icon out of its column. */
+  .sidebar__link:hover .sidebar__label {
+    transform: translateX(2px);
   }
 
   .sidebar__icon {
     width: 1.25rem;
     height: 1.25rem;
     flex-shrink: 0;
+    transition: transform var(--duration-base) var(--ease-spring);
+  }
+
+  .sidebar__link:hover .sidebar__icon,
+  .sidebar__link--active .sidebar__icon {
+    transform: scale(1.12);
   }
 
   .sidebar__badge {
