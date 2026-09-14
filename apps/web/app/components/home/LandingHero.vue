@@ -365,31 +365,39 @@ const stats = computed(() => [
   }
 
   /*
-   * The art starts a third of the way across the CONTAINER and runs off the
-   * right of the WINDOW.
+   * Both edges belong to the container: the art starts a third of the way
+   * across it and ends at its right edge.
    *
-   * That split is the whole fix. Anchoring the left edge to the container
-   * keeps the picture the same distance from the headline on every monitor;
-   * letting the right edge escape to the window keeps it bleeding rather than
-   * ending on a visible seam. `50% - 50vw` is negative whenever the container
-   * is narrower than the window, which is exactly how far it has to reach.
+   * It used to escape to the window edge, which meant a wide monitor had a
+   * wide black margin on the left and none at all on the right -- the whole
+   * composition read as shoved sideways. The design's frame is 1672px and the
+   * art bleeds to the edge of THAT, so the container is the frame, and the
+   * margins outside it stay even.
    */
   .hero__art {
     left: 33%;
-    right: calc(50% - 50vw);
+    right: 0;
   }
 
   .hero__fade {
     background:
+      /* Left: dissolves the picture into the type column. */
       linear-gradient(
         to right,
         var(--surface-base) 0%,
         rgb(10 10 12 / 0.72) 12%,
-        rgb(10 10 12 / 0.18) 34%,
-        transparent 58%
+        rgb(10 10 12 / 0.16) 32%,
+        transparent 54%
       ),
-      /* Softer than it was: the old stop at 55% put a band of dead black
-         between the picture and the figures under it. */
+      /* Right: a short fade so ending at the container edge reads as the
+         picture receding rather than as a cut. */
+      linear-gradient(to left, var(--surface-base) 0%, transparent 9%),
+      /* Top: the bar is transparent until you scroll, and the brightest part
+         of the render is directly under it. Without this the nav and the
+         search placeholder sit on a lit wall and stop being readable. */
+      linear-gradient(to bottom, rgb(10 10 12 / 0.7) 0%, transparent 14%),
+      /* Bottom: soft, so there is no band of dead black between the picture
+         and the figures under it. */
       linear-gradient(to bottom, transparent 72%, var(--surface-base) 100%);
   }
 

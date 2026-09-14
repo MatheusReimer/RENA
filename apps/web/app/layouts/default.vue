@@ -546,8 +546,10 @@ onMounted(() => {
     font-family: inherit;
   }
 
+  /* One step up from tertiary: the bar is transparent over the hero artwork,
+     and the dimmest text colour in the system does not survive that. */
   .topbar__search-input::placeholder {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
 
   .topbar__search-input:focus {
