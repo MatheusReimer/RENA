@@ -41,13 +41,14 @@ import { ProviderError } from '../providers'
 const RAIL_SIZE = 24
 
 /**
- * Tiles per media type on the home wall.
+ * Tiles per media type for the home collage.
  *
- * Twelve of each fills a six-column grid to eight rows, which covers a
- * desktop opener with a little spare at the bottom edge -- the grid is meant
- * to run off the screen rather than end on a visible last row.
+ * Enough for several screenfuls, because the collage pages: one screen is
+ * roughly forty tiles, and sixty of each type gives six pages to move through
+ * without a second request. The rows are small -- an id, a title and two urls
+ * -- so the whole set is a few tens of kilobytes.
  */
-const WALL_PER_TYPE = 12
+const WALL_PER_TYPE = 60
 
 /** Faces under the landing statement. Five is what the design shows. */
 const FACE_PILE_SIZE = 5
@@ -77,6 +78,7 @@ export const discoverService = {
           id: row.id,
           title: row.title,
           coverImageUrl: row.coverImageUrl,
+          backdropImageUrl: row.backdropImageUrl,
         })),
       members,
       ...totals,

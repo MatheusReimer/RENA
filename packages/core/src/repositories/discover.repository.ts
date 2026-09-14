@@ -42,6 +42,15 @@ export async function wallArtwork(db: Executor, perType: number) {
           id: schema.media.id,
           title: schema.media.title,
           coverImageUrl: schema.media.coverImageUrl,
+          /*
+           * The landscape alternative, where the provider has one.
+           *
+           * A collage made only of 2:3 posters reads as a shop shelf. Mixing
+           * in 16:9 stills is what makes it read as a wall of things rather
+           * than a catalogue -- and films and series are the only types that
+           * have them, which is itself a useful bit of variety.
+           */
+          backdropImageUrl: schema.media.backdropImageUrl,
         })
         .from(schema.media)
         .leftJoin(
@@ -72,7 +81,9 @@ export async function wallArtwork(db: Executor, perType: number) {
    * Interleave the four lists rather than concatenating them, so the grid
    * alternates type by tile instead of showing four solid blocks.
    */
-  const woven: Array<{ id: string; title: string; coverImageUrl: string | null }> = []
+  // Inferred from the query rather than restated, so adding a column to the
+  // select does not silently drop it here.
+  const woven: Array<(typeof byType)[number][number]> = []
   for (let i = 0; i < perType; i += 1) {
     for (const list of byType) {
       const row = list[i]

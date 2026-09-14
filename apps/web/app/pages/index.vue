@@ -99,32 +99,25 @@ useHead({ title: 'Home' })
 <template>
   <div>
     <!--
-      Two openers, because home is two screens.
+      One opener in two states.
 
-      A visitor who is not signed in gets the landing hero: it argues for the
-      product, and the feed below it is empty anyway. A member gets the wall,
-      because they have already been argued into it and what they came for is
-      underneath.
+      The wall and the statement are the same on both sides of the sign-in
+      line; what changes is that a visitor gets the pitch and the join button
+      and a member does not, because a member has already been argued into it
+      and what they came for is underneath. `compact` also shortens it, so the
+      feed is not a full screen away for someone who reads it daily.
 
-      Both sit outside the page container: they are artwork and run the full
-      width of the window, while everything below is a reading column. Inside
-      the container the wall was a 75rem box centred on a black screen.
+      It sits outside the page container: the wall is artwork and runs the
+      full width of the window, while everything below is a reading column.
     -->
-    <HomeLandingHero
-      v-if="!auth.isSignedIn"
+    <HomeCollage
+      v-if="home.tiles.length"
       class="opener"
+      :tiles="home.tiles"
       :members="home.members"
       :member-count="home.memberCount"
       :review-count="home.reviewCount"
-      :conversation-count="home.conversationCount"
-    />
-
-    <HomeArtWall
-      v-else-if="home.tiles.length"
-      class="opener"
-      :tiles="home.tiles"
-      :title-count="home.titleCount"
-      :member-count="home.memberCount"
+      :compact="auth.isSignedIn"
     />
 
     <!-- Before the catalogue is imported there is no wall to draw, so the

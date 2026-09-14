@@ -424,6 +424,9 @@ export interface WallTile {
   id: string
   title: string
   coverImageUrl: string
+  /** 16:9 still, for the tiles the collage lays out landscape. Films and
+   *  series mostly; books and games have none. */
+  backdropImageUrl: string | null
 }
 
 /**
