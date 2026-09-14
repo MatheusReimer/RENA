@@ -426,9 +426,20 @@ export interface WallTile {
   coverImageUrl: string
 }
 
-export interface HomeWall {
+/**
+ * Everything the home screen needs in one request.
+ *
+ * Both openers read from this -- the landing hero a visitor sees and the wall
+ * a member sees -- because they are the same screen at two states, and two
+ * requests for one screen is one too many.
+ */
+export interface HomeSummary {
+  /** Artwork for the wall. */
   tiles: WallTile[]
-  /** The two figures printed under the statement. */
+  /** A few members, for the face pile under the landing statement. */
+  members: UserSummary[]
   titleCount: number
   memberCount: number
+  reviewCount: number
+  conversationCount: number
 }

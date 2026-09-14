@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BRAND } from '@revy/shared/constants'
-import type { Activity, HomeWall, Media, MediaStatus } from '@revy/shared/types'
+import type { Activity, HomeSummary, Media, MediaStatus } from '@revy/shared/types'
 
 /**
  * Home feed (SPEC 18).
@@ -72,19 +72,26 @@ const { data: currentlyData } = await useAsyncData(
 const currently = computed(() => currentlyData.value?.currently ?? [])
 
 /**
- * Artwork for the opener.
+ * Everything the opener needs.
  *
  * Fetched alongside the feed rather than after it: this is the first thing
- * painted, and waiting on a feed query to start loading forty covers would put
- * the whole opener behind a request that has nothing to do with it.
+ * painted, and waiting on a feed query to start loading the opener would put
+ * it behind a request that has nothing to do with it.
  */
-const { data: wallData } = await useAsyncData('home-wall', () => api.discover.wall(), {
-  default: () => ({ tiles: [], titleCount: 0, memberCount: 0 }) as HomeWall,
+const EMPTY_HOME: HomeSummary = {
+  tiles: [],
+  members: [],
+  titleCount: 0,
+  memberCount: 0,
+  reviewCount: 0,
+  conversationCount: 0,
+}
+
+const { data: homeData } = await useAsyncData('home-summary', () => api.discover.home(), {
+  default: () => EMPTY_HOME,
 })
 
-const wall = computed<HomeWall>(
-  () => wallData.value ?? { tiles: [], titleCount: 0, memberCount: 0 },
-)
+const home = computed<HomeSummary>(() => homeData.value ?? EMPTY_HOME)
 
 useHead({ title: 'Home' })
 </script>
@@ -92,18 +99,34 @@ useHead({ title: 'Home' })
 <template>
   <div>
     <!--
-      Outside the page container on purpose: the wall is artwork and runs the
-      full width of the window, while everything below it is a laid-out
-      reading column. Inside the container it was a 75rem box centred on a
-      black screen.
+      Two openers, because home is two screens.
+
+      A visitor who is not signed in gets the landing hero: it argues for the
+      product, and the feed below it is empty anyway. A member gets the wall,
+      because they have already been argued into it and what they came for is
+      underneath.
+
+      Both sit outside the page container: they are artwork and run the full
+      width of the window, while everything below is a reading column. Inside
+      the container the wall was a 75rem box centred on a black screen.
     -->
-    <HomeArtWall
-      v-if="wall.tiles.length"
+    <HomeLandingHero
+      v-if="!auth.isSignedIn"
       class="opener"
-      :tiles="wall.tiles"
-      :title-count="wall.titleCount"
-      :member-count="wall.memberCount"
+      :members="home.members"
+      :member-count="home.memberCount"
+      :review-count="home.reviewCount"
+      :conversation-count="home.conversationCount"
     />
+
+    <HomeArtWall
+      v-else-if="home.tiles.length"
+      class="opener"
+      :tiles="home.tiles"
+      :title-count="home.titleCount"
+      :member-count="home.memberCount"
+    />
+
     <!-- Before the catalogue is imported there is no wall to draw, so the
          typographic opener stands in rather than a black band. -->
     <UiPageHero v-else class="opener" lead="Stories" tail="connect us." :subtitle="BRAND.tagline" />

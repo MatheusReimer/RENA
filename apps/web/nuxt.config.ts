@@ -101,21 +101,24 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         /*
-         * Two faces, two jobs. Inter sets everything you read; Archivo sets the
-         * few things you look at -- the statement on the home wall and the
-         * screen titles. Inter alone made every screen read as generic no
-         * matter how it was composed: it is the most common typeface on the
-         * web, and a product built around film artwork needs a headline face
-         * with a point of view.
+         * Two faces, two jobs.
          *
-         * One request for both families, and only the weights actually used.
+         * Inter sets everything you read and every control you use. Playfair
+         * Display sets the few things you look at -- the home statement and
+         * screen titles. The high-contrast serif against a grotesque UI is
+         * the whole typographic idea of the design: the product is about
+         * books and films, and it should not be set entirely in the typeface
+         * every dashboard uses.
+         *
+         * Playfair is loaded as a variable range rather than four static
+         * weights, which is one file instead of four.
          */
         {
           rel: 'stylesheet',
           href:
             'https://fonts.googleapis.com/css2' +
             '?family=Inter:wght@400;500;600;700;800' +
-            '&family=Archivo:wght@600;800;900' +
+            '&family=Playfair+Display:wght@500..900' +
             '&display=swap',
         },
       ],

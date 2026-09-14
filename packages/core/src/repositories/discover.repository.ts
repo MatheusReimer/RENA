@@ -83,14 +83,50 @@ export async function wallArtwork(db: Executor, perType: number) {
   return woven
 }
 
-/** The two counts printed under the wall. Both are whole-catalogue figures. */
+/**
+ * The figures printed under the home statement.
+ *
+ * Real counts, not marketing rounding. A seeded development database says
+ * eleven members and that is what it should say -- a figure a visitor can
+ * check against the screens is the only kind worth printing.
+ *
+ * "Worlds" is the one constant: there are four kinds of thing in here, and
+ * that number is a product decision rather than a row count.
+ */
 export async function catalogueTotals(db: Executor) {
-  const [[titles], [members]] = await Promise.all([
+  const [[titles], [members], [reviews], [threads]] = await Promise.all([
     db.select({ count: sql<number>`count(*)::int` }).from(schema.media),
     db.select({ count: sql<number>`count(*)::int` }).from(schema.users),
+    db.select({ count: sql<number>`count(*)::int` }).from(schema.reviews),
+    db.select({ count: sql<number>`count(*)::int` }).from(schema.discussionThreads),
   ])
 
-  return { titleCount: titles?.count ?? 0, memberCount: members?.count ?? 0 }
+  return {
+    titleCount: titles?.count ?? 0,
+    memberCount: members?.count ?? 0,
+    reviewCount: reviews?.count ?? 0,
+    conversationCount: threads?.count ?? 0,
+  }
+}
+
+/**
+ * A handful of members, for the face pile.
+ *
+ * Ordered by who joined most recently rather than at random, so the row is
+ * stable between renders -- a pile that reshuffles on every navigation reads
+ * as a bug, and server and client would disagree about it anyway.
+ */
+export async function recentMembers(db: Executor, limit: number) {
+  return db
+    .select({
+      id: schema.users.id,
+      username: schema.users.username,
+      displayName: schema.users.displayName,
+      avatarUrl: schema.users.avatarUrl,
+    })
+    .from(schema.users)
+    .orderBy(desc(schema.users.createdAt))
+    .limit(limit)
 }
 
 export const discoverRepository = {

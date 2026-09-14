@@ -38,22 +38,35 @@ const navItems = [
   { to: '/discover', icon: 'discover', label: 'Discover', barOnly: false },
   { to: '/community', icon: 'community', label: 'Community', barOnly: false },
   { to: '/friends', icon: 'friends', label: 'Friends', barOnly: true },
-  { to: '/lists', icon: 'lists', label: 'Lists', barOnly: true },
+  // "Library" rather than "Lists", per the design. It is the same screen; the
+  // word covers what is on it better -- lists, watched, read and played.
+  { to: '/lists', icon: 'lists', label: 'Library', barOnly: true },
   { to: '/activity', icon: 'activity', label: 'Notifications', barOnly: false },
 ] as const
 
 const tabBarItems = navItems.filter((item) => !item.barOnly)
 
 /**
- * What the bar itself shows as words.
+ * What the bar itself shows as words: four destinations, no more.
  *
- * Search and Notifications are deliberately absent: they are controls, not
- * destinations, and they sit on the right as icons. Putting all seven items in
- * a row is what makes a nav bar look like a site map.
+ * Search is a field on the right, Notifications is the mark on the avatar, and
+ * Friends lives on the profile. Putting all seven in a row is what makes a nav
+ * bar look like a site map.
  */
-const barItems = navItems.filter(
-  (item) => item.to !== '/search' && item.to !== '/activity',
+const BAR_ROUTES = ['/', '/discover', '/community', '/lists'] as const
+
+const barItems = BAR_ROUTES.map(
+  (route) => navItems.find((item) => item.to === route)!,
 )
+
+/** The bar's search field. Submitting hands off to the search screen. */
+const term = ref('')
+
+function submitSearch() {
+  const value = term.value.trim()
+  if (!value) return navigateTo('/search')
+  return navigateTo({ path: '/search', query: { q: value } })
+}
 
 /** The profile link points at the signed-in user, or sign-in when signed out. */
 const profileTarget = computed(() => (auth.user ? `/u/${auth.user.username}` : '/signin'))
@@ -118,17 +131,46 @@ onMounted(() => {
         </nav>
 
         <div class="topbar__actions">
-          <NuxtLink to="/search" class="topbar__icon" aria-label="Search">
-            <LayoutNavIcon name="search" />
-          </NuxtLink>
+          <!-- A plain div, not <search>: the element is valid HTML but Vue's
+               compiler treats an unknown tag as a component and warns on
+               every render. `role="search"` on the form says the same thing
+               to assistive tech. -->
+          <div class="topbar__search">
+            <form role="search" @submit.prevent="submitSearch">
+              <label class="sr-only" for="topbar-search">Search</label>
+              <LayoutNavIcon name="search" class="topbar__search-icon" />
+              <input
+                id="topbar-search"
+                v-model="term"
+                type="search"
+                class="topbar__search-input"
+                placeholder="Search for movies, books, games..."
+                autocomplete="off"
+              />
+            </form>
+          </div>
 
-          <NuxtLink to="/activity" class="topbar__icon" aria-label="Notifications">
+          <span class="topbar__divider" aria-hidden="true" />
+
+          <!--
+            The design marks notifications with a dot on the avatar and nothing
+            else. That works right up until you have none unread, at which
+            point the screen has no route to them at all -- so the bell stays,
+            quietly, and carries the mark.
+          -->
+          <NuxtLink
+            v-if="auth.user"
+            to="/activity"
+            class="topbar__bell"
+            :class="{ 'topbar__bell--active': isActive('/activity') }"
+            :aria-label="
+              auth.unreadNotifications
+                ? `Notifications, ${auth.unreadNotifications} unread`
+                : 'Notifications'
+            "
+          >
             <LayoutNavIcon name="activity" />
-            <span
-              v-if="auth.unreadNotifications"
-              class="topbar__dot"
-              :aria-label="`${auth.unreadNotifications} unread`"
-            />
+            <span v-if="auth.unreadNotifications" class="topbar__dot" aria-hidden="true" />
           </NuxtLink>
 
           <NuxtLink
@@ -382,26 +424,30 @@ onMounted(() => {
     -webkit-backdrop-filter: blur(16px) saturate(1.4);
   }
 
+  /*
+   * Three tracks, and the outer two are equal so the nav sits on the true
+   * centre of the window rather than the centre of what is left over. That is
+   * what the design does, and it is the reason the bar reads as composed
+   * instead of as a row of things pushed apart.
+   */
   .topbar__inner {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: var(--space-8);
+    gap: var(--space-6);
     height: var(--topbar-height);
     padding-inline: var(--space-6);
   }
 
   .topbar__brand {
-    flex-shrink: 0;
-    /* The wordmark reads as the first nav item otherwise; a little air to its
-       right makes it the mark it is. */
-    margin-right: var(--space-2);
+    justify-self: start;
   }
 
   .topbar__nav {
     display: flex;
     align-items: center;
-    gap: var(--space-6);
-    min-width: 0;
+    gap: var(--space-8);
+    justify-self: center;
   }
 
   .topbar__link {
@@ -415,10 +461,7 @@ onMounted(() => {
     transition: color var(--duration-base) var(--ease-out);
   }
 
-  .topbar__link:hover {
-    color: var(--text-primary);
-  }
-
+  .topbar__link:hover,
   .topbar__link--active {
     color: var(--text-primary);
   }
@@ -434,17 +477,17 @@ onMounted(() => {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: -2px;
     height: 2px;
     border-radius: var(--radius-full);
     background: var(--accent);
     transform: scaleX(0);
-    transform-origin: left center;
+    transform-origin: center;
     transition: transform var(--duration-base) var(--ease-spring);
   }
 
   .topbar__link:hover .topbar__mark {
-    transform: scaleX(0.35);
+    transform: scaleX(0.4);
     background: var(--border-strong);
   }
 
@@ -457,13 +500,70 @@ onMounted(() => {
   .topbar__actions {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    /* Pushed to the far edge: the bar is brand, then destinations, then a gap,
-       then the two controls and you. */
-    margin-left: auto;
+    gap: var(--space-4);
+    justify-self: end;
+    min-width: 0;
   }
 
-  .topbar__icon {
+  /*
+   * The search field has no box.
+   *
+   * A bordered input in a transparent bar over artwork puts a rectangle in the
+   * middle of the picture. An icon and a placeholder are enough to say what it
+   * is, and the field only draws an underline once you are in it.
+   */
+  .topbar__search form {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-block: var(--space-2);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--duration-base) var(--ease-out);
+  }
+
+  .topbar__search form:focus-within {
+    border-bottom-color: var(--border-default);
+  }
+
+  .topbar__search-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+
+  .topbar__search-input {
+    width: clamp(9rem, 18vw, 17rem);
+    min-width: 0;
+    border: 0;
+    background: none;
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    font-family: inherit;
+  }
+
+  .topbar__search-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .topbar__search-input:focus {
+    outline: none;
+  }
+
+  /* Chrome draws its own clear button on type=search; it does not match
+     anything else here. */
+  .topbar__search-input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .topbar__divider {
+    width: 1px;
+    height: 1.5rem;
+    background: var(--border-default);
+    flex-shrink: 0;
+  }
+
+  .topbar__bell {
     position: relative;
     display: grid;
     place-items: center;
@@ -476,32 +576,21 @@ onMounted(() => {
       background-color var(--duration-fast) var(--ease-out);
   }
 
-  .topbar__icon:hover {
+  .topbar__bell:hover,
+  .topbar__bell--active {
     color: var(--text-primary);
     background: var(--surface-raised);
   }
 
-  .topbar__icon svg {
+  .topbar__bell svg {
     width: 1.125rem;
     height: 1.125rem;
   }
 
-  .topbar__dot {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.45rem;
-    width: 7px;
-    height: 7px;
-    border-radius: var(--radius-full);
-    background: var(--accent);
-    /* Reads over the bar whether it is transparent or blurred. */
-    outline: 2px solid var(--surface-base);
-  }
-
   .topbar__avatar {
+    position: relative;
     display: grid;
     place-items: center;
-    margin-left: var(--space-1);
     border-radius: var(--radius-full);
     outline: 2px solid transparent;
     outline-offset: 2px;
@@ -511,6 +600,18 @@ onMounted(() => {
   .topbar__avatar:hover,
   .topbar__avatar--active {
     outline-color: var(--accent);
+  }
+
+  .topbar__dot {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.4rem;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    /* Reads over the bar whether it is transparent or blurred. */
+    outline: 2px solid var(--surface-base);
   }
 
   .topbar__signin {
@@ -527,11 +628,6 @@ onMounted(() => {
     background: var(--accent-hover);
   }
 
-  /*
-   * Clears the fixed bar. A screen that wants its artwork to run underneath
-   * pulls this back with a negative margin on that one element, rather than
-   * every other screen having to remember to add it.
-   */
   .content {
     padding-top: var(--topbar-height);
     padding-bottom: var(--space-16);

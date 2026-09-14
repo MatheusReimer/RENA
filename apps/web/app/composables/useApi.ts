@@ -9,7 +9,7 @@ import type {
   DiscussionCommentNode,
   DiscussionThread,
   FriendRequest,
-  HomeWall,
+  HomeSummary,
   ListSummary,
   Media,
   MediaDetail,
@@ -327,8 +327,8 @@ export function useApi() {
           query: type ? { type } : {},
         }),
 
-      /** Artwork and counts for the home wall. */
-      wall: () => request<HomeWall>('/api/wall'),
+      /** Artwork, counts and faces for the home opener. */
+      home: () => request<HomeSummary>('/api/home'),
     },
 
     /* -------------------------------------------------------------- *

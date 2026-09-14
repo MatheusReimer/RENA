@@ -2,7 +2,7 @@ import { BRAND, MEDIA_TYPES, MEDIA_TYPE_PLURALS } from '@revy/shared/constants'
 import type {
   DiscoverItem,
   DiscoverSection,
-  HomeWall,
+  HomeSummary,
   MediaType,
   UserSummary,
 } from '@revy/shared/types'
@@ -17,6 +17,7 @@ import {
   newReleases,
   recentlyAdded,
   similarToUserTaste,
+  recentMembers,
   wallArtwork,
 } from '../repositories'
 import { ProviderError } from '../providers'
@@ -48,17 +49,21 @@ const RAIL_SIZE = 24
  */
 const WALL_PER_TYPE = 12
 
+/** Faces under the landing statement. Five is what the design shows. */
+const FACE_PILE_SIZE = 5
+
 export const discoverService = {
   /**
-   * Artwork and figures for the home wall.
+   * Artwork and figures for the home screen.
    *
    * Public: this is the signed-out landing screen as much as the signed-in
    * one, and it says nothing about any particular person.
    */
-  async wall(ctx: ServiceContext): Promise<HomeWall> {
-    const [rows, totals] = await Promise.all([
+  async home(ctx: ServiceContext): Promise<HomeSummary> {
+    const [rows, totals, members] = await Promise.all([
       wallArtwork(ctx.db, WALL_PER_TYPE),
       catalogueTotals(ctx.db),
+      recentMembers(ctx.db, FACE_PILE_SIZE),
     ])
 
     return {
@@ -73,6 +78,7 @@ export const discoverService = {
           title: row.title,
           coverImageUrl: row.coverImageUrl,
         })),
+      members,
       ...totals,
     }
   },
