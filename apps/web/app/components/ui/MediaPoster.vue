@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MEDIA_TYPE_LABELS } from '@revy/shared/constants'
 import type { MediaType } from '@revy/shared/types'
+import { POSTER_WIDTHS, imageSrcSet } from '@revy/shared/utils'
 
 /**
  * Poster artwork (SPEC 30: "large media artwork", SPEC 38: lazy loading).
@@ -17,9 +18,25 @@ const props = withDefaults(
     /** `eager` for above-the-fold hero art; everything else stays lazy. */
     loading?: 'lazy' | 'eager'
     rounded?: 'md' | 'lg'
+    /**
+     * The CSS `sizes` value: how wide this poster actually renders.
+     *
+     * Without it the browser assumes the full viewport width and downloads the
+     * largest candidate for a 120px card. The default describes a rail card;
+     * anything larger should say so.
+     */
+    sizes?: string
   }>(),
-  { loading: 'lazy', rounded: 'md', mediaType: undefined },
+  { loading: 'lazy', rounded: 'md', mediaType: undefined, sizes: '(min-width: 60rem) 180px, 33vw' },
 )
+
+/*
+ * We now store the provider's largest image, so every poster must declare the
+ * width it is actually drawn at -- otherwise a rail of 200 cards would pull
+ * 200 full-resolution posters. Null for artwork we cannot resize (Steam, Open
+ * Library), where the plain `src` is the only option.
+ */
+const srcset = computed(() => imageSrcSet(props.src, POSTER_WIDTHS))
 
 const failed = ref(false)
 const loaded = ref(false)
@@ -82,6 +99,8 @@ const displayTitle = computed(() =>
       v-if="!showFallback"
       ref="img"
       :src="src!"
+      :srcset="srcset ?? undefined"
+      :sizes="srcset ? sizes : undefined"
       :alt="`${title} cover art`"
       :loading="loading"
       decoding="async"

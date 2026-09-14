@@ -66,6 +66,8 @@ withDefaults(
    * does show should be unambiguous about what this place is -- which is the
    * whole argument of the design.
    */
+  font-family: var(--font-display);
+  font-weight: 900;
   font-size: clamp(2.5rem, 7vw, 4.5rem);
   line-height: 0.98;
   letter-spacing: -0.035em;

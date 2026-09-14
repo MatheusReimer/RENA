@@ -1,6 +1,7 @@
 import { type Executor, schema } from '@revy/db'
+import { MEDIA_TYPES } from '@revy/shared/constants'
 import type { MediaType } from '@revy/shared/types'
-import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, isNotNull, sql } from 'drizzle-orm'
 
 /**
  * Ranking queries for Discover (SPEC 21).
@@ -20,6 +21,77 @@ const TRENDING_WINDOW_DAYS = 30
  * from ten thousand people. This is the number that stops that.
  */
 export const HIGHEST_RATED_MINIMUM = 5
+
+/**
+ * Artwork for the home wall, plus the two figures printed under it.
+ *
+ * The wall is a texture rather than a ranked list, so this is not another
+ * "top N" query: it spreads the selection evenly across media types, because
+ * a grid that happens to be forty film posters says something untrue about
+ * what the catalogue holds.
+ *
+ * Only rows with cover art are eligible. The wall has no room for a fallback
+ * card -- a tile is 80px wide and a titled placeholder at that size is
+ * illegible, so a missing cover simply means that title is not on the wall.
+ */
+export async function wallArtwork(db: Executor, perType: number) {
+  const byType = await Promise.all(
+    MEDIA_TYPES.map((mediaType) =>
+      db
+        .select({
+          id: schema.media.id,
+          title: schema.media.title,
+          coverImageUrl: schema.media.coverImageUrl,
+        })
+        .from(schema.media)
+        .leftJoin(
+          schema.mediaRatingStats,
+          eq(schema.mediaRatingStats.mediaId, schema.media.id),
+        )
+        .where(
+          and(eq(schema.media.mediaType, mediaType), isNotNull(schema.media.coverImageUrl)),
+        )
+        /*
+         * Most-rated first, so the wall is made of titles a visitor is likely
+         * to recognise. Recognition is the entire job here: the grid has to
+         * read as "things I know" at a glance, not as a random shelf.
+         *
+         * Rated titles are a small slice of the catalogue, so the tail falls
+         * back to most-recently-imported -- which tracks provider popularity,
+         * since that is the order the importer walks.
+         */
+        .orderBy(
+          desc(sql`coalesce(${schema.mediaRatingStats.ratingCount}, 0)`),
+          desc(schema.media.createdAt),
+        )
+        .limit(perType),
+    ),
+  )
+
+  /*
+   * Interleave the four lists rather than concatenating them, so the grid
+   * alternates type by tile instead of showing four solid blocks.
+   */
+  const woven: Array<{ id: string; title: string; coverImageUrl: string | null }> = []
+  for (let i = 0; i < perType; i += 1) {
+    for (const list of byType) {
+      const row = list[i]
+      if (row) woven.push(row)
+    }
+  }
+
+  return woven
+}
+
+/** The two counts printed under the wall. Both are whole-catalogue figures. */
+export async function catalogueTotals(db: Executor) {
+  const [[titles], [members]] = await Promise.all([
+    db.select({ count: sql<number>`count(*)::int` }).from(schema.media),
+    db.select({ count: sql<number>`count(*)::int` }).from(schema.users),
+  ])
+
+  return { titleCount: titles?.count ?? 0, memberCount: members?.count ?? 0 }
+}
 
 export const discoverRepository = {
   /**

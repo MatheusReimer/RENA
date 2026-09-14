@@ -407,3 +407,28 @@ export interface DiscoverItem {
   /** Friends associated with this item, for 'Friends are watching'. */
   friends: UserSummary[]
 }
+
+/* ------------------------------------------------------------------ *
+ * The home wall
+ * ------------------------------------------------------------------ */
+
+/**
+ * One tile of artwork on the home wall.
+ *
+ * Deliberately not a `Media`. The wall renders a cover and links to a title --
+ * it has no use for descriptions, release dates or rating aggregates, and
+ * shipping forty full media objects to draw forty images is waste the home
+ * page pays on every visit.
+ */
+export interface WallTile {
+  id: string
+  title: string
+  coverImageUrl: string
+}
+
+export interface HomeWall {
+  tiles: WallTile[]
+  /** The two figures printed under the statement. */
+  titleCount: number
+  memberCount: number
+}

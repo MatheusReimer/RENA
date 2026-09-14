@@ -100,9 +100,23 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        /*
+         * Two faces, two jobs. Inter sets everything you read; Archivo sets the
+         * few things you look at -- the statement on the home wall and the
+         * screen titles. Inter alone made every screen read as generic no
+         * matter how it was composed: it is the most common typeface on the
+         * web, and a product built around film artwork needs a headline face
+         * with a point of view.
+         *
+         * One request for both families, and only the weights actually used.
+         */
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+          href:
+            'https://fonts.googleapis.com/css2' +
+            '?family=Inter:wght@400;500;600;700;800' +
+            '&family=Archivo:wght@600;800;900' +
+            '&display=swap',
         },
       ],
     },

@@ -18,8 +18,23 @@ const API_BASE = 'https://api.themoviedb.org/3'
 const IMAGE_BASE = 'https://image.tmdb.org/t/p'
 
 /** Poster width used for cards and detail headers. */
-const POSTER_SIZE = 'w500'
-const BACKDROP_SIZE = 'w1280'
+/*
+ * Store the provider's best, resize at the point of use.
+ *
+ * These were w500 and w1280, which threw away most of the resolution TMDB
+ * holds -- Endgame's backdrop is 3840x2160 and its poster 2000x3000, and we
+ * were serving a quarter of that to every screen, including full-bleed ones.
+ *
+ * Size is not fixed here any more because it cannot be: a poster is 92px wide
+ * in a search result and 500px in a hero, and the right answer also depends on
+ * the device pixel ratio. `imageAtWidth` in @revy/shared picks per use.
+ *
+ * Note the ceiling varies per title -- it is whatever was uploaded. Some are
+ * 3840 wide, some are 1280 and cannot go higher, which is why any design that
+ * fills a screen with one backdrop has to check before committing to it.
+ */
+const POSTER_SIZE = 'original'
+const BACKDROP_SIZE = 'original'
 
 interface TmdbMovie {
   id: number

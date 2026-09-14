@@ -2,17 +2,18 @@ import type {
   Activity,
   ApiErrorBody,
   ApiErrorCode,
-  DiscussionComment,
-  DiscussionCommentNode,
   CommunityDetail,
   CommunitySummary,
   DiscoverSection,
+  DiscussionComment,
+  DiscussionCommentNode,
   DiscussionThread,
   FriendRequest,
+  HomeWall,
   ListSummary,
-  MediaList,
   Media,
   MediaDetail,
+  MediaList,
   MediaSearchResult,
   MediaStatus,
   Notification,
@@ -325,6 +326,9 @@ export function useApi() {
         request<{ sections: DiscoverSection[] }>('/api/discover', {
           query: type ? { type } : {},
         }),
+
+      /** Artwork and counts for the home wall. */
+      wall: () => request<HomeWall>('/api/wall'),
     },
 
     /* -------------------------------------------------------------- *

@@ -53,6 +53,12 @@ const profileActive = computed(() => route.path.startsWith('/u/'))
 
 <template>
   <div class="shell">
+    <!--
+      First tab stop on every screen. The sidebar is a dozen links and the home
+      wall is forty-eight, so reaching the page content by keyboard without
+      this means tabbing through the whole catalogue first.
+    -->
+    <a class="skip" href="#content">Skip to content</a>
     <!-- Desktop sidebar -->
     <aside class="sidebar">
       <NuxtLink to="/" class="sidebar__brand" :aria-label="BRAND.name">
@@ -125,7 +131,7 @@ const profileActive = computed(() => route.path.startsWith('/u/'))
       </div>
     </header>
 
-    <main class="content">
+    <main id="content" class="content" tabindex="-1">
       <slot />
     </main>
 
@@ -275,6 +281,39 @@ const profileActive = computed(() => route.path.startsWith('/u/'))
 /* ------------------------------------------------------------------ *
  * Desktop: sidebar + centred content. Not a scaled-up phone (SPEC 31).
  * ------------------------------------------------------------------ */
+
+/*
+ * Off-screen until focused. Hidden with a position offset rather than
+ * display:none, because a display:none element cannot receive focus at all,
+ * which would make the link useless to the people it exists for.
+ *
+ * Top level, not inside the desktop query -- a phone keyboard needs it as
+ * much as a laptop one, and the mobile tab bar is its own row of tab stops.
+ */
+.skip {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transform: translateY(-250%);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.skip:focus-visible {
+  transform: none;
+}
+
+/* The target is programmatically focusable, so it must never draw a ring of
+   its own when focus lands there from the skip link. */
+.content:focus {
+  outline: none;
+}
 
 @media (min-width: 60rem) {
   .shell {

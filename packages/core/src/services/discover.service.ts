@@ -1,15 +1,23 @@
 import { BRAND, MEDIA_TYPES, MEDIA_TYPE_PLURALS } from '@revy/shared/constants'
-import type { DiscoverItem, DiscoverSection, MediaType, UserSummary } from '@revy/shared/types'
+import type {
+  DiscoverItem,
+  DiscoverSection,
+  HomeWall,
+  MediaType,
+  UserSummary,
+} from '@revy/shared/types'
 import { toScore } from '@revy/shared/utils'
 import type { ServiceContext } from '../context'
 import { toMedia, toUserSummary } from '../mappers'
 import {
+  catalogueTotals,
   discoverRepository,
   friendshipRepository,
   mediaRepository,
   newReleases,
   recentlyAdded,
   similarToUserTaste,
+  wallArtwork,
 } from '../repositories'
 import { ProviderError } from '../providers'
 
@@ -31,7 +39,44 @@ import { ProviderError } from '../providers'
  */
 const RAIL_SIZE = 24
 
+/**
+ * Tiles per media type on the home wall.
+ *
+ * Twelve of each fills a six-column grid to eight rows, which covers a
+ * desktop opener with a little spare at the bottom edge -- the grid is meant
+ * to run off the screen rather than end on a visible last row.
+ */
+const WALL_PER_TYPE = 12
+
 export const discoverService = {
+  /**
+   * Artwork and figures for the home wall.
+   *
+   * Public: this is the signed-out landing screen as much as the signed-in
+   * one, and it says nothing about any particular person.
+   */
+  async wall(ctx: ServiceContext): Promise<HomeWall> {
+    const [rows, totals] = await Promise.all([
+      wallArtwork(ctx.db, WALL_PER_TYPE),
+      catalogueTotals(ctx.db),
+    ])
+
+    return {
+      // The query already filters on cover art, but the column is nullable and
+      // the type should not claim otherwise downstream.
+      tiles: rows
+        .filter((row): row is typeof row & { coverImageUrl: string } =>
+          Boolean(row.coverImageUrl),
+        )
+        .map((row) => ({
+          id: row.id,
+          title: row.title,
+          coverImageUrl: row.coverImageUrl,
+        })),
+      ...totals,
+    }
+  },
+
   /**
    * Every Discover section the viewer can see.
    *
