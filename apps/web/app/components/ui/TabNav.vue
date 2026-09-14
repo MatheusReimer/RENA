@@ -64,9 +64,16 @@ const model = defineModel<string>({ required: true })
   color: var(--text-primary);
 }
 
-/* The indicator sits on the shared bottom border rather than adding height,
-   so switching tabs never shifts the content below. */
-.tab--active::after {
+/*
+ * The indicator sits on the shared bottom border rather than adding height,
+ * so switching tabs never shifts the content below.
+ *
+ * Every tab carries one, scaled to nothing until it is active. Animating
+ * scaleX on a per-tab element gives the same growing-underline motion as a
+ * travelling bar without measuring positions in JavaScript -- and it survives
+ * the tab row reflowing, which a measured bar would not.
+ */
+.tab::after {
   content: '';
   position: absolute;
   inset-inline: 0;
@@ -74,6 +81,13 @@ const model = defineModel<string>({ required: true })
   height: 2px;
   background: var(--accent);
   border-radius: var(--radius-full);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.tab--active::after {
+  transform: scaleX(1);
 }
 
 .tab__badge {

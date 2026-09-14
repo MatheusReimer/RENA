@@ -263,6 +263,35 @@ async function toggleLike() {
 .card__action svg {
   width: 1.125rem;
   height: 1.125rem;
+  transition: transform var(--duration-base) var(--ease-spring);
+}
+
+/*
+ * The heart pops when it fills.
+ *
+ * This is the one place an overshoot curve earns its keep: liking something is
+ * a small act of enthusiasm, and a linear fill reads as a checkbox. The scale
+ * is on the icon alone so the count beside it stays legible.
+ */
+.card__action--liked svg {
+  animation: heart-pop var(--duration-slow) var(--ease-spring);
+}
+
+.card__action:active svg {
+  transform: scale(0.86);
+  transition-duration: var(--duration-fast);
+}
+
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .card__action:hover {

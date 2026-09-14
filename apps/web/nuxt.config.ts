@@ -75,6 +75,13 @@ export default defineNuxtConfig({
   },
 
   app: {
+    /*
+     * Cross-fade between screens. `out-in` rather than the default overlap:
+     * two dark screens fading through each other reads as a flicker, and
+     * sequencing them keeps the incoming page's entrance legible.
+     */
+    pageTransition: { name: 'page', mode: 'out-in' },
+
     head: {
       title: BRAND.name,
       htmlAttrs: { lang: 'en' },

@@ -73,7 +73,12 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
     </header>
 
     <ul ref="rail" class="rail" @scroll.passive="measure">
-      <li v-for="item in section.items" :key="item.media.id" class="card">
+      <li
+        v-for="(item, index) in section.items"
+        :key="item.media.id"
+        v-reveal="index"
+        class="card"
+      >
         <NuxtLink :to="`/media/${item.media.id}`" class="card__link">
           <UiMediaPoster
             :src="item.media.coverImageUrl"
@@ -204,18 +209,38 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
  * The only motion on the card, and it is on the artwork alone.
  *
  * Lifting the whole card moves its text, which is harder to read mid-hover;
- * scaling just the poster inside a fixed frame keeps the grid still while
+ * animating just the poster inside a fixed frame keeps the grid still while
  * making the target feel live.
  */
 .card :deep(.poster) {
   transition:
     transform var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out);
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+  /* Promotes the poster to its own layer so a rail of two dozen animating
+     cards does not repaint the row on every frame. */
+  will-change: transform;
+}
+
+/* The artwork itself scales inside the frame rather than the frame growing,
+   so neighbouring cards never shift. */
+.card :deep(.poster__img) {
+  transition: transform var(--duration-slow) var(--ease-out);
 }
 
 .card__link:hover :deep(.poster) {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   border-color: var(--border-strong);
+  box-shadow: var(--shadow-float);
+}
+
+.card__link:hover :deep(.poster__img) {
+  transform: scale(1.06);
+}
+
+.card__link:active :deep(.poster) {
+  transform: translateY(-2px);
+  transition-duration: var(--duration-fast);
 }
 
 .card__link:hover .card__title {

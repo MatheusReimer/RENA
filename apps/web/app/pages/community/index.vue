@@ -87,9 +87,10 @@ useHead({ title: 'Community' })
       </UiEmptyState>
 
       <CommunityCard
-        v-for="community in communities"
+        v-for="(community, index) in communities"
         v-else
         :key="community.media.id"
+        v-reveal="index"
         :community="community"
       />
     </div>

@@ -22,13 +22,35 @@ const props = withDefaults(
 )
 
 const failed = ref(false)
+const loaded = ref(false)
+const img = ref<HTMLImageElement | null>(null)
+
+/**
+ * Catches an image that finished before the listener existed.
+ *
+ * A cached cover can complete between render and hydration, so its `load`
+ * event never reaches us -- and since the fade starts at `opacity: 0`, the
+ * poster would stay invisible forever. `complete` is the authoritative answer
+ * to "did this already finish", so it is checked directly on mount and again
+ * whenever the source changes.
+ */
+function syncLoaded() {
+  const el = img.value
+  if (el?.complete && el.naturalWidth > 0) loaded.value = true
+}
+
+onMounted(syncLoaded)
 
 // A list can reuse a component instance for a different item; without this a
 // single broken cover would poison every card that scrolled through the slot.
 watch(
   () => props.src,
-  () => {
+  async () => {
     failed.value = false
+    loaded.value = false
+    // After the new src has been applied to the element, not before.
+    await nextTick()
+    syncLoaded()
   },
 )
 
@@ -58,11 +80,14 @@ const displayTitle = computed(() =>
   <div class="poster" :class="`poster--${rounded}`">
     <img
       v-if="!showFallback"
+      ref="img"
       :src="src!"
       :alt="`${title} cover art`"
       :loading="loading"
       decoding="async"
       class="poster__img"
+      :class="{ 'poster__img--loaded': loaded }"
+      @load="loaded = true"
       @error="failed = true"
     />
 
@@ -102,6 +127,28 @@ const displayTitle = computed(() =>
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /*
+   * Covers arrive at wildly different times across a rail. Snapping in reads
+   * as the page glitching; a short fade reads as loading. Starting slightly
+   * scaled up means the settle is visible without the frame ever moving.
+   */
+  opacity: 0;
+  transform: scale(1.04);
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+
+.poster__img--loaded {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster__img {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ------------------------------------------------------------------ *

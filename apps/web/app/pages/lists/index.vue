@@ -111,7 +111,13 @@ useHead({ title: 'My Lists' })
         description="Change a list's visibility from its own page."
       />
 
-      <ListCard v-for="list in visible" v-else :key="list.id" :list="list" />
+      <ListCard
+        v-for="(list, index) in visible"
+        v-else
+        :key="list.id"
+        v-reveal="index"
+        :list="list"
+      />
     </div>
 
     <ListComposer v-if="composerOpen" @close="composerOpen = false" @created="onCreated" />

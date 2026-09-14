@@ -86,9 +86,10 @@ useHead({ title: 'Discover' })
       </UiEmptyState>
 
       <DiscoverRail
-        v-for="section in sections"
+        v-for="(section, index) in sections"
         v-else
         :key="section.key"
+        v-reveal="index"
         :section="section"
       />
     </div>

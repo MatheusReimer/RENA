@@ -210,6 +210,19 @@ pulled toward the global mean in proportion to how few ratings it has
 with 3 ratings above one with 8. Still arithmetic, not a recommendation model,
 which §21 rules out.
 
+**Motion explains, it does not decorate.** The tokens in `tokens.css` name
+four curves and four durations, and the rule is that movement should say
+something: where a thing came from, that it responded, that more of it exists
+offscreen. Entrances are slower than reactions — a reaction must feel instant,
+an entrance has to be seen to be understood. The overshoot curve is used in
+exactly one place, on the like button, because on everything it reads as
+wobbly.
+
+Reveal-on-scroll is a client-only directive (`v-reveal`), so the hidden state
+is never server-rendered — otherwise a failed hydration would leave a
+permanently invisible page. One shared IntersectionObserver serves the whole
+app; Discover alone holds nearly three hundred cards.
+
 **User content is never trusted as HTML.** It is stored raw and escaped at
 render time — sanitising on input mangles legitimate text and gives false
 confidence. `vue/no-v-html` is an error in the lint config.

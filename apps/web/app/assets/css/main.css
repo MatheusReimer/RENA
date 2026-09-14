@@ -203,6 +203,54 @@ ol {
 }
 
 /* ------------------------------------------------------------------ *
+ * Reveal on scroll (see plugins/reveal.client.ts)
+ *
+ * The hidden state is applied by the directive after hydration, never by the
+ * server, so content is visible without JavaScript.
+ * ------------------------------------------------------------------ */
+
+.reveal {
+  opacity: 0;
+  /* Rising a little reads as arriving from below the fold. More than about
+     16px starts to look like the page is assembling itself. */
+  transform: translateY(14px);
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--duration-enter) var(--ease-out) var(--reveal-delay, 0ms),
+    transform var(--duration-enter) var(--ease-out) var(--reveal-delay, 0ms);
+}
+
+/* ------------------------------------------------------------------ *
+ * Page transitions
+ *
+ * A short cross-fade with a slight rise. Long enough to register that the
+ * screen changed, short enough that navigation never feels gated on it.
+ * ------------------------------------------------------------------ */
+
+.page-enter-active {
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+
+.page-leave-active {
+  transition: opacity var(--duration-fast) var(--ease-in);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-leave-to {
+  opacity: 0;
+}
+
+/* ------------------------------------------------------------------ *
  * Motion preferences
  * ------------------------------------------------------------------ */
 
@@ -214,6 +262,14 @@ ol {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Belt and braces. The directive already opts out, but a reveal element
+     that somehow kept its hidden state would be invisible rather than
+     merely un-animated -- which is a broken page, not a calmer one. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

@@ -142,8 +142,9 @@ useHead({ title: 'Home' })
 
     <div v-else class="feed">
       <FeedActivityCard
-        v-for="activity in items"
+        v-for="(activity, index) in items"
         :key="activity.id"
+        v-reveal="index"
         :activity="activity"
       />
 
