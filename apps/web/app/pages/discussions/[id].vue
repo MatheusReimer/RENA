@@ -57,7 +57,6 @@ useHead(() => ({ title: thread.value?.title ?? 'Discussion' }))
 
     <UiEmptyState
       v-else-if="error || !thread || !media"
-      icon="💬"
       title="We couldn't load this discussion."
       description="It may have been deleted by its author."
     >
@@ -102,7 +101,6 @@ useHead(() => ({ title: thread.value?.title ?? 'Discussion' }))
 
       <UiEmptyState
         v-if="comments.length === 0"
-        icon="💬"
         title="No replies yet."
         description="Be the first person to say something."
       />

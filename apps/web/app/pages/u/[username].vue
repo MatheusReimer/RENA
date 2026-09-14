@@ -128,7 +128,6 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
 
     <UiEmptyState
       v-else-if="error || !profile"
-      icon="🔍"
       title="We couldn't find that profile."
       description="The username may have changed, or the account no longer exists."
     >
@@ -199,7 +198,6 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
         <section v-if="tab === 'activity'" class="section">
           <UiEmptyState
             v-if="activity.length === 0"
-            icon="🎬"
             :title="emptyActivityTitle"
             :description="
               profile.isSelf
@@ -224,7 +222,6 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
 
           <UiEmptyState
             v-else-if="lists.length === 0"
-            icon="📁"
             :title="profile.isSelf ? 'You have no lists yet.' : 'No lists to show.'"
             :description="
               profile.isSelf
@@ -245,7 +242,6 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
         <section v-else class="section section--padded">
           <UiEmptyState
             v-if="currently.length === 0"
-            icon="📚"
             title="Nothing in progress."
             description="Titles marked as watching or reading show up here."
           />
@@ -259,6 +255,7 @@ useHead(() => ({ title: profile.value?.displayName ?? 'Profile' }))
           >
             <div class="current__poster">
               <UiMediaPoster
+        sizes="48px"
                 :src="entry.media.coverImageUrl"
                 :title="entry.media.title"
                 :media-type="entry.media.mediaType"

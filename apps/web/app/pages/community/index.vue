@@ -45,7 +45,6 @@ useHead({ title: 'Community' })
     <div class="page__body">
       <UiEmptyState
         v-if="tab === 'joined' && !auth.isSignedIn && auth.initialised"
-        icon="👥"
         title="Sign in to see the communities you've joined."
       >
         <template #action>
@@ -63,7 +62,7 @@ useHead({ title: 'Community' })
         </div>
       </div>
 
-      <UiEmptyState v-else-if="error" icon="⚠️" title="We couldn't load communities.">
+      <UiEmptyState v-else-if="error" title="We couldn't load communities.">
         <template #action>
           <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
         </template>
@@ -71,7 +70,6 @@ useHead({ title: 'Community' })
 
       <UiEmptyState
         v-else-if="communities.length === 0"
-        icon="💬"
         :title="
           tab === 'joined'
             ? 'You have not joined any communities yet.'

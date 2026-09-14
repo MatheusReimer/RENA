@@ -86,7 +86,6 @@ useHead({ title: 'Friends' })
     <div class="page__body">
       <UiEmptyState
         v-if="!auth.isSignedIn && auth.initialised"
-        icon="👥"
         title="Sign in to see your friends."
         description="Follow people whose taste you trust and their ratings show up in your feed."
       >
@@ -105,7 +104,7 @@ useHead({ title: 'Friends' })
         </div>
       </div>
 
-      <UiEmptyState v-else-if="error" icon="⚠️" title="We couldn't load your friends.">
+      <UiEmptyState v-else-if="error" title="We couldn't load your friends.">
         <template #action>
           <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
         </template>
@@ -129,7 +128,6 @@ useHead({ title: 'Friends' })
 
         <UiEmptyState
           v-if="friends.length === 0"
-          icon="👋"
           title="Add friends to see what they're watching and reading."
           description="Search for someone by name, or open a profile and send a request."
         >
@@ -142,7 +140,6 @@ useHead({ title: 'Friends' })
 
         <UiEmptyState
           v-else-if="visibleFriends.length === 0"
-          icon="🔍"
           :title="`No friends matching &quot;${filter.trim()}&quot;.`"
         />
 
@@ -168,7 +165,6 @@ useHead({ title: 'Friends' })
       <template v-else-if="tab === 'requests'">
         <UiEmptyState
           v-if="incoming.length === 0"
-          icon="📭"
           title="No pending requests."
           description="When someone asks to be your friend, it shows up here."
         />
@@ -209,7 +205,6 @@ useHead({ title: 'Friends' })
       <template v-else>
         <UiEmptyState
           v-if="outgoing.length === 0"
-          icon="✉️"
           title="No requests waiting on a reply."
         />
 

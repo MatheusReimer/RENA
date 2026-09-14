@@ -81,6 +81,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', measure))
       >
         <NuxtLink :to="`/media/${item.media.id}`" class="card__link">
           <UiMediaPoster
+            sizes="(min-width: 48rem) 184px, 22vw"
             :src="item.media.coverImageUrl"
             :title="item.media.title"
             :media-type="item.media.mediaType"

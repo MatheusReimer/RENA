@@ -64,7 +64,6 @@ useHead({ title: 'My Lists' })
     <div class="page__body">
       <UiEmptyState
         v-if="!auth.isSignedIn && auth.initialised"
-        icon="📚"
         title="Sign in to build your collections."
         description="Keep track of what you want to watch, read and play."
       >
@@ -85,7 +84,6 @@ useHead({ title: 'My Lists' })
 
       <UiEmptyState
         v-else-if="error"
-        icon="⚠️"
         title="We couldn't load your lists."
       >
         <template #action>
@@ -95,7 +93,6 @@ useHead({ title: 'My Lists' })
 
       <UiEmptyState
         v-else-if="lists.length === 0"
-        icon="📁"
         title="Create your first collection."
         description="Favourites, a watchlist, the books you keep meaning to start — anything you want to keep together."
       >
@@ -106,7 +103,6 @@ useHead({ title: 'My Lists' })
 
       <UiEmptyState
         v-else-if="visible.length === 0"
-        icon="🔍"
         :title="`No ${filter} lists.`"
         description="Change a list's visibility from its own page."
       />

@@ -7,7 +7,6 @@
  * collapsing to nothing.
  */
 defineProps<{
-  icon?: string
   title: string
   description?: string
 }>()
@@ -15,7 +14,9 @@ defineProps<{
 
 <template>
   <div class="empty">
-    <span v-if="icon" class="empty__icon" aria-hidden="true">{{ icon }}</span>
+    <!-- A rule rather than a glyph. An emoji in an empty state is decoration
+         standing in for a sentence; the sentence is already here. -->
+    <span class="empty__rule" aria-hidden="true" />
     <p class="empty__title">{{ title }}</p>
     <p v-if="description" class="empty__description">{{ description }}</p>
     <div v-if="$slots.action" class="empty__action">
@@ -33,10 +34,13 @@ defineProps<{
   padding: var(--space-12) var(--space-4);
 }
 
-.empty__icon {
-  font-size: 2rem;
-  margin-bottom: var(--space-3);
-  opacity: 0.7;
+.empty__rule {
+  width: 1.75rem;
+  height: 2px;
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  opacity: 0.8;
 }
 
 .empty__title {

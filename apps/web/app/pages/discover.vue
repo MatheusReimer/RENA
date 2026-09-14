@@ -60,7 +60,6 @@ useHead({ title: 'Discover' })
 
       <UiEmptyState
         v-else-if="error"
-        icon="⚠️"
         title="We couldn't load Discover."
         description="Something went wrong on our end."
       >
@@ -71,7 +70,6 @@ useHead({ title: 'Discover' })
 
       <UiEmptyState
         v-else-if="sections.length === 0"
-        icon="🌱"
         title="Nothing to show yet."
         description="Rate a few things and this fills up with what the community is watching, reading and playing."
       >

@@ -90,22 +90,25 @@ useHead({ title: 'Home' })
 </script>
 
 <template>
-  <div class="page">
+  <div>
     <!--
-      Shown signed out as well as signed in. Without it the first thing a new
-      visitor met was a tab bar and an empty list, which says nothing about
-      what this place is.
+      Outside the page container on purpose: the wall is artwork and runs the
+      full width of the window, while everything below it is a laid-out
+      reading column. Inside the container it was a 75rem box centred on a
+      black screen.
     -->
     <HomeArtWall
       v-if="wall.tiles.length"
+      class="opener"
       :tiles="wall.tiles"
       :title-count="wall.titleCount"
       :member-count="wall.memberCount"
     />
     <!-- Before the catalogue is imported there is no wall to draw, so the
          typographic opener stands in rather than a black band. -->
-    <UiPageHero v-else lead="Stories" tail="connect us." :subtitle="BRAND.tagline" />
+    <UiPageHero v-else class="opener" lead="Stories" tail="connect us." :subtitle="BRAND.tagline" />
 
+    <div class="page">
     <div class="columns">
       <div class="columns__main">
         <div class="page__tabs">
@@ -116,7 +119,6 @@ useHead({ title: 'Home' })
          product is rather than showing an empty list. -->
     <UiEmptyState
       v-if="!auth.isSignedIn && auth.initialised"
-      icon="👋"
       title="See what your friends are watching, reading and loving."
       description="Sign in to follow friends, rate what you finish, and keep everything you want to watch in one place."
     >
@@ -138,7 +140,6 @@ useHead({ title: 'Home' })
     <!-- Error with retry (SPEC 36) -->
     <UiEmptyState
       v-else-if="error"
-      icon="⚠️"
       title="We couldn't load your feed."
       description="Something went wrong on our end. Give it another try."
     >
@@ -150,7 +151,6 @@ useHead({ title: 'Home' })
     <!-- Empty (SPEC 37) -->
     <UiEmptyState
       v-else-if="items.length === 0"
-      icon="🍿"
       :title="
         scope === 'following'
           ? 'Your friends have not posted yet.'
@@ -185,6 +185,7 @@ useHead({ title: 'Home' })
         <FeedContinuePanel :entries="currently" />
       </aside>
     </div>
+    </div>
   </div>
 </template>
 
@@ -192,6 +193,20 @@ useHead({ title: 'Home' })
 .page {
   max-width: var(--page-max);
   margin-inline: auto;
+}
+
+/*
+ * The opener runs under the fixed top bar rather than starting below it.
+ *
+ * `.content` pads itself down to clear the bar so ordinary screens do not
+ * begin underneath it; this pulls that padding back for the one element that
+ * should. The bar is transparent until you scroll, so the artwork is the first
+ * thing on the screen rather than a strip of chrome above it.
+ */
+@media (min-width: 60rem) {
+  .opener {
+    margin-top: calc(var(--topbar-height) * -1);
+  }
 }
 
 /*

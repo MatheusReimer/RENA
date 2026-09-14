@@ -23,6 +23,7 @@ defineProps<{
   <div class="result" :class="{ 'result--busy': opening }">
     <div class="result__poster">
       <UiMediaPoster
+        sizes="48px"
         :src="result.coverImageUrl"
         :title="result.title"
         :media-type="result.mediaType"

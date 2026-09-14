@@ -222,7 +222,6 @@ useHead({ title: 'Search' })
       <!-- Error with retry (SPEC 36) -->
       <UiEmptyState
         v-else-if="failed"
-        icon="⚠️"
         title="Search is unavailable right now."
         description="The catalogue did not respond. Try again in a moment."
       >
@@ -259,7 +258,6 @@ useHead({ title: 'Search' })
 
           <UiEmptyState
             v-else
-            icon="🔎"
             title="Find movies, series, books and games."
             description="Search the catalogue to rate something, add it to a list, or see what your friends thought."
           />
@@ -275,7 +273,6 @@ useHead({ title: 'Search' })
       <!-- No matches (SPEC 37) -->
       <UiEmptyState
         v-else-if="searched && visibleMedia.length === 0 && (!showPeople || people.length === 0)"
-        icon="🤷"
         :title="`No results for &quot;${query.trim()}&quot;`"
         description="Try a different spelling, or search by the original title."
       />

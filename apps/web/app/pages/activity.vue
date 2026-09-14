@@ -90,16 +90,6 @@ async function respond(notificationId: string, friendshipId: string, action: 'ac
   }
 }
 
-const ICONS: Record<string, string> = {
-  friend_request: '\u{1F464}',
-  friend_request_accepted: '\u{1F91D}',
-  comment_on_review: '\u{1F4AC}',
-  reply_to_discussion: '\u{1F4AC}',
-  liked_review: '❤️',
-  mentioned: '@',
-  badge_earned: '⭐',
-}
-
 useHead({ title: 'Activity' })
 </script>
 
@@ -113,7 +103,6 @@ useHead({ title: 'Activity' })
     <div class="page__body">
       <UiEmptyState
         v-if="!auth.isSignedIn && auth.initialised"
-        icon="🔔"
         title="Sign in to see your notifications."
       >
         <template #action>
@@ -130,7 +119,6 @@ useHead({ title: 'Activity' })
 
       <UiEmptyState
         v-else-if="error"
-        icon="⚠️"
         title="We couldn't load your notifications."
       >
         <template #action>
@@ -140,7 +128,6 @@ useHead({ title: 'Activity' })
 
       <UiEmptyState
         v-else-if="items.length === 0"
-        icon="🔔"
         title="Nothing to catch up on."
         description="Friend requests, replies and badges show up here."
       />
@@ -154,9 +141,13 @@ useHead({ title: 'Activity' })
           class="row"
           :class="{ 'row--unread': !notification.readAt }"
         >
-          <span class="row__icon" aria-hidden="true">
-            {{ ICONS[notification.type] ?? '\u{1F514}' }}
-          </span>
+          <!-- An unread marker rather than a per-type glyph. The message
+               already says what happened and the avatar says who did it; the
+               only thing the row was actually missing was whether it is new. -->
+          <span
+            class="row__dot"
+            :aria-label="notification.readAt ? undefined : 'Unread'"
+          />
           <UiUserAvatar v-if="notification.actor" :user="notification.actor" size="md" />
           <span class="row__text">
             <span class="row__message">{{ describe(notification) }}</span>
@@ -241,12 +232,18 @@ useHead({ title: 'Activity' })
   border-radius: var(--radius-md);
 }
 
-.row__icon {
-  display: grid;
-  place-items: center;
-  width: 1.5rem;
-  font-size: var(--text-base);
+.row__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
   flex-shrink: 0;
+  /* Holds its column whether or not it is lit, so read and unread rows keep
+     the same left edge. */
+  background: transparent;
+}
+
+.row--unread .row__dot {
+  background: var(--accent);
 }
 
 .row__text {

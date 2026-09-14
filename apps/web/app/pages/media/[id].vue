@@ -240,7 +240,6 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 
     <UiEmptyState
       v-else-if="error || !media"
-      icon="🎬"
       title="We couldn't load this title."
       description="It may have been removed, or the catalogue is unavailable."
     >
@@ -404,7 +403,6 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 
           <UiEmptyState
             v-else-if="reviews.length === 0"
-            icon="✍️"
             title="No reviews yet."
             description="Be the first person to share what you thought."
           />
@@ -442,7 +440,6 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
 
           <UiEmptyState
             v-else-if="threads.length === 0"
-            icon="💬"
             title="Be the first person to start a discussion."
             description="Ask a question, share a theory, or argue about the ending."
           />
@@ -459,12 +456,10 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
         <section v-else class="section">
           <UiEmptyState
             v-if="!auth.isSignedIn"
-            icon="👥"
             title="Sign in to see what your friends thought."
           />
           <UiEmptyState
             v-else-if="media.friendRatings.length === 0"
-            icon="👥"
             title="None of your friends have rated this yet."
             description="Add friends to see their ratings here."
           />

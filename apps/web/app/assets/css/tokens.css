@@ -155,10 +155,27 @@
   --stagger-step: 45ms;
 
   /* Layout */
+  /* Mobile bottom tab bar. */
   --nav-height: 3.5rem;
-  --sidebar-width: 15rem;
-  --content-max: 40rem;
-  --page-max: 75rem;
+  /* Desktop top bar. Content clears it; full-bleed artwork runs under it. */
+  --topbar-height: 3.75rem;
+  /*
+   * The reading column.
+   *
+   * A feed is prose plus one image per item, so this is set by line length
+   * rather than by how much room there happens to be -- a 1200px-wide review
+   * is harder to read, not more generous.
+   */
+  --content-max: 42rem;
+  /*
+   * The widest a laid-out screen gets.
+   *
+   * Raised when the sidebar came out: the page had been capped at 75rem and
+   * centred inside a shell that also spent 15rem on navigation, which on a
+   * wide monitor left the content in a narrow strip down the middle with dead
+   * black either side. Artwork surfaces ignore this and run edge to edge.
+   */
+  --page-max: 86rem;
 
   /* Poster aspect ratios, so cards never disagree about proportion. */
   --poster-ratio: 2 / 3;

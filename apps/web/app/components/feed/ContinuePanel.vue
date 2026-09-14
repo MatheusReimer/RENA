@@ -87,6 +87,7 @@ const groups = computed(() => {
       >
         <div class="item__poster">
           <UiMediaPoster
+        sizes="40px"
             :src="entry.media.coverImageUrl"
             :title="entry.media.title"
             :media-type="entry.media.mediaType"

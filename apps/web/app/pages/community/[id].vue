@@ -120,7 +120,6 @@ useHead(() => ({ title: media.value ? `${media.value.title} community` : 'Commun
 
     <UiEmptyState
       v-else-if="error || !community || !media"
-      icon="💬"
       title="We couldn't load this community."
     >
       <template #action>
@@ -186,7 +185,6 @@ useHead(() => ({ title: media.value ? `${media.value.title} community` : 'Commun
 
           <UiEmptyState
             v-else-if="threads.length === 0"
-            icon="💬"
             title="Be the first person to start a discussion."
             description="Ask a question, share a theory, or argue about the ending."
           />
@@ -203,7 +201,6 @@ useHead(() => ({ title: media.value ? `${media.value.title} community` : 'Commun
         <section v-else-if="tab === 'members'" class="section">
           <UiEmptyState
             v-if="community.members.length === 0"
-            icon="👥"
             title="No members yet."
             description="Join to be the first."
           />

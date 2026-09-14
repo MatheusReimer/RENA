@@ -15,6 +15,7 @@ defineProps<{ community: CommunitySummary }>()
   <NuxtLink :to="`/community/${community.media.id}`" class="card">
     <div class="card__poster">
       <UiMediaPoster
+        sizes="56px"
         :src="community.media.coverImageUrl"
         :title="community.media.title"
         :media-type="community.media.mediaType"

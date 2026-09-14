@@ -109,7 +109,6 @@ async function onCreated(list: ListSummary) {
 
       <UiEmptyState
         v-else-if="failed"
-        icon="⚠️"
         title="We couldn't load your lists."
       >
         <template #action>
@@ -119,7 +118,6 @@ async function onCreated(list: ListSummary) {
 
       <UiEmptyState
         v-else-if="lists.length === 0"
-        icon="📁"
         title="No lists yet."
         description="Create one to start collecting."
       />

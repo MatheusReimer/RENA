@@ -95,7 +95,6 @@ useHead(() => ({ title: list.value?.name ?? 'List' }))
 
     <UiEmptyState
       v-else-if="error || !list"
-      icon="📁"
       title="We couldn't find that list."
       description="It may have been deleted, or it is private."
     >
@@ -132,7 +131,6 @@ useHead(() => ({ title: list.value?.name ?? 'List' }))
 
       <UiEmptyState
         v-if="items.length === 0"
-        icon="➕"
         title="Nothing in this list yet."
         :description="
           isOwner
@@ -153,6 +151,7 @@ useHead(() => ({ title: list.value?.name ?? 'List' }))
 
           <NuxtLink :to="`/media/${item.media.id}`" class="item__poster">
             <UiMediaPoster
+        sizes="44px"
               :src="item.media.coverImageUrl"
               :title="item.media.title"
               :media-type="item.media.mediaType"
