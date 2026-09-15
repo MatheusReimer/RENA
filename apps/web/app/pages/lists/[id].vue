@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MEDIA_TYPE_LABELS } from '@revy/shared/constants'
+import { BRAND, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
 import { releaseYear } from '@revy/shared/utils'
 
 /**
@@ -11,6 +11,8 @@ import { releaseYear } from '@revy/shared/utils'
 const route = useRoute()
 const api = useApi()
 const auth = useAuthStore()
+const { absolute } = useShareLink()
+const { t } = useI18n()
 
 const listId = computed(() => String(route.params.id))
 
@@ -83,6 +85,60 @@ async function move(index: number, direction: -1 | 1) {
 }
 
 useHead(() => ({ title: list.value?.name ?? 'List' }))
+
+/*
+ * A shared list is the one piece of member-made content worth indexing
+ * (SPEC 22).
+ *
+ * Somebody's "Best horror of the decade" is exactly the long-tail query this
+ * catalogue can answer and IMDb cannot, and every item in it links to a media
+ * page -- so the `nofollow` the default policy applied here was costing the
+ * catalogue internal link weight as well as the list its own result.
+ *
+ * Opt-in per load, never per pattern: only a list that actually resolved and
+ * is `public`. A `friends`-only or private list is 404 to a signed-out crawler
+ * in the API, but this page still answers 200, so the pattern alone cannot
+ * tell the two apart. `setIndexPolicy` is scoped to this path and defaults to
+ * the private policy, so the failure mode of getting this wrong is an
+ * unindexed public list, not an indexed private one.
+ */
+watchEffect(() => {
+  if (list.value?.visibility === 'public') setIndexPolicy('index')
+})
+
+/*
+ * A real 404 for anything the reader cannot see.
+ *
+ * Without it every unreachable list is a soft 404: HTTP 200 with an error
+ * state in the body, which a crawler files as a thin duplicate page rather
+ * than a dead end. The API already collapses "private" and "does not exist"
+ * into the same not-found, so this leaks nothing about which it was.
+ */
+if (import.meta.server && error.value) {
+  setResponseStatus(useRequestEvent()!, 404)
+}
+
+const shareDescription = computed(() => {
+  const value = list.value
+  if (!value) return BRAND.description
+  if (value.description) return value.description
+  return t('lists.metaItems', { count: value.itemCount })
+})
+
+useSeoMeta({
+  description: () => shareDescription.value,
+  ogTitle: () =>
+    list.value ? `${list.value.name} · ${list.value.user.displayName}` : BRAND.name,
+  ogDescription: () => shareDescription.value,
+  ogType: 'website',
+  ogUrl: () => (list.value ? absolute(`/lists/${list.value.id}`) : undefined),
+  /*
+   * The first cover, which is already the page's own visual identity -- the
+   * stacked thumbnails are built from the same array.
+   */
+  ogImage: () => list.value?.previewCovers?.[0] ?? undefined,
+  twitterCard: () => (list.value?.previewCovers?.length ? 'summary_large_image' : 'summary'),
+})
 </script>
 
 <template>

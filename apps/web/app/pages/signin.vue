@@ -71,6 +71,10 @@ useHead({ title: 'Sign in' })
       <span v-if="fieldErrors.password" class="field__error">{{ fieldErrors.password[0] }}</span>
     </label>
 
+    <!-- Beside the password field, where somebody realises they have
+         forgotten it, rather than buried under the submit button. -->
+    <NuxtLink to="/forgot-password" class="auth-form__link forgot">Forgot your password?</NuxtLink>
+
     <p v-if="formError" class="auth-form__error" role="alert">{{ formError }}</p>
 
     <UiAppButton type="submit" variant="primary" size="lg" block :loading="submitting">

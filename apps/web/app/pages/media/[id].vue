@@ -1,7 +1,22 @@
 <script setup lang="ts">
-import { MEDIA_STATUS_LABELS, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
-import type { DiscussionThread, MediaStatus, Review } from '@revy/shared/types'
-import { formatAverage, formatRatingCount, formatRuntime, releaseYear } from '@revy/shared/utils'
+import { BRAND, MEDIA_STATUS_LABELS, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
+import type {
+  CommunityMember,
+  DiscussionThread,
+  MediaCredit,
+  MediaStatus,
+  MediaType,
+  Presence,
+  Review,
+} from '@revy/shared/types'
+import {
+  formatAverage,
+  formatRatingCount,
+  formatRuntime,
+  isReleased,
+  relativeTime,
+  releaseYear,
+} from '@revy/shared/utils'
 
 /**
  * Media detail (SPEC 19).
@@ -12,7 +27,9 @@ import { formatAverage, formatRatingCount, formatRuntime, releaseYear } from '@r
  */
 const route = useRoute()
 const api = useApi()
+const { absolute } = useShareLink()
 const auth = useAuthStore()
+const { locale } = useI18n()
 
 const mediaId = computed(() => String(route.params.id))
 
@@ -24,7 +41,36 @@ const { data, status, error, refresh } = await useAsyncData(
 
 const media = computed(() => data.value?.media ?? null)
 
-const tab = ref<'overview' | 'reviews' | 'discussions' | 'friends'>('overview')
+const tab = ref<'overview' | 'reviews' | 'discussions' | 'members' | 'friends'>('overview')
+
+/*
+ * The tab can be named in the URL.
+ *
+ * `/community/[id]` used to be a second page over the same threads, and it
+ * redirects here now -- which only works if it can say *where* here. It is
+ * also the thing you want when linking somebody to an argument about the
+ * ending rather than to the top of a catalogue entry.
+ */
+const TABS = ['overview', 'reviews', 'discussions', 'members', 'friends'] as const
+
+if (TABS.includes(route.query.tab as (typeof TABS)[number])) {
+  tab.value = route.query.tab as (typeof TABS)[number]
+}
+
+/**
+ * Who else here has been through this title.
+ *
+ * Deliberately not awaited with the page: the media page's own payload is
+ * already several queries deep, and this is a panel further down the screen.
+ * `lazy` means the page paints first and the panel arrives when it arrives.
+ */
+const { data: presence, refresh: refreshPresence } = await useAsyncData(
+  () => `presence-${route.params.id}`,
+  () => api.media.presence(String(route.params.id)),
+  // Typed explicitly: an untyped `null` default widens the ref to `{}` and the
+  // panel below then refuses every property it needs.
+  { lazy: true, default: (): Presence | null => null },
+)
 
 const tabs = computed(() => [
   { value: 'overview', label: 'Overview' },
@@ -34,8 +80,103 @@ const tabs = computed(() => [
     label: 'Discussions',
     badge: media.value?.discussionCount || undefined,
   },
+  { value: 'members', label: 'Members', badge: memberCount.value || undefined },
   { value: 'friends', label: 'Friends', badge: media.value?.friendRatings.length || undefined },
 ])
+
+/**
+ * Cast and crew.
+ *
+ * `lazy` for the same reason presence is: the page's own payload is already
+ * several queries deep, and this is a strip below the fold. It renders
+ * nothing at all when a title has no credits -- books and games mostly, until
+ * their authors and developers are backfilled.
+ */
+const { data: creditsData } = await useAsyncData(
+  () => `credits:${mediaId.value}`,
+  () => api.media.credits(mediaId.value),
+  { lazy: true, watch: [mediaId], default: () => ({ credits: [] as MediaCredit[] }) },
+)
+
+const credits = computed(() => creditsData.value?.credits ?? [])
+
+/* ------------------------------------------------------------------ *
+ * The community, which is this title (SPEC 14)
+ *
+ * Folded in from `/community/[id]`, which was a second page over the same
+ * threads: same `media_id`, same rows, two URLs. Everything that page had and
+ * this one did not -- Join, the member count, the member list -- lives here
+ * now, and its About tab was this page's Overview under another name.
+ * ------------------------------------------------------------------ */
+
+const joined = ref(false)
+const memberCount = ref(0)
+const joinPending = ref(false)
+
+watch(
+  media,
+  (next) => {
+    joined.value = next?.joined ?? false
+    memberCount.value = next?.memberCount ?? 0
+  },
+  { immediate: true },
+)
+
+async function toggleMembership() {
+  if (!auth.isSignedIn) return navigateTo('/signin')
+  if (joinPending.value || !media.value) return
+
+  const next = !joined.value
+  joinPending.value = true
+
+  // Optimistic: the button is the whole interaction, so it must respond now.
+  joined.value = next
+  memberCount.value += next ? 1 : -1
+
+  try {
+    const result = await api.communities.setMembership(media.value.id, next)
+    joined.value = result.joined
+    memberCount.value = result.memberCount
+  } catch {
+    joined.value = !next
+    memberCount.value += next ? -1 : 1
+  } finally {
+    joinPending.value = false
+  }
+}
+
+/**
+ * The member list, fetched when its tab is opened.
+ *
+ * Unlike the count and the viewer's own membership -- which ride the page
+ * payload because the Join button cannot afford to paint wrong -- this is a
+ * list behind a tab nobody has clicked yet.
+ */
+const members = ref<CommunityMember[]>([])
+const membersLoaded = ref(false)
+const membersLoading = ref(false)
+
+async function loadMembers() {
+  if (membersLoading.value || !media.value) return
+  membersLoading.value = true
+  try {
+    const result = await api.communities.get(media.value.id)
+    members.value = result.community.members
+    membersLoaded.value = true
+  } finally {
+    membersLoading.value = false
+  }
+}
+
+watch(tab, (next) => {
+  if (next === 'members' && !membersLoaded.value) loadMembers()
+})
+
+// The tab can arrive already selected from the query, in which case the watch
+// above never fires.
+onMounted(() => {
+  if (tab.value === 'members' && !membersLoaded.value) loadMembers()
+})
 
 /** Metadata line: 2024 · Movie · Sci-Fi, Drama · 2h 46m */
 const metaLine = computed(() => {
@@ -97,7 +238,37 @@ async function saveRating() {
 
 const savingStatus = ref(false)
 
-const statusOptions = computed<MediaStatus[]>(() => ['planned', 'in_progress', 'completed'])
+/**
+ * Whether this is out yet.
+ *
+ * The catalogue carries titles well before release, and they were collecting
+ * ratings -- Avengers: Doomsday had scores on it. The server refuses those
+ * now; this is so nobody is offered a control that is going to say no.
+ *
+ * Planning stays available, because "want to watch" is exactly what somebody
+ * on an unreleased title's page came to do.
+ */
+const released = computed(() => isReleased(media.value?.releaseDate))
+
+const statusOptions = computed<MediaStatus[]>(() =>
+  released.value ? ['planned', 'in_progress', 'completed'] : ['planned'],
+)
+
+/** The release day, spelled out, for the notice that replaces the controls. */
+const releaseLabel = computed(() => {
+  const date = media.value?.releaseDate
+  if (!date) return ''
+
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return releaseYear(date)
+
+  return new Intl.DateTimeFormat(locale.value, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(parsed)
+})
 
 /**
  * Where the viewer is: episode for a series, page for a book.
@@ -154,7 +325,10 @@ async function setStatus(next: MediaStatus) {
     // Tapping the active status clears it, so there is no separate "remove".
     const value = media.value.viewerState?.status === next ? null : next
     await api.ratings.setStatus(media.value.id, value)
-    await refresh()
+    // The presence panel counts the viewer out of its own figures, so marking
+    // something finished changes what it says -- and finishing something is
+    // exactly the moment somebody looks at it.
+    await Promise.all([refresh(), refreshPresence()])
   } finally {
     savingStatus.value = false
   }
@@ -202,9 +376,23 @@ async function loadThreads() {
   }
 }
 
-// Both lists load on first visit to their tab rather than with the page, so
-// opening a media item is one request instead of three.
-watch(tab, async (value) => {
+/*
+ * Both lists load on first visit to their tab rather than with the page, so
+ * opening a media item is one request instead of three.
+ *
+ * `immediate`, and watching `media` as well as `tab`, and both halves were
+ * bugs. `tab` is set from `?tab=` synchronously in setup -- above, before this
+ * watcher exists -- so a reader arriving *directly* at `?tab=reviews` never
+ * triggered it and sat looking at "No reviews yet" on a title that had them.
+ * That is the linked case, which is the whole reason the tab is in the URL:
+ * every `/community/<id>` redirect lands on `?tab=discussions`, and every
+ * shared link to a review lands here too.
+ *
+ * Watching `media` covers the other order: fire immediately, find the media
+ * still resolving, return -- and then run again when it arrives. The
+ * `*Loaded` guards make the repeat free.
+ */
+watch([tab, media], async ([value]) => {
   if (!media.value) return
 
   if (value === 'reviews' && !reviewsLoaded.value) {
@@ -222,9 +410,45 @@ watch(tab, async (value) => {
   if (value === 'discussions' && !threadsLoaded.value) {
     await loadThreads()
   }
-})
+}, { immediate: true })
 
-useHead(() => ({ title: media.value?.title ?? 'Loading' }))
+/*
+ * A shared media link (SPEC 19).
+ *
+ * The other URL people paste. Unlike a profile this one always has artwork, so
+ * the card is worth having: a poster, the title, and what this community
+ * scored it -- which is the thing we know that IMDb does not.
+ */
+/*
+ * The Open Graph type per media kind.
+ *
+ * This was `video.other` for everything, which told Facebook a Dostoevsky
+ * novel was a video. The type drives which extra properties a consumer looks
+ * for and how the card is laid out, so a wrong one is a worse card, not just a
+ * wrong label.
+ *
+ * Games get `website`: Open Graph has no game type, and `article` -- the usual
+ * reflex -- claims a byline and a publish date this page does not have.
+ */
+// `as const` so the values stay literals: `useSeoMeta` types `ogType` as a
+// union of the valid Open Graph types, and a widened `string` is rejected.
+const OG_TYPES = {
+  movie: 'video.movie',
+  series: 'video.tv_show',
+  book: 'book',
+  game: 'website',
+} as const satisfies Record<MediaType, string>
+
+useSeoMeta({
+  title: () => (media.value ? `${media.value.title} · ${BRAND.name}` : BRAND.name),
+  description: () => media.value?.description || BRAND.description,
+  ogTitle: () => media.value?.title ?? BRAND.name,
+  ogDescription: () => media.value?.description || BRAND.description,
+  ogType: () => OG_TYPES[media.value?.mediaType ?? 'movie'],
+  ogUrl: () => (media.value ? absolute(`/media/${media.value.id}`) : undefined),
+  ogImage: () => media.value?.backdropImageUrl ?? media.value?.coverImageUrl ?? undefined,
+  twitterCard: 'summary_large_image',
+})
 </script>
 
 <template>
@@ -293,8 +517,13 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
           <div class="score__detail">
             <UiStarRating :score="media.ratingSummary.average" size="lg" />
             <span class="score__count">
-              {{ formatRatingCount(media.ratingSummary.count) }}
-              {{ media.ratingSummary.count === 1 ? 'rating' : 'ratings' }}
+              {{
+                $t(
+                  'common.ratings',
+                  { count: formatRatingCount(media.ratingSummary.count) },
+                  media.ratingSummary.count,
+                )
+              }}
             </span>
           </div>
         </div>
@@ -306,7 +535,15 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
             eye to the one thing the viewer has not done; once they have rated,
             the button is a status readout and should stop asking.
           -->
-          <div class="cta" :class="{ 'cta--beamed': !media.viewerState?.score }">
+          <!--
+            No rating control before release.
+
+            A disabled button with a tooltip would be the usual answer and it
+            is the wrong one here: the reason has nothing to do with the
+            reader, so there is nothing for them to fix by hovering it. The
+            date is the useful thing, so the date is what the space says.
+          -->
+          <div v-if="released" class="cta" :class="{ 'cta--beamed': !media.viewerState?.score }">
             <UiBorderBeam v-if="!media.viewerState?.score" />
             <UiAppButton variant="primary" size="lg" block @click="openRating">
               <UiStarRating
@@ -317,6 +554,15 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
               {{ media.viewerState?.score ? `Your rating · ${media.viewerState.score.toFixed(1)}` : 'Rate this' }}
             </UiAppButton>
           </div>
+
+          <p v-else class="unreleased">
+            <span class="unreleased__mark" aria-hidden="true" />
+            {{
+              releaseLabel
+                ? $t('media.releasesOn', { date: releaseLabel })
+                : $t('media.notReleased')
+            }}
+          </p>
 
           <UiAppButton variant="secondary" size="lg" @click="openAddToList">
             <span class="actions__plus" aria-hidden="true">+</span>
@@ -367,6 +613,15 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
             No description available for this title yet.
           </p>
 
+          <!--
+            Who made it, as a row of faces.
+
+            This is the way into a person's page, and the reason those pages
+            are worth having: "what else has this director done" gets asked
+            while looking at a film, not from a search box.
+          -->
+          <MediaCreditStrip :credits="credits" />
+
           <!-- Friends (SPEC 19) -->
           <div v-if="media.friendRatings.length" class="friends">
             <h2 class="section__heading">Your friends</h2>
@@ -382,6 +637,21 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
               <span class="friend__score">{{ friend.score?.toFixed(1) }}</span>
             </NuxtLink>
           </div>
+
+          <!--
+            Who else here has been through this (SPEC 9, 12).
+
+            Its own request, fired after the page has painted: this sits below
+            the description and nobody should wait on it to see what they came
+            for. It is also the one panel a signed-out visitor gets the full
+            value of, which is why it is not gated.
+          -->
+          <MediaPresencePanel
+            v-if="presence"
+            :presence="presence"
+            :media-type="media.mediaType"
+            :media-title="media.title"
+          />
         </section>
 
         <!-- Reviews (SPEC 11) -->
@@ -425,12 +695,15 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
             >
               Start a discussion
             </UiAppButton>
+            <!-- Was "Open community", which led to a second page over these
+                 same threads. Joining is what that page was actually for. -->
             <UiAppButton
-              variant="ghost"
+              :variant="joined ? 'ghost' : 'secondary'"
               size="sm"
-              @click="navigateTo(`/community/${media.id}`)"
+              :loading="joinPending"
+              @click="toggleMembership"
             >
-              Open community
+              {{ joined ? 'Joined' : 'Join' }}
             </UiAppButton>
           </div>
 
@@ -450,6 +723,46 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
             :key="thread.id"
             :thread="thread"
           />
+        </section>
+
+        <!-- Members (SPEC 14). The people who joined this title. -->
+        <section v-else-if="tab === 'members'" class="section">
+          <div class="section__actions">
+            <UiAppButton
+              :variant="joined ? 'ghost' : 'secondary'"
+              size="sm"
+              :loading="joinPending"
+              @click="toggleMembership"
+            >
+              {{ joined ? 'Joined' : 'Join' }}
+            </UiAppButton>
+          </div>
+
+          <div v-if="membersLoading" class="section__loading">
+            <UiSkeletonBlock v-for="i in 4" :key="i" width="100%" height="3rem" />
+          </div>
+
+          <UiEmptyState
+            v-else-if="members.length === 0"
+            title="No members yet."
+            description="Join to be the first."
+          />
+
+          <NuxtLink
+            v-for="member in members"
+            v-else
+            :key="member.user.id"
+            :to="`/u/${member.user.username}`"
+            class="member"
+          >
+            <UiUserAvatar :user="member.user" size="md" />
+            <div class="member__text">
+              <span class="member__name">{{ member.user.displayName }}</span>
+              <span class="member__handle">
+                @{{ member.user.username }} · joined {{ relativeTime(member.joinedAt) }}
+              </span>
+            </div>
+          </NuxtLink>
         </section>
 
         <!-- Friends tab -->
@@ -691,6 +1004,37 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
   padding: 1px;
 }
 
+/*
+ * Takes the rating button's place, and its size.
+ *
+ * Sized like the control it replaces so the row does not reflow between a
+ * released title and an upcoming one -- browsing a list of both should not
+ * make the page jump.
+ */
+.unreleased {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex: 1;
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.unreleased__mark {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
 .cta :deep(.btn) {
   position: relative;
   z-index: 1;
@@ -809,6 +1153,32 @@ useHead(() => ({ title: media.value?.title ?? 'Loading' }))
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+/* Carried over from the community page this tab replaces. */
+.member {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.member__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.member__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.member__handle {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
 }
 
 .description {

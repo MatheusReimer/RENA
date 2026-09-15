@@ -22,6 +22,69 @@
       "when": 1789337592117,
       "tag": "0002_nosy_eternity",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789394192474,
+      "tag": "0003_stormy_famine",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789396551875,
+      "tag": "0004_perpetual_tyger_tiger",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789407221451,
+      "tag": "0005_cloudy_ricochet",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789420485257,
+      "tag": "0006_old_blink",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789441637538,
+      "tag": "0007_awesome_warbound",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789478627579,
+      "tag": "0008_lowly_captain_cross",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789490784643,
+      "tag": "0009_silky_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789491484704,
+      "tag": "0010_damp_ghost_rider",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789507506304,
+      "tag": "0011_flawless_sunset_bain",
+      "breakpoints": true
     }
   ]
 }

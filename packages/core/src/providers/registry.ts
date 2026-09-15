@@ -38,6 +38,7 @@ export interface ProviderRegistry {
     query: string,
     limit: number,
     mediaType?: MediaType,
+    locale?: string,
   ): Promise<{ results: ProviderSearchResult[]; failed: string[] }>
 }
 
@@ -81,7 +82,7 @@ export function createProviderRegistry(options: ProviderRegistryOptions): Provid
 
     all,
 
-    async searchAll(query, limit, mediaType) {
+    async searchAll(query, limit, mediaType, locale) {
       const targets = mediaType
         ? [byType.get(mediaType)].filter((p): p is MediaProvider => p !== undefined)
         : all()
@@ -90,7 +91,12 @@ export function createProviderRegistry(options: ProviderRegistryOptions): Provid
 
       const settled = await Promise.allSettled(
         targets.map((provider) =>
-          provider.search({ query, limit, ...(mediaType ? { mediaType } : {}) }),
+          provider.search({
+            query,
+            limit,
+            ...(mediaType ? { mediaType } : {}),
+            ...(locale ? { locale } : {}),
+          }),
         ),
       )
 

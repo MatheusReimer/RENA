@@ -1,5 +1,14 @@
 import { relations, sql } from 'drizzle-orm'
-import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import {
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core'
 import { authUser } from './auth'
 
 /**
@@ -23,6 +32,37 @@ export const users = pgTable(
     displayName: text('display_name').notNull(),
     avatarUrl: text('avatar_url'),
     bio: text('bio'),
+    /*
+     * The language this person reads and writes in (SPEC 31).
+     *
+     * Distinct from `reviews.language`, which is a property of one piece of
+     * text. This is a property of a person, and it does two jobs: it sets the
+     * interface on every device they sign in from, and it is the language
+     * their own reviews are recorded as being written in -- so the attribution
+     * on a translation ("translated from Portuguese") is sourced from what the
+     * author told us rather than guessed from the characters.
+     *
+     * Defaulted rather than nullable, for the same reason as the review
+     * column: everyone has a language, and null would mean "we never asked".
+     */
+    language: varchar('language', { length: 8 }).notNull().default('en'),
+    /*
+     * The badge shown beside this person's name, as a slug (SPEC 17).
+     *
+     * Denormalised onto the user deliberately. The title appears everywhere a
+     * name does -- reviews, comments, the feed, presence, friend lists -- and
+     * `toUserSummary` is called from forty-two places. Resolving it by join
+     * would mean editing forty-two queries and paying for the join on every
+     * one; a column on a row those queries already select costs nothing.
+     *
+     * The slug rather than the badge id, and no name column: the name is
+     * rendered from the slug in the reader's own language, so storing it would
+     * only create an English copy to go stale.
+     *
+     * Maintained by `badgeService` when a rarer badge is earned. Null until
+     * somebody earns their first.
+     */
+    titleBadgeSlug: text('title_badge_slug'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

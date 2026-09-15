@@ -1,0 +1,506 @@
+{
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "community": "Community",
+    "library": "Library",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "search": "Search",
+    "signIn": "Sign in",
+    "join": "Join",
+    "skipToContent": "Skip to content",
+    "searchPlaceholder": "Search for a movie, game, book or show...",
+    "yourLibrary": "Your library",
+    "discover": "Discover",
+    "watchlist": "Watchlist",
+    "readlist": "Readlist",
+    "playlist": "Playlist",
+    "yourReviews": "Your Reviews",
+    "liked": "Liked",
+    "history": "History",
+    "greeting": "Hi, {name}",
+    "about": "About",
+    "footerTagline": "Made for people who love stories.",
+    "friends": "Friends",
+    "messages": "Messages"
+  },
+  "mediaType": {
+    "movie": "Movie",
+    "series": "TV Show",
+    "book": "Book",
+    "game": "Game",
+    "movie_plural": "Movies",
+    "series_plural": "TV Shows",
+    "book_plural": "Books",
+    "game_plural": "Games"
+  },
+  "landing": {
+    "eyebrow": "Reviews. Discussions. Real people.",
+    "titleLead": "Stories mean",
+    "titleRest": "more",
+    "titleAccent": "together.",
+    "lede": "RENA is a community for honest reviews, meaningful discussions, and everything you love to watch, read, and play.",
+    "join": "Join the community",
+    "explore": "Explore",
+    "membersNote": "Sharing stories. Finding people.",
+    "member": "member",
+    "members": "members",
+    "exploreEyebrow": "Explore",
+    "exploreTitle": "What's your next story?",
+    "trendingEyebrow": "Trending on {brand}",
+    "trendingTitle": "Fresh reviews from the community",
+    "carouselLabel": "Recently reviewed titles",
+    "communityEyebrow": "The RENA community",
+    "communityTitleLead": "Real people.",
+    "communityTitleRest": "Real perspectives.",
+    "likes": "likes",
+    "replies": "replies",
+    "closingLead": "Good stories",
+    "closingRest": "find good people.",
+    "closingLine": "A line connects us all.",
+    "titles": "Titles"
+  },
+  "tagline": {
+    "movie": "From classics to new releases.",
+    "series": "Binge. Discuss. Revisit.",
+    "book": "Turn the page together.",
+    "game": "All worlds, all players."
+  },
+  "ask": {
+    "cardTitle": "Not sure what to watch next?",
+    "cardCue": "Describe it →",
+    "promoFallback": "Better stories together.",
+    "dialogLabel": "Find something to watch, read or play",
+    "title": "What are you in the mood for?",
+    "lede": "Describe it however it sits in your head. We'll look through everything on RENA — films, series, books and games.",
+    "placeholder": "Something slow and beautiful that isn't sad…",
+    "submit": "Find it",
+    "thinking": "Thinking",
+    "close": "Close",
+    "understood": "Looking for",
+    "again": "Ask for something else",
+    "failed": "Something went wrong.",
+    "notRated": "Not yet rated here",
+    "onRena": "on RENA",
+    "ratings": "{count} rating | {count} ratings",
+    "waiting1": "Reading the catalogue…",
+    "waiting2": "Six hundred titles to weigh up…",
+    "waiting3": "Working out what actually fits…",
+    "waiting4": "Still going — this one is taking a moment…",
+    "opener1": "Something under two hours I can watch with my girlfriend",
+    "opener2": "A book that will make me cry on a plane",
+    "opener3": "Like Black Mirror, but hopeful",
+    "opener4": "A game I can finish in a weekend",
+    "noPreference": "Doesn't matter",
+    "replyPlaceholder": "Or say it your own way…",
+    "send": "Send",
+    "decideNow": "Just show me something",
+    "narrowing": "Narrowing it down"
+  },
+  "presence": {
+    "heading": "Who else has been here",
+    "firstLine": "You would be the first.",
+    "firstSub": "Nobody here has {verb} {title} yet. Mark it finished and the next person will find you.",
+    "finished": "Finished",
+    "readingNow": "Reading now,",
+    "friend": "Friend",
+    "inProgress": "{count} person is part-way through right now. | {count} people are part-way through right now.",
+    "language": "{count} of them writes in {language}. | {count} of them write in {language}."
+  },
+  "language": {
+    "label": "Language",
+    "switch": "Change language",
+    "inYourLanguage": "In your language",
+    "otherLanguages": "Also {count} in another language | Also {count} in other languages",
+    "showAll": "Show all languages",
+    "writtenIn": "Written in {language}",
+    "hint": "Sets your interface, and marks what language your reviews are written in.",
+    "translated": "Translated from {language}",
+    "seeOriginal": "See original",
+    "seeTranslation": "See translation",
+    "translating": "Translating…",
+    "machine": "Machine translation",
+    "en": "English",
+    "pt-BR": "Portuguese",
+    "es": "Spanish"
+  },
+  "common": {
+    "seeAll": "See all",
+    "tryAgain": "Try again",
+    "loadMore": "Load more",
+    "viewDetails": "View details",
+    "all": "All",
+    "ratings": "{count} rating | {count} ratings",
+    "reviews": "{count} review | {count} reviews",
+    "loading": "Loading…",
+    "showMore": "Show more",
+    "signIn": "Sign in",
+    "clear": "Clear",
+    "continue": "Continue",
+    "copied": "Link copied",
+    "copyFailed": "Couldn't copy"
+  },
+  "explore": {
+    "heroTitle": "Explore. Discover. Belong.",
+    "filterByType": "Filter by type",
+    "moodEyebrow": "Discover by mood",
+    "moodTitle": "What are you in the mood for?",
+    "sayEyebrow": "What the community is saying",
+    "sayTitle": "Real people. Real perspectives.",
+    "sayClosingA": "Different people.",
+    "sayClosingB": "Same stories.",
+    "sayClosingC": "That's the magic.",
+    "scrollBack": "Scroll back",
+    "scrollForward": "Scroll forward",
+    "empty": "Nothing here yet.",
+    "failed": "We couldn't load Explore.",
+    "heroLead": "Find",
+    "heroLeadRest": "something",
+    "heroTail": "worth",
+    "heroAccent": "getting lost in.",
+    "heroSub": "Explore movies, shows, games and books through the people who love them.",
+    "trendingSub": "The most talked about titles this week.",
+    "moodEmptyBody": "No titles in the catalogue match this mood well enough to recommend. Try another.",
+    "failedBody": "Something went wrong on our end.",
+    "gems": "Hidden gems",
+    "gemsSub": "You might not know these yet."
+  },
+  "dash": {
+    "heroLead": "Great stories",
+    "heroLineA": "You watch. You read. You play. You share.",
+    "heroLineB": "And you're not alone.",
+    "activity": "Your activity",
+    "viewAll": "View all",
+    "friendsWatching": "Friends are watching",
+    "viewMoreFriends": "View more friends",
+    "popularNow": "Popular right now",
+    "trendingReviews": "Trending reviews",
+    "trendingSub": "What the community is talking about this week.",
+    "filterReviews": "Filter reviews by type",
+    "main": "Main",
+    "discoverByType": "Discover by type"
+  },
+  "discover": {
+    "trendingOfType": "Trending {type}",
+    "newOfType": "New {type}",
+    "moreOfType": "More {type}",
+    "popularOfType": "Popular {type}",
+    "topOfType": "Highest rated {type}",
+    "friendsWatching": "Friends are watching",
+    "forYou": "More in genres you rate highly",
+    "highestRated": "Highest rated on {brand}",
+    "friendsRated": "Friends recently rated",
+    "recommended": "Because of what you and your friends rate",
+    "reasonFriend": "{name} rated this highly",
+    "reasonTwoFriends": "{first} and {second} rated this highly",
+    "reasonFriendsMore": "{name} and {count} other friends rated this highly",
+    "reasonFriendCount": "{count} friends rated this highly",
+    "reasonTaste": "{count} people who share your taste rated this highly"
+  },
+  "mood": {
+    "stays-with-you": "Something that stays with you",
+    "stays-with-you_tags": "Emotional · Meaningful · Lasting",
+    "disappear-into": "A world to disappear into",
+    "disappear-into_tags": "Immersive · Expansive · Unforgettable",
+    "make-me-think": "Something that makes me think",
+    "make-me-think_tags": "Clever · Layered · Provoking",
+    "good-cry": "I need a good cry",
+    "good-cry_tags": "Tender · Honest · Devastating",
+    "one-more-episode": "Just one more episode",
+    "one-more-episode_tags": "Addictive · Twisty · Bingeable",
+    "something-weird": "Something a bit strange",
+    "something-weird_tags": "Odd · Bold · Unlike anything"
+  },
+  "search": {
+    "browseTitle": "Browse the catalogue",
+    "browseSub": "Nothing typed yet. Here is what people are rating.",
+    "peopleTitle": "Find people",
+    "peopleBody": "Type a name or username to find members here.",
+    "emptyTitle": "Find movies, series, books and games.",
+    "emptyBody": "Search the catalogue to rate something, add it to a list, or see what your friends thought."
+  },
+  "credits": {
+    "heading": "Cast & crew"
+  },
+  "person": {
+    "failed": "We couldn't load this person.",
+    "failedBody": "Try again in a moment.",
+    "credits": "{count} title | {count} titles",
+    "workTitle": "Their work",
+    "workSub": "Everything {name} is credited on here, newest first.",
+    "noWork": "Nothing credited yet.",
+    "noWorkBody": "We have not imported credits for this person yet."
+  },
+  "media": {
+    "releasesOn": "Not out yet — releases {date}",
+    "notReleased": "Not released yet",
+    "unreleasedHint": "You can add it to your list now and rate it once it is out."
+  },
+  "recommend": {
+    "because": "Because you liked {title}",
+    "becauseSub": "Same people, same ground.",
+    "genres": "Also {genres}",
+    "similar": "Similar to what you liked",
+    "role": {
+      "director": "Directed by {name}",
+      "creator": "Created by {name}",
+      "writer": "Written by {name}",
+      "cast": "With {name}",
+      "author": "By {name}",
+      "developer": "From {name}"
+    }
+  },
+  "score": {
+    "onRena": "{count} rating on RENA | {count} ratings on RENA",
+    "fromSource": "{source} · {count} votes",
+    "fromSourceBare": "From {source}",
+    "unrated": "Not rated yet"
+  },
+  "auth": {
+    "signOut": "Sign out",
+    "signOutFailed": "We couldn't sign you out. Check your connection and try again."
+  },
+  "badges": {
+    "first-rating": {
+      "name": "Officially Opinionated",
+      "description": "Rate your first title."
+    },
+    "ten-ratings": {
+      "name": "Avid Rater",
+      "description": "Rate 10 titles."
+    },
+    "fifty-ratings": {
+      "name": "Relentless Rater",
+      "description": "Rate 50 titles."
+    },
+    "hundred-ratings": {
+      "name": "Self-Appointed Authority",
+      "description": "Rate 100 titles."
+    },
+    "first-review": {
+      "name": "Has Thoughts",
+      "description": "Write your first review."
+    },
+    "ten-reviews": {
+      "name": "Unsolicited Reviewer",
+      "description": "Write 10 reviews."
+    },
+    "fifty-reviews": {
+      "name": "Nobody Asked",
+      "description": "Write 50 reviews."
+    },
+    "first-movie": {
+      "name": "Casual Viewer",
+      "description": "Rate your first movie."
+    },
+    "first-series": {
+      "name": "Pilot Survivor",
+      "description": "Rate your first series."
+    },
+    "first-book": {
+      "name": "Reader, Allegedly",
+      "description": "Rate your first book."
+    },
+    "first-game": {
+      "name": "Pressed Start",
+      "description": "Rate your first game."
+    },
+    "movies-25": {
+      "name": "Seen Everything",
+      "description": "Rate 25 movies."
+    },
+    "series-25": {
+      "name": "Chronically Mid-Season",
+      "description": "Rate 25 series."
+    },
+    "books-25": {
+      "name": "Suspiciously Well-Read",
+      "description": "Rate 25 books."
+    },
+    "games-25": {
+      "name": "Backlog in Denial",
+      "description": "Rate 25 games."
+    },
+    "first-friend": {
+      "name": "Made a Friend",
+      "description": "Add your first friend."
+    },
+    "social-butterfly": {
+      "name": "Socially Functional",
+      "description": "Make 10 friends."
+    },
+    "fifty-friends": {
+      "name": "Knows Everyone",
+      "description": "Make 50 friends."
+    },
+    "hundred-friends": {
+      "name": "Local Celebrity",
+      "description": "Make 100 friends."
+    },
+    "discussion-starter": {
+      "name": "Started Something",
+      "description": "Start your first discussion."
+    },
+    "ten-discussions": {
+      "name": "Serial Instigator",
+      "description": "Start 10 discussions."
+    },
+    "ten-comments": {
+      "name": "Chronic Replier",
+      "description": "Leave 10 comments."
+    },
+    "fifty-comments": {
+      "name": "Last Word Enjoyer",
+      "description": "Leave 50 comments."
+    },
+    "first-list": {
+      "name": "Has a System",
+      "description": "Create your first list."
+    },
+    "five-lists": {
+      "name": "Compulsive Organiser",
+      "description": "Create 5 lists."
+    }
+  },
+  "friends": {
+    "title": "Friends",
+    "tabRatings": "Ratings",
+    "tabFriends": "Friends",
+    "tabRequests": "Requests",
+    "tabSent": "Sent",
+    "signInTitle": "Sign in to see your friends.",
+    "signInBody": "Follow people whose taste you trust and their ratings show up in your feed.",
+    "loadFailed": "We couldn't load your friends.",
+    "noFriendsYet": "No friends yet, so no ratings to show.",
+    "noFriendsYetBody": "Add a few people and this becomes a running feed of what they are scoring.",
+    "ratingsFailed": "We couldn't load what your friends have been rating.",
+    "noRatingsYet": "Your friends haven't rated anything yet.",
+    "noRatingsYetBody": "As soon as one of them scores something, it shows up here.",
+    "ratingsEnd": "That's everything your friends have rated.",
+    "searchPlaceholder": "Search friends...",
+    "searchLabel": "Search friends",
+    "noneTitle": "Add friends to see what they're watching and reading.",
+    "noneBody": "Search for someone by name, or open a profile and send a request.",
+    "noMatches": "No friends matching \"{term}\".",
+    "noRequests": "No pending requests.",
+    "noRequestsBody": "When someone asks to be your friend, it shows up here.",
+    "noSent": "No requests waiting on a reply.",
+    "findPeople": "Find people",
+    "accept": "Accept",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "sentAgo": "sent {when}",
+    "tryAgain": "Try again",
+    "signIn": "Sign in",
+    "showMore": "Show more"
+  },
+  "messages": {
+    "title": "Messages",
+    "privacyNote": "Private between the two of you. Stored encrypted, and only readable by people in the conversation.",
+    "signInTitle": "Sign in to see your messages.",
+    "signInBody": "Conversations are between friends, so you will need an account first.",
+    "loadFailed": "We couldn't load your messages.",
+    "noneTitle": "No conversations yet.",
+    "noneBody": "Open a friend's profile and press Message to start one.",
+    "yourFriends": "Your friends",
+    "noMessagesYet": "No messages yet",
+    "you": "You:",
+    "unreadLabel": "{count} unread",
+    "loadingEarlier": "Loading earlier messages…",
+    "threadStart": "This is the beginning of your conversation.",
+    "threadEmpty": "No messages yet. Say something.",
+    "openFailed": "We couldn't open this conversation.",
+    "openFailedBody": "It may have been removed, or you may no longer have access to it.",
+    "backToMessages": "Back to messages",
+    "hideMessage": "Hide this message",
+    "hideForMe": "Hide for me",
+    "composePlaceholder": "Write a message…",
+    "composeLabel": "Write a message",
+    "send": "Send",
+    "sendFailed": "Could not send. Try again.",
+    "closed": "You can only message people you are friends with. You can still read this conversation.",
+    "tryAgain": "Try again",
+    "signIn": "Sign in"
+  },
+  "profile": {
+    "share": "Share profile",
+    "shareShort": "Share",
+    "copied": "Link copied",
+    "shareFailed": "Could not copy the link",
+    "shareText": "{name} on RENA",
+    "badges": "Badges",
+    "signOut": "Sign out",
+    "message": "Message",
+    "addFriend": "Add friend",
+    "friends": "Friends",
+    "cancelRequest": "Cancel request",
+    "acceptRequest": "Accept request",
+    "notFound": "We couldn't find that profile.",
+    "notFoundBody": "The username may have changed, or the account no longer exists.",
+    "searchPeople": "Search for people",
+    "level": "Level {n}",
+    "ratings": "Ratings",
+    "reviews": "Reviews",
+    "friendCount": "Friends",
+    "metaRatings": "{count} ratings",
+    "metaReviews": "{count} reviews"
+  },
+  "lists": {
+    "metaItems": "{count} items"
+  },
+  "community": {
+    "title": "Community",
+    "subtitle": "Every title is a community. Join the ones you care about.",
+    "tabBrowse": "Browse",
+    "tabActive": "Active",
+    "tabJoined": "Joined",
+    "join": "Join",
+    "joined": "Joined",
+    "threadCount": "{count} discussion | {count} discussions",
+    "memberCount": "{formatted} member | {formatted} members",
+    "activeAgo": "Active {ago}",
+    "emptyJoined": "You have not joined any communities yet.",
+    "emptyActive": "Nothing is happening yet.",
+    "emptyHint": "Open any title and start a discussion — that is all it takes to make one.",
+    "emptyAction": "Find something to talk about",
+    "signInJoined": "Sign in to see the communities you've joined.",
+    "loadFailed": "We couldn't load communities.",
+    "tabFriends": "Friends",
+    "searchPlaceholder": "Search communities…",
+    "friendsHere": "{name} is here | {name} and 1 other is here | {name} and {others} others are here",
+    "emptyFriends": "None of your friends have joined a community yet.",
+    "signInFriends": "Sign in to see where your friends are.",
+    "emptySearch": "Nothing matches “{query}”.",
+    "emptySearchHint": "Try a different spelling, or the original title."
+  },
+  "onboarding": {
+    "title": "Tell us what you like",
+    "kindsTitle": "What are you into?",
+    "kindsSub": "Pick everything that applies. You can change this later.",
+    "moodsTitle": "What are you usually after?",
+    "moodsSub": "This decides what we put in front of you, not what you get.",
+    "rateTitle": "Rate a few you know",
+    "rateSub": "Even five is enough to make your recommendations yours.",
+    "skip": "Skip for now",
+    "done": "Done — let's go",
+    "doneCount": "Rated {count} of {target}",
+    "noTitles": "Nothing to show for that combination.",
+    "noTitlesBody": "Go back and pick a few more, or skip ahead — you can rate anything later.",
+    "step": {
+      "kinds": "Step 1 of 3",
+      "moods": "Step 2 of 3",
+      "rate": "Step 3 of 3"
+    }
+  },
+  "entry": {
+    "shareTitle": "{name} rated {title} {score}",
+    "shareTitleNoScore": "{name} on {title}",
+    "logged": "Logged {ago}",
+    "share": "Share this rating",
+    "openTitle": "Open the title",
+    "missing": "There's nothing here.",
+    "missingBody": "This rating may have been removed, or the link may be wrong.",
+    "backHome": "Go home"
+  }
+}

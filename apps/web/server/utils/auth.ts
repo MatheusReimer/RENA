@@ -1,3 +1,4 @@
+import { createMailer } from '@revy/core'
 import { schema } from '@revy/db'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
@@ -12,7 +13,13 @@ import { useDatabase } from './db'
  * Auth owns the `auth_*` tables; `users` is ours and linked by `auth_user_id`.
  */
 
-function buildAuth(secret: string, baseURL: string) {
+/** How long a reset or confirmation link stays valid. */
+const LINK_TTL_SECONDS = 60 * 60
+
+/** Line break for the plain-text bodies below. */
+const NEWLINE = '\n'
+
+function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof createMailer>) {
   return betterAuth({
     secret,
     ...(baseURL ? { baseURL } : {}),
@@ -31,10 +38,76 @@ function buildAuth(secret: string, baseURL: string) {
 
     emailAndPassword: {
       enabled: true,
-      // Email delivery is not wired up for the MVP; requiring verification
-      // would lock every new account out. Turn this on with the mail provider.
+      /*
+       * Verification is sent but does not gate sign-in.
+       *
+       * Blocking the first session until somebody has been to their inbox is
+       * the single largest drop-off in any sign-up flow, and the risk it
+       * mitigates -- someone registering an address they do not own -- is
+       * small on a product where the account owns nothing but opinions. The
+       * address is confirmed, the flag is stored, and gating specific actions
+       * on it later is one condition rather than a migration.
+       */
       requireEmailVerification: false,
       minPasswordLength: 8,
+      resetPasswordTokenExpiresIn: LINK_TTL_SECONDS,
+
+      /*
+       * Reset mail.
+       *
+       * Better Auth only calls this when the address exists, and deliberately
+       * returns the same response either way -- so the endpoint cannot be used
+       * to discover who has an account (OWASP A07). The client copy has to
+       * keep that promise, which is why the confirmation screen says "if that
+       * address has an account" rather than "sent".
+       */
+      async sendResetPassword({ user, url }) {
+        await mailer.send({
+          to: user.email,
+          subject: 'Reset your RENA password',
+          text: [
+            'Somebody asked to reset the password on your RENA account.',
+            '',
+            url,
+            '',
+            'The link works once and expires in an hour.',
+            'If this was not you, nothing has changed and you can ignore this.',
+          ].join(NEWLINE),
+        })
+      },
+
+      /*
+       * Every existing session is dropped when a password changes.
+       *
+       * The common reason somebody resets a password is that they think
+       * another person has it. Leaving that person signed in on their own
+       * device would make the reset theatre.
+       */
+      revokeSessionsOnPasswordReset: true,
+    },
+
+    emailVerification: {
+      sendOnSignUp: true,
+      // A fresh link whenever somebody follows an expired one, rather than a
+      // dead end that tells them to find the newer email they do not have.
+      autoSignInAfterVerification: true,
+      expiresIn: LINK_TTL_SECONDS,
+
+      async sendVerificationEmail({ user, url }) {
+        await mailer.send({
+          to: user.email,
+          subject: 'Confirm your email for RENA',
+          text: [
+            `Welcome to RENA, ${user.name || 'there'}.`,
+            '',
+            'Confirm this address so we can reach you about your account:',
+            '',
+            url,
+            '',
+            'The link expires in an hour. If you did not sign up, ignore this.',
+          ].join(NEWLINE),
+        })
+      },
     },
 
     session: {
@@ -76,7 +149,13 @@ export function useAuth(): AuthInstance {
     })
   }
 
-  instance = buildAuth(config.authSecret, config.public.appUrl)
+  const mailer = createMailer({
+    resendApiKey: config.mailResendApiKey,
+    from: config.mailFrom,
+    isProduction: process.env.NODE_ENV === 'production',
+  })
+
+  instance = buildAuth(config.authSecret, config.public.appUrl, mailer)
   return instance
 }
 

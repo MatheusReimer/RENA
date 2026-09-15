@@ -1,67 +1,88 @@
 <script setup lang="ts">
 import { BRAND } from '@revy/shared/constants'
-import type { Activity, HomeSummary, Media, MediaStatus } from '@revy/shared/types'
+import type { HomeSummary, Media, MediaStatus, MediaType } from '@revy/shared/types'
 
 /**
- * Home feed (SPEC 18).
+ * Home: two screens behind one route.
  *
- * The primary social surface. Two scopes, matching the mockup: For You mixes
- * the viewer's own activity in, Following is friends only (SPEC 13).
+ * A visitor gets the landing page -- an argument for why this place is worth
+ * joining. A member gets their feed, immediately, because they have already
+ * been argued into it and the feed is what they came back for.
+ *
+ * These used to be one screen with a `compact` flag on the opener, and the
+ * flag was never going to hold: every section either had to work in two very
+ * different states or be hidden in one of them, which is two designs wearing
+ * one component. Splitting them means each is allowed to be finished.
+ *
+ * The layout is chosen here rather than in `definePageMeta`, which is static.
+ * The session is resolved in `app.vue`, above the layout, so `isSignedIn` is
+ * already known by the time this renders -- on the server as well as the
+ * client, which is what keeps the two from disagreeing.
  */
+definePageMeta({ layout: false })
+
 const auth = useAuthStore()
 const api = useApi()
+const { absolute } = useShareLink()
 
-const scope = ref<'for-you' | 'following'>('for-you')
+/* ------------------------------------------------------------------ *
+ * The landing screen
+ * ------------------------------------------------------------------ */
 
-const tabs = [
-  { value: 'for-you', label: 'For You' },
-  { value: 'following', label: 'Following' },
-] as const
-
-const items = ref<Activity[]>([])
-const nextCursor = ref<string | null>(null)
-const loadingMore = ref(false)
-
-const { status, error, refresh } = await useAsyncData(
-  'feed',
-  async () => {
-    if (!auth.isSignedIn) return { items: [], nextCursor: null }
-    const result = await api.feed.get({ scope: scope.value })
-    items.value = result.items
-    nextCursor.value = result.nextCursor
-    return result
-  },
-  // Switching tabs refetches rather than filtering client-side, because the
-  // two scopes are genuinely different queries.
-  { watch: [scope] },
-)
-
-async function loadMore() {
-  if (!nextCursor.value || loadingMore.value) return
-  loadingMore.value = true
-  try {
-    const result = await api.feed.get({ scope: scope.value, cursor: nextCursor.value })
-    items.value.push(...result.items)
-    nextCursor.value = result.nextCursor
-  } finally {
-    loadingMore.value = false
-  }
+const EMPTY_HOME: HomeSummary = {
+  trending: [],
+  members: [],
+  reviews: [],
+  titleCount: 0,
+  memberCount: 0,
+  reviewCount: 0,
+  conversationCount: 0,
 }
 
 /**
- * "Continue watching / reading", beside the feed on desktop (SPEC 22).
+ * Fetched for everyone, including members who will never see it.
  *
- * Fetched separately from the feed so a slow catalogue query cannot hold up
- * the thing people actually came for.
+ * `useAsyncData` is not conditional -- it has to be called the same way on
+ * every render or the keys drift between server and client. The response is a
+ * few kilobytes and identical for every visitor, so the cost of a member
+ * fetching it is a rounding error against the complexity of not doing so.
+ */
+const { data: homeData } = await useAsyncData('home-summary', () => api.discover.home(), {
+  default: () => EMPTY_HOME,
+})
+
+const home = computed<HomeSummary>(() => homeData.value ?? EMPTY_HOME)
+
+/* ------------------------------------------------------------------ *
+ * The member dashboard (SPEC 18, 22)
+ * ------------------------------------------------------------------ */
+
+/** The trending-reviews filter. Only that row depends on it. */
+const reviewFilter = ref<MediaType | null>(null)
+
+const { data: dash, status: dashStatus } = await useAsyncData(
+  'dashboard',
+  () => (auth.isSignedIn ? api.auth.dashboard(reviewFilter.value ?? undefined) : Promise.resolve(null)),
+  // Refetched rather than filtered client-side: the row shows the four
+  // most-liked of a *type*, which is a different query, not a subset.
+  { watch: [reviewFilter] },
+)
+
+/**
+ * "Continue exploring", beside the dashboard (SPEC 22).
+ *
+ * Its own endpoint rather than part of the dashboard payload: it is the one
+ * piece here that changes as you use the product, so it can be refetched
+ * alone when you finish something.
  */
 const { data: currentlyData } = await useAsyncData(
   'home-currently',
-  async () => {
-    if (!auth.isSignedIn) {
-      return { currently: [] as Array<{ status: MediaStatus; media: Media; updatedAt: string }> }
-    }
-    return api.auth.currently()
-  },
+  () =>
+    auth.isSignedIn
+      ? api.auth.currently()
+      : Promise.resolve({
+          currently: [] as Array<{ status: MediaStatus; media: Media; updatedAt: string }>,
+        }),
   {
     default: () => ({
       currently: [] as Array<{ status: MediaStatus; media: Media; updatedAt: string }>,
@@ -69,234 +90,147 @@ const { data: currentlyData } = await useAsyncData(
   },
 )
 
-const currently = computed(() => currentlyData.value?.currently ?? [])
+const continueItems = computed(() =>
+  (currentlyData.value?.currently ?? []).map((entry) => ({
+    id: entry.media.id,
+    title: entry.media.title,
+    mediaType: entry.media.mediaType,
+    coverImageUrl: entry.media.coverImageUrl,
+  })),
+)
 
-/**
- * Everything the opener needs.
+/*
+ * The front door (SPEC 22).
  *
- * Fetched alongside the feed rather than after it: this is the first thing
- * painted, and waiting on a feed query to start loading the opener would put
- * it behind a request that has nothing to do with it.
+ * The one page whose card is seen by people who have never heard of the
+ * product, so it carries the positioning line rather than a screen name. No
+ * title for a visitor: `titleTemplate` in `app.vue` renders the brand alone,
+ * which is what a landing page should say.
  */
-const EMPTY_HOME: HomeSummary = {
-  tiles: [],
-  members: [],
-  titleCount: 0,
-  memberCount: 0,
-  reviewCount: 0,
-  conversationCount: 0,
-}
-
-const { data: homeData } = await useAsyncData('home-summary', () => api.discover.home(), {
-  default: () => EMPTY_HOME,
+useHead({ title: auth.isSignedIn ? 'Home' : null })
+useSeoMeta({
+  description: BRAND.description,
+  ogTitle: `${BRAND.name} — ${BRAND.tagline}`,
+  ogDescription: BRAND.description,
+  ogType: 'website',
+  ogUrl: () => absolute('/'),
+  twitterCard: 'summary_large_image',
 })
-
-const home = computed<HomeSummary>(() => homeData.value ?? EMPTY_HOME)
-
-useHead({ title: 'Home' })
 </script>
 
 <template>
-  <div>
-    <!--
-      One opener in two states.
-
-      The wall and the statement are the same on both sides of the sign-in
-      line; what changes is that a visitor gets the pitch and the join button
-      and a member does not, because a member has already been argued into it
-      and what they came for is underneath. `compact` also shortens it, so the
-      feed is not a full screen away for someone who reads it daily.
-
-      It sits outside the page container: the wall is artwork and runs the
-      full width of the window, while everything below is a reading column.
-    -->
-    <HomeCollage
-      v-if="home.tiles.length"
-      class="opener"
-      :tiles="home.tiles"
-      :members="home.members"
-      :member-count="home.memberCount"
-      :review-count="home.reviewCount"
-      :compact="auth.isSignedIn"
-    />
-
-    <!-- Before the catalogue is imported there is no wall to draw, so the
-         typographic opener stands in rather than a black band. -->
-    <UiPageHero v-else class="opener" lead="Stories" tail="connect us." :subtitle="BRAND.tagline" />
-
-    <div class="page">
-    <div class="columns" :class="{ 'columns--with-side': currently.length }">
-      <div class="columns__main">
-        <div class="page__tabs">
-          <UiTabNav v-model="scope" :tabs="tabs" />
-        </div>
-
-    <!-- Signed out: the feed is meaningless without a graph, so say what the
-         product is rather than showing an empty list. -->
-    <UiEmptyState
-      v-if="!auth.isSignedIn && auth.initialised"
-      title="See what your friends are watching, reading and loving."
-      description="Sign in to follow friends, rate what you finish, and keep everything you want to watch in one place."
-    >
-      <template #action>
-        <div class="page__cta">
-          <UiAppButton variant="primary" @click="navigateTo('/signup')">
-            Create account
-          </UiAppButton>
-          <UiAppButton variant="ghost" @click="navigateTo('/signin')">Sign in</UiAppButton>
-        </div>
-      </template>
-    </UiEmptyState>
-
-    <!-- Loading (SPEC 36) -->
-    <div v-else-if="status === 'pending' && items.length === 0" class="feed">
-      <FeedActivitySkeleton v-for="i in 3" :key="i" />
-    </div>
-
-    <!-- Error with retry (SPEC 36) -->
-    <UiEmptyState
-      v-else-if="error"
-      title="We couldn't load your feed."
-      description="Something went wrong on our end. Give it another try."
-    >
-      <template #action>
-        <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
-      </template>
-    </UiEmptyState>
-
-    <!-- Empty (SPEC 37) -->
-    <UiEmptyState
-      v-else-if="items.length === 0"
-      :title="
-        scope === 'following'
-          ? 'Your friends have not posted yet.'
-          : 'Nothing here yet.'
-      "
-      description="Add friends to see what they're watching and reading, or rate something to start your own history."
-    >
-      <template #action>
-        <UiAppButton variant="primary" @click="navigateTo('/search')">
-          Find something to rate
-        </UiAppButton>
-      </template>
-    </UiEmptyState>
-
-    <div v-else class="feed">
-      <FeedActivityCard
-        v-for="(activity, index) in items"
-        :key="activity.id"
-        v-reveal="index"
-        :activity="activity"
+  <NuxtLayout :name="auth.isSignedIn ? 'default' : 'landing'">
+    <!-- Signed out: the landing screen. -->
+    <template v-if="!auth.isSignedIn">
+      <HomeHero :members="home.members" :member-count="home.memberCount" />
+      <HomeExploreCards />
+      <UiPosterCarousel
+        v-if="home.trending.length"
+        :items="home.trending"
+        :eyebrow="$t('landing.trendingEyebrow', { brand: BRAND.name })"
+        :title="$t('landing.trendingTitle')"
+        see-all-to="/discover"
       />
+      <HomeCommunityBand :reviews="home.reviews" />
+      <HomeClosingBand
+        :title-count="home.titleCount"
+        :member-count="home.memberCount"
+        :review-count="home.reviewCount"
+        :conversation-count="home.conversationCount"
+      />
+    </template>
 
-      <div v-if="nextCursor" class="feed__more">
-        <UiAppButton variant="secondary" :loading="loadingMore" @click="loadMore">
-          Load more
-        </UiAppButton>
-      </div>
+    <!-- Signed in: the dashboard. -->
+    <template v-else>
+      <DashboardHero :name="auth.user?.displayName.split(' ')[0] ?? 'there'" />
+
+      <div class="board">
+        <div class="board__main">
+          <DashboardPosterRow
+            v-if="continueItems.length"
+            title="Continue exploring"
+            subtitle="Pick up where you left off."
+            see-all-to="/lists"
+            :items="continueItems"
+          />
+
+          <DashboardReviewRow
+            v-model="reviewFilter"
+            :reviews="dash?.reviews ?? []"
+            :loading="dashStatus === 'pending'"
+          />
+
+          <!--
+            One row per thing they liked, each named after it.
+
+            Rendered in a loop rather than once, because a single row on the
+            most recent favourite says the same thing on every visit -- and
+            the server now drops any row whose anchor has nothing genuinely
+            connected to it, so an empty list here means "nothing to say"
+            rather than "not implemented".
+          -->
+          <DashboardPosterRow
+            v-for="row in dash?.recommendations ?? []"
+            :key="row.anchor.id"
+            :title="$t('recommend.because', { title: row.anchor.title })"
+            :subtitle="$t('recommend.becauseSub')"
+            :anchor="row.anchor"
+            see-all-to="/discover"
+            :items="row.items"
+          />
         </div>
+
+        <DashboardAside
+          v-if="dash"
+          class="board__side"
+          :activity="dash.activity"
+          :friends="dash.friends"
+          :popular="dash.popular"
+        />
       </div>
 
-      <aside v-if="currently.length" class="columns__side">
-        <FeedContinuePanel :entries="currently" />
-      </aside>
-    </div>
-    </div>
-  </div>
+      <HomeCommunityBand :reviews="home.reviews" />
+    </template>
+  </NuxtLayout>
 </template>
 
 <style scoped>
-.page {
-  max-width: var(--page-max);
-  margin-inline: auto;
-}
-
 /*
- * The opener runs under the fixed top bar rather than starting below it.
+ * The main column and the margin.
  *
- * `.content` pads itself down to clear the bar so ordinary screens do not
- * begin underneath it; this pulls that padding back for the one element that
- * should. The bar is transparent until you scroll, so the artwork is the first
- * thing on the screen rather than a strip of chrome above it.
+ * One column until 80rem rather than at the usual 64rem: the side panels are
+ * summaries, and squeezed next to a four-card review grid they stop being
+ * glanceable. Below that width they fall underneath, which is the right
+ * reading order anyway -- what you came for first, context second.
  */
-@media (min-width: 60rem) {
-  .opener {
-    margin-top: calc(var(--topbar-height) * -1);
-  }
-}
-
-/*
- * One column on phones, two from the tablet breakpoint. The side panel comes
- * second in the DOM so the feed is what a screen reader and a narrow screen
- * reach first -- it is the reason the page exists.
- */
-.columns {
+.board {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--space-6);
+  padding-bottom: var(--space-12);
 }
 
-.columns__main {
-  min-width: 0;
-}
-
-@media (min-width: 60rem) {
-  /*
-   * One column by default, two only when there is actually a panel.
-   *
-   * The second track was declared unconditionally, so a viewer with nothing
-   * in progress -- which includes everyone signed out -- got an empty 16rem
-   * reservation and a feed sitting off-centre for no reason anyone could see.
-   */
-  .columns {
-    grid-template-columns: minmax(0, var(--content-max));
-    justify-content: center;
+@media (min-width: 80rem) {
+  .board {
+    grid-template-columns: minmax(0, 1fr) 20rem;
     align-items: start;
-    padding-inline: var(--space-4);
+    gap: var(--space-8);
   }
 
-  .columns--with-side {
-    grid-template-columns: minmax(0, var(--content-max)) 16rem;
-  }
-
-  .columns__side {
+  .board__side {
     position: sticky;
-    top: var(--space-6);
+    top: calc(var(--topbar-height) + var(--space-6));
     padding-top: var(--space-10);
+    padding-right: var(--space-8);
   }
 }
 
-.page__tabs {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
-  padding-inline: var(--space-4);
-  background: var(--surface-base);
+.board__side {
+  padding-inline: var(--space-6);
 }
 
-.page__cta {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.feed {
-  display: flex;
-  flex-direction: column;
-}
-
-.feed__more {
-  display: grid;
-  place-items: center;
-  padding: var(--space-6);
-}
-
-@media (min-width: 60rem) {
-  .page {
-    padding-top: var(--space-6);
-  }
-
-  .page__tabs {
-    top: 0;
-    padding-top: var(--space-2);
+@media (min-width: 80rem) {
+  .board__side {
+    padding-left: 0;
   }
 }
 </style>

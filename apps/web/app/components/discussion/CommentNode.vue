@@ -45,6 +45,7 @@ const canReply = computed(() => props.comment.depth < COMMENT_MAX_DEPTH)
         <NuxtLink :to="`/u/${comment.user.username}`" class="comment__author">
           <UiUserAvatar :user="comment.user" size="xs" />
           <span class="comment__name">{{ comment.user.displayName }}</span>
+          <UiUserTitle :slug="comment.user.titleSlug" />
         </NuxtLink>
         <time class="comment__time" :datetime="comment.createdAt">
           {{ relativeTime(comment.createdAt) }}

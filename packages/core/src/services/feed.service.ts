@@ -1,6 +1,6 @@
 import { FEED_PAGE_SIZE_DEFAULT } from '@revy/shared/constants'
 import type { FeedQueryInput } from '@revy/shared/schemas'
-import type { Activity, Paginated } from '@revy/shared/types'
+import type { Activity, ActivityType, Paginated } from '@revy/shared/types'
 import { excerpt, toScore } from '@revy/shared/utils'
 import { requireViewer, type ServiceContext } from '../context'
 import { toMedia, toUserSummary } from '../mappers'
@@ -27,7 +27,7 @@ export const feedService = {
 
     if (userIds.length === 0) return { items: [], nextCursor: null }
 
-    return loadActivities(ctx, userIds, limit, input.cursor ?? null)
+    return loadActivities(ctx, userIds, limit, input.cursor ?? null, input.type)
   },
 
   /** One user's activity, for their profile (SPEC 22). */
@@ -56,6 +56,7 @@ async function loadActivities(
   userIds: string[],
   limit: number,
   cursor: string | null,
+  type?: ActivityType,
 ): Promise<Paginated<Activity>> {
   // One extra row tells us whether another page exists without a COUNT.
   const rows = await activityRepository.listForUsers(
@@ -63,6 +64,7 @@ async function loadActivities(
     userIds,
     limit + 1,
     parseCursor(cursor),
+    type,
   )
 
   const hasMore = rows.length > limit

@@ -12,6 +12,16 @@ export const LIMITS = {
   listName: { min: 1, max: 100 },
   listDescription: { max: 500 },
   searchQuery: { min: 1, max: 100 },
+  /*
+   * A direct message (SPEC 12).
+   *
+   * Shorter than a comment on purpose: a chat message that runs to three
+   * thousand characters is a review posted in the wrong place, and the cap is
+   * the cheapest way to say so. It also bounds the ciphertext a single row can
+   * hold, which matters more here than elsewhere because these rows are
+   * encrypted and therefore not compressible by the column store.
+   */
+  messageContent: { min: 1, max: 2000 },
 } as const
 
 /** Maximum depth for nested discussion replies (SPEC 14). */
@@ -25,6 +35,6 @@ export const RESERVED_USERNAMES: readonly string[] = [
   'admin', 'administrator', 'api', 'auth', 'settings', 'support', 'help',
   'about', 'terms', 'privacy', 'login', 'logout', 'signup', 'register',
   'search', 'discover', 'feed', 'home', 'profile', 'notifications',
-  'lists', 'media', 'movie', 'series', 'book', 'user', 'users',
+  'lists', 'media', 'movie', 'series', 'book', 'user', 'users', 'messages',
   'revy', 'vybe', 'staff', 'team', 'official', 'root', 'system', 'me', 'null',
 ]

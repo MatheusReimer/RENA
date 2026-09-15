@@ -3,6 +3,7 @@ import {
   type MediaProvider,
   type ProviderMedia,
   type ProviderSearchParams,
+  type ProviderRating,
   type ProviderSearchResult,
 } from './types'
 
@@ -16,6 +17,25 @@ import {
  */
 
 const API_BASE = 'https://openlibrary.org'
+
+/**
+ * Open Library scores books out of five; everything else here is out of ten.
+ *
+ * Normalised at capture so no screen has to know which provider a number came
+ * from in order to draw it -- the same reason TMDB's ten-point scale is kept
+ * as-is and RAWG's Metacritic percentage is divided by ten.
+ */
+const OPEN_LIBRARY_SCALE = 2
+
+interface OpenLibraryRatings {
+  summary?: { average?: number; count?: number }
+}
+
+interface OpenLibraryWork {
+  /** A plain string on older records, a typed object on newer ones. */
+  description?: string | { type?: string; value?: string }
+}
+
 const COVER_BASE = 'https://covers.openlibrary.org/b/id'
 
 interface OpenLibraryDoc {
@@ -122,6 +142,75 @@ export function createOpenLibraryProvider(
   return {
     key: 'open-library',
     mediaTypes: ['book'],
+
+    /**
+     * A work's community rating, which the search payload does not carry.
+     *
+     * This is why every book in the catalogue showed no score at all: the
+     * import reads `/search.json`, and ratings live at their own endpoint,
+     * one request per work. Worth the request only for a backfill, never
+     * during a bulk import.
+     */
+    async getRating(externalId): Promise<ProviderRating | null> {
+      let data: OpenLibraryRatings
+      try {
+        data = await request<OpenLibraryRatings>(`/works/${externalId}/ratings.json`, {})
+      } catch (error) {
+        // A work with no ratings at all 404s here rather than returning an
+        // empty summary, which is not a failure -- it is the answer.
+        if (error instanceof ProviderError && error.status === 404) return null
+        throw error
+      }
+
+      const average = data.summary?.average
+      const count = data.summary?.count ?? 0
+
+      // `average` is present but null on works nobody has rated.
+      if (typeof average !== 'number' || average <= 0 || count === 0) return null
+
+      return {
+        source: 'Open Library',
+        score: Math.round(average * OPEN_LIBRARY_SCALE * 10) / 10,
+        votes: count,
+      }
+    },
+
+    /**
+     * A work's blurb, which the search payload also does not carry.
+     *
+     * Open Library stores this two ways and has for years: older records hold
+     * a plain string, newer ones a `{ type, value }` object. Reading only one
+     * shape silently returns nothing for roughly half the catalogue, which is
+     * indistinguishable from a book that genuinely has no description.
+     */
+    async getDescription(externalId): Promise<string | null> {
+      let data: OpenLibraryWork
+      try {
+        data = await request<OpenLibraryWork>(`/works/${externalId}.json`, {})
+      } catch (error) {
+        if (error instanceof ProviderError && error.status === 404) return null
+        throw error
+      }
+
+      const raw =
+        typeof data.description === 'string' ? data.description : data.description?.value
+
+      if (!raw) return null
+
+      /*
+       * Strip the source note these blurbs so often end with.
+       *
+       * A good share of Open Library descriptions close with a line like
+       * "([source][1])" or a bare "----------" rule followed by provenance.
+       * It is meaningful on the work page and noise in a two-line caption.
+       */
+      const cleaned = raw
+        .split(/\n-{3,}|\r?\n\r?\n\(\[/)[0]!
+        .replace(/\[([^\]]+)\]\[\d+\]/g, '$1')
+        .trim()
+
+      return cleaned.length > 0 ? cleaned : null
+    },
 
     async search({ query, limit }: ProviderSearchParams): Promise<ProviderSearchResult[]> {
       const data = await request<OpenLibrarySearchResponse>('/search.json', {

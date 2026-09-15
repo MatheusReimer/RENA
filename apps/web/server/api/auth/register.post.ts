@@ -68,6 +68,7 @@ export default defineApiHandler(async (event) => {
       authUserId,
       username: input.username,
       displayName: input.displayName,
+      language: input.language,
     })
     return { user }
   } catch (error) {

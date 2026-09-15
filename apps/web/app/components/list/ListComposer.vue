@@ -273,7 +273,7 @@ async function submit() {
   padding: var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   transition:
     border-color var(--duration-fast) var(--ease-out),
     background-color var(--duration-fast) var(--ease-out);

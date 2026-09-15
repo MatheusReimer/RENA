@@ -10,6 +10,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from 'drizzle-orm/pg-core'
 import { media } from './media'
 import { users } from './users'
@@ -69,6 +70,19 @@ export const reviews = pgTable(
     ratingId: uuid('rating_id').references(() => ratings.id, { onDelete: 'set null' }),
     /** Stored raw and escaped at render time. Never trusted as HTML (SPEC 39). */
     content: text('content').notNull(),
+    /*
+     * What language this was written in.
+     *
+     * Not a display preference -- a property of the text. Somebody who buys a
+     * book in Sao Paulo and finds forty reviews of it has technically found
+     * company and practically found none if every one of them is in English.
+     * Language is part of presence, which is why it lives on the review rather
+     * than being inferred from whoever happens to be reading it.
+     *
+     * A short BCP-47 tag ('en', 'pt-BR'), defaulted rather than nullable: every
+     * review has a language, and a null here would mean "we forgot to ask".
+     */
+    language: varchar('language', { length: 8 }).notNull().default('en'),
     spoiler: boolean('spoiler').notNull().default(false),
     /** Denormalised counters, maintained transactionally with the writes. */
     likeCount: integer('like_count').notNull().default(0),
@@ -83,6 +97,46 @@ export const reviews = pgTable(
     index('reviews_user_id_idx').on(table.userId),
     index('reviews_media_id_idx').on(table.mediaId),
     index('reviews_media_created_idx').on(table.mediaId, table.createdAt),
+  ],
+)
+
+/**
+ * Machine translations of a review, cached (SPEC 31, 40).
+ *
+ * A separate table rather than a column on `reviews`, and the reason is what
+ * the two things are. The review is what somebody wrote. These are derived
+ * artefacts of it -- produced by a model, never edited by a person, disposable
+ * and rebuildable. Keeping them apart means a translation can be deleted or
+ * regenerated wholesale without touching a row anybody authored, and it keeps
+ * the review table the same size it was for every query that does not want a
+ * translation.
+ *
+ * Filled lazily: a translation is produced the first time somebody who reads
+ * another language opens the review, then kept. Translating every review into
+ * every language on write would spend most of its cost on text nobody asks
+ * for, and this catalogue has more reviews than readers of any one language.
+ */
+export const reviewTranslations = pgTable(
+  'review_translations',
+  {
+    reviewId: uuid('review_id')
+      .notNull()
+      .references(() => reviews.id, { onDelete: 'cascade' }),
+    /** The language this row is *into*. The source is on the review. */
+    language: varchar('language', { length: 8 }).notNull(),
+    content: text('content').notNull(),
+    /**
+     * Which model produced it.
+     *
+     * Recorded so a batch from a model that turned out to translate badly can
+     * be found and dropped without invalidating every translation ever made.
+     */
+    provider: text('provider').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // One translation per review per language; a regeneration replaces it.
+    uniqueIndex('review_translations_pk').on(table.reviewId, table.language),
   ],
 )
 

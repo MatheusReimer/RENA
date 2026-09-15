@@ -2,10 +2,36 @@ packages:
   - 'apps/*'
   - 'packages/*'
 
+# Build scripts are blocked by default in pnpm 10+, which is a supply-chain
+# control: an install-time script runs arbitrary code on every machine that
+# clones this repo, CI included. Every entry below is a decision recorded
+# rather than a prompt dismissed.
 allowBuilds:
-  esbuild: set this to true or false
+  # Needs its postinstall to fetch the platform binary Vite and Nitro compile
+  # with. Without it, nothing builds.
+  esbuild: true
 
-# Build scripts are blocked by default in pnpm 10+; esbuild needs its
-# postinstall to fetch the platform binary that Vite/Nitro compile with.
+  # Not needed. Its only install-time hook is a no-op echo -- the `prepare`
+  # script runs for git installs, not for the published tarball, whose dist/
+  # is already built and is what we import.
+  '@google/genai': false
+
+  # Not needed, and not ours: it arrives underneath @google/genai for a
+  # sentencepiece tokenizer this app never calls.
+  protobufjs: false
+
+# Kept in sync with allowBuilds above; pnpm reads this list.
 onlyBuiltDependencies:
   - esbuild
+
+# Pins the copy of esbuild reached through the deprecated `@esbuild-kit/*`
+# chain that `drizzle-kit` still depends on. Versions at or below 0.24.2 let
+# any website talk to esbuild's dev server and read the response -- a server
+# nothing here runs, but a vulnerable version in the tree is a vulnerable
+# version in the tree.
+#
+# Scoped to that path on purpose: a bare `esbuild` override would pin every
+# copy including Vite's, and `^0.25.0` would drag that one back from 0.28.
+overrides:
+  '@esbuild-kit/core-utils>esbuild': '^0.25.0'
+

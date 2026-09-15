@@ -23,18 +23,30 @@ const TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
 const API_BASE = 'https://api.igdb.com/v4'
 const IMAGE_BASE = 'https://images.igdb.com/igdb/image/upload'
 
+/** Rows per bulk-list page. IGDB permits 500; 50 keeps each request modest. */
+const PAGE_SIZE = 50
+
 /**
- * IGDB `category` values that are standalone games.
+ * IGDB `game_type` values that are standalone games.
  *
  * The field also covers DLC (1), expansions (2), bundles (3), mods (5) and
  * episodes (6). Including them would put "Hades: Soundtrack"-shaped entries in
- * the catalogue, so search and detail both filter to these.
+ * the catalogue, so every query filters to these.
+ *
+ * The field was called `category` until IGDB renamed it, and the rename is
+ * worth a note because of how it failed: the old name does not error. A
+ * `where category = (...)` clause matches nothing and returns `[]`, and
+ * `fields category` is dropped from the response without comment. So the
+ * provider went on working in every visible respect while returning an empty
+ * catalogue -- search, detail, trending and the bulk list all silently. If
+ * this ever returns nothing again, suspect a renamed field before suspecting
+ * the credentials.
  */
 const MAIN_GAME = 0
 const STANDALONE_EXPANSION = 4
 const REMAKE = 8
 const REMASTER = 9
-const GAME_CATEGORIES = [MAIN_GAME, STANDALONE_EXPANSION, REMAKE, REMASTER]
+const GAME_TYPES = [MAIN_GAME, STANDALONE_EXPANSION, REMAKE, REMASTER]
 
 interface IgdbImage {
   image_id?: string
@@ -62,6 +74,9 @@ interface IgdbGame {
   genres?: IgdbNamed[]
   platforms?: IgdbNamed[]
   involved_companies?: IgdbCompany[]
+  /** Critic and player scores combined, 0-100. */
+  total_rating?: number
+  total_rating_count?: number
 }
 
 interface TokenResponse {
@@ -81,6 +96,8 @@ export interface IgdbProviderOptions {
 /** Fields requested on every query, as one Apicalypse clause. */
 const FIELDS = [
   'name',
+  'total_rating',
+  'total_rating_count',
   'summary',
   'first_release_date',
   'cover.image_id',
@@ -191,6 +208,60 @@ export function createIgdbProvider(options: IgdbProviderOptions): MediaProvider 
     return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10)
   }
 
+  /**
+   * An IGDB game as the domain stores it.
+   *
+   * Shared by the detail lookup and the bulk list. The catalogue is built by
+   * one and read by the other, so a field added to only one produces titles
+   * whose metadata depends on how they happened to be discovered.
+   */
+  function toMedia(game: IgdbGame): ProviderMedia {
+    const developers = (game.involved_companies ?? [])
+      .filter((entry) => entry.developer && entry.company?.name)
+      .map((entry) => entry.company!.name!)
+
+    const platforms = (game.platforms ?? [])
+      .map((platform) => platform.name)
+      .filter((name): name is string => typeof name === 'string')
+
+    return {
+      externalId: String(game.id),
+      provider: 'igdb',
+      mediaType: 'game',
+      title: game.name!,
+      originalTitle: null,
+      description: game.summary?.trim() || null,
+      releaseDate: toReleaseDate(game.first_release_date),
+      coverImageUrl: imageUrl(game.cover, 'cover_big'),
+      // Artwork is the closest thing to a backdrop; a screenshot is the
+      // fallback, and many older titles have neither.
+      backdropImageUrl:
+        imageUrl(game.artworks?.[0], '1080p') ?? imageUrl(game.screenshots?.[0], '1080p'),
+      metadata: {
+        genres: (game.genres ?? [])
+          .map((genre) => genre.name)
+          .filter((name): name is string => typeof name === 'string'),
+        ...(platforms.length ? { platforms } : {}),
+        ...(developers.length ? { developers } : {}),
+        /*
+         * IGDB's combined critic-and-player score, 0-100, rescaled to the
+         * 0-10 the domain stores. Only kept where enough people have voted
+         * for it to mean anything -- a "94" from three votes is noise wearing
+         * the costume of a consensus.
+         */
+        ...(typeof game.total_rating === 'number' && (game.total_rating_count ?? 0) >= 5
+          ? {
+              externalRating: {
+                source: 'IGDB',
+                score: Math.round(game.total_rating) / 10,
+                votes: game.total_rating_count ?? 0,
+              },
+            }
+          : {}),
+      },
+    }
+  }
+
   function toSearchResult(game: IgdbGame): ProviderSearchResult {
     return {
       externalId: String(game.id),
@@ -203,7 +274,7 @@ export function createIgdbProvider(options: IgdbProviderOptions): MediaProvider 
     }
   }
 
-  const categoryFilter = `category = (${GAME_CATEGORIES.join(',')})`
+  const gameTypeFilter = `game_type = (${GAME_TYPES.join(',')})`
 
   return {
     key: 'igdb',
@@ -221,7 +292,7 @@ export function createIgdbProvider(options: IgdbProviderOptions): MediaProvider 
 
       const games = await query(
         'games',
-        `search "${safe}"; fields ${FIELDS}; where ${categoryFilter}; limit ${Math.min(limit, 50)};`,
+        `search "${safe}"; fields ${FIELDS}; where ${gameTypeFilter}; limit ${Math.min(limit, 50)};`,
       )
 
       return games.filter((game) => game.name).map(toSearchResult)
@@ -235,40 +306,40 @@ export function createIgdbProvider(options: IgdbProviderOptions): MediaProvider 
 
       const [game] = await query(
         'games',
-        `fields ${FIELDS}; where id = ${id} & ${categoryFilter}; limit 1;`,
+        `fields ${FIELDS}; where id = ${id} & ${gameTypeFilter}; limit 1;`,
       )
 
       if (!game?.name) return null
 
-      const developers = (game.involved_companies ?? [])
-        .filter((entry) => entry.developer && entry.company?.name)
-        .map((entry) => entry.company!.name!)
+      return toMedia(game)
+    },
 
-      const platforms = (game.platforms ?? [])
-        .map((platform) => platform.name)
-        .filter((name): name is string => typeof name === 'string')
+    /**
+     * The catalogue import's entry point (SPEC 8).
+     *
+     * Added alongside RAWG's, and for the same reason: the importer skips any
+     * provider that cannot bulk list, and this one sits *first* in the game
+     * fallback chain. Configuring IGDB -- the best games catalogue we can
+     * reach, and the one worth the OAuth dance -- therefore produced a
+     * catalogue with no games in it at all.
+     *
+     * Sorted by how many people have rated a title, which on IGDB is the
+     * closest thing to fame. Sorting by score instead fills the catalogue with
+     * obscure titles holding a perfect ten from eleven voters.
+     */
+    async listPopular(mediaType, page): Promise<ProviderMedia[]> {
+      if (mediaType !== 'game') return []
 
-      return {
-        externalId,
-        provider: 'igdb',
-        mediaType: 'game',
-        title: game.name,
-        originalTitle: null,
-        description: game.summary?.trim() || null,
-        releaseDate: toReleaseDate(game.first_release_date),
-        coverImageUrl: imageUrl(game.cover, 'cover_big'),
-        // Artwork is the closest thing to a backdrop; a screenshot is the
-        // fallback, and many older titles have neither.
-        backdropImageUrl:
-          imageUrl(game.artworks?.[0], '1080p') ?? imageUrl(game.screenshots?.[0], '1080p'),
-        metadata: {
-          genres: (game.genres ?? [])
-            .map((genre) => genre.name)
-            .filter((name): name is string => typeof name === 'string'),
-          ...(platforms.length ? { platforms } : {}),
-          ...(developers.length ? { developers } : {}),
-        },
-      }
+      const games = await query(
+        'games',
+        `fields ${FIELDS};` +
+          ` where ${gameTypeFilter}` +
+          ' & cover != null & total_rating_count > 5;' +
+          ' sort total_rating_count desc;' +
+          ` limit ${PAGE_SIZE}; offset ${(page - 1) * PAGE_SIZE};`,
+      )
+
+      return games.filter((game) => game.name).map(toMedia)
     },
 
     async getTrending(type, limit): Promise<ProviderSearchResult[]> {
@@ -283,7 +354,7 @@ export function createIgdbProvider(options: IgdbProviderOptions): MediaProvider 
       const games = await query(
         'games',
         `fields ${FIELDS};` +
-          ` where ${categoryFilter}` +
+          ` where ${gameTypeFilter}` +
           ` & first_release_date > ${threeMonthsAgo}` +
           ` & first_release_date < ${now}` +
           ' & cover != null & total_rating_count > 5;' +

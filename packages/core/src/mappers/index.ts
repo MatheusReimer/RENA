@@ -1,10 +1,12 @@
 import type { schema } from '@revy/db'
 import type {
+  CommunityReview,
   Media,
   MediaRatingSummary,
+  TrendingTile,
   UserSummary,
 } from '@revy/shared/types'
-import { toScore } from '@revy/shared/utils'
+import { excerpt, releaseYear, toScore } from '@revy/shared/utils'
 
 /**
  * Row -> DTO mapping, in one place.
@@ -24,6 +26,9 @@ export function toUserSummary(row: UserRow): UserSummary {
     username: row.username,
     displayName: row.displayName,
     avatarUrl: row.avatarUrl,
+    // Free: it is a column on the row every caller already selected. That is
+    // the whole reason it is denormalised rather than joined.
+    titleSlug: row.titleBadgeSlug,
   }
 }
 
@@ -60,10 +65,102 @@ export function toRatingSummary(row: RatingStatsRow | null | undefined): MediaRa
   }
 
   return {
-    // ratingSum is in half-steps; /2 converts the mean back to the 0.5-5 scale.
-    average: Math.round((row.ratingSum / row.ratingCount / 2) * 10) / 10,
+    average: averageScore(row.ratingSum, row.ratingCount),
     count: row.ratingCount,
     distribution,
+  }
+}
+
+/**
+ * A stored sum of half-steps and a count, as the 0.5-5.0 average people read.
+ *
+ * Null rather than 0.0 for an unrated title. Zero is a verdict -- it says the
+ * community hated the thing -- and "nobody has said yet" is not a verdict at
+ * all, so the two must not share a representation.
+ */
+export function averageScore(ratingSum: number, ratingCount: number): number | null {
+  if (ratingCount <= 0) return null
+  // The sum is in half-steps; /2 converts the mean back to the 0.5-5 scale.
+  return Math.round((ratingSum / ratingCount / 2) * 10) / 10
+}
+
+/* ------------------------------------------------------------------ *
+ * The landing screen
+ * ------------------------------------------------------------------ */
+
+type TrendingRow = Pick<
+  MediaRow,
+  'id' | 'mediaType' | 'title' | 'coverImageUrl' | 'releaseDate' | 'metadata'
+> & {
+  /** Null where a title has no stats row at all, not merely no ratings. */
+  ratingCount: number | null
+  ratingSum: number | null
+}
+
+export function toTrendingTile(row: TrendingRow): TrendingTile {
+  const ratingCount = row.ratingCount ?? 0
+
+  return {
+    id: row.id,
+    mediaType: row.mediaType,
+    title: row.title,
+    coverImageUrl: row.coverImageUrl,
+    // Formatted here rather than in the component: the rail prints a year and
+    // has no use for the rest of a date, so the rest need not cross the wire.
+    releaseYear: releaseYear(row.releaseDate),
+    ratingAverage: averageScore(row.ratingSum ?? 0, ratingCount),
+    ratingCount,
+  }
+}
+
+/**
+ * How much of a review reaches a card.
+ *
+ * Shorter than the repository's 240-character ceiling on purpose: the query
+ * decides which reviews are *eligible*, this decides what fits on a card at
+ * the size it is drawn. Trimming here rather than in the component means the
+ * full text never crosses the wire for a card that cannot show it.
+ */
+const QUOTE_LENGTH = 150
+
+type CommunityReviewRow = {
+  id: string
+  content: string
+  likeCount: number
+  commentCount: number
+  createdAt: Date
+  mediaId: string
+  mediaTitle: string
+  mediaType: MediaRow['mediaType']
+  coverImageUrl: string | null
+  /** Half-steps, or null where the author wrote without scoring. */
+  score: number | null
+  authorId: string
+  authorUsername: string
+  authorDisplayName: string
+  authorAvatarUrl: string | null
+  authorTitleSlug: string | null
+}
+
+export function toCommunityReview(row: CommunityReviewRow): CommunityReview {
+  return {
+    id: row.id,
+    author: {
+      id: row.authorId,
+      username: row.authorUsername,
+      displayName: row.authorDisplayName,
+      avatarUrl: row.authorAvatarUrl,
+      titleSlug: row.authorTitleSlug,
+    },
+    mediaId: row.mediaId,
+    mediaTitle: row.mediaTitle,
+    mediaType: row.mediaType,
+    coverImageUrl: row.coverImageUrl,
+    score: row.score === null ? null : toScore(row.score),
+    quote: excerpt(row.content, QUOTE_LENGTH),
+    likeCount: row.likeCount,
+    commentCount: row.commentCount,
+    createdAt: toIsoRequired(row.createdAt),
   }
 }
 

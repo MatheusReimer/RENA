@@ -1,19 +1,27 @@
 <script setup lang="ts">
-import type { FriendRequest, UserSummary } from '@revy/shared/types'
+import { FEED_PAGE_SIZE_DEFAULT } from '@revy/shared/constants'
+import type { Activity, FriendRequest, UserSummary } from '@revy/shared/types'
 import { relativeTime } from '@revy/shared/utils'
 
 /**
- * Friends (SPEC 12).
+ * Friends (SPEC 12, 13).
  *
- * Friends, incoming requests and outgoing requests, matching the design's
- * three tabs. Accept and reject happen inline here rather than only on a
- * profile, because responding to a pile of requests is the whole reason to
- * open this screen.
+ * Four tabs now: what friends have been rating, then the graph itself --
+ * friends, incoming requests, outgoing requests. Accept and reject happen
+ * inline here rather than only on a profile, because responding to a pile of
+ * requests is the whole reason to open this screen.
+ *
+ * Ratings leads, and is the default. A screen called Friends that opens on a
+ * list of names answers "who are my friends", which is a question nobody has
+ * after the first week; opening on what they have been scoring answers "what
+ * are my friends into", which is the one worth coming back for. The roster is
+ * one tab away and keeps its counter in the tab bar.
  */
 const api = useApi()
 const auth = useAuthStore()
+const { t } = useI18n()
 
-const tab = ref<'friends' | 'requests' | 'sent'>('friends')
+const tab = ref<'ratings' | 'friends' | 'requests' | 'sent'>('ratings')
 
 const { data, status, error, refresh } = await useAsyncData('friends', async () => {
   if (!auth.isSignedIn) {
@@ -31,10 +39,83 @@ const incoming = computed(() => data.value?.incoming ?? [])
 const outgoing = computed(() => data.value?.outgoing ?? [])
 
 const tabs = computed(() => [
-  { value: 'friends', label: 'Friends', badge: friends.value.length || undefined },
-  { value: 'requests', label: 'Requests', badge: incoming.value.length || undefined },
-  { value: 'sent', label: 'Sent', badge: outgoing.value.length || undefined },
+  { value: 'ratings', label: t('friends.tabRatings') },
+  { value: 'friends', label: t('friends.tabFriends'), badge: friends.value.length || undefined },
+  { value: 'requests', label: t('friends.tabRequests'), badge: incoming.value.length || undefined },
+  { value: 'sent', label: t('friends.tabSent'), badge: outgoing.value.length || undefined },
 ])
+
+/* ------------------------------------------------------------------ *
+ * What friends have been rating (SPEC 13)
+ * ------------------------------------------------------------------ */
+
+/*
+ * The feed, scoped to friends and narrowed to ratings.
+ *
+ * `scope: 'following'` rather than 'for-you' because this screen is about
+ * other people -- seeing your own scores mixed in would make it a worse
+ * version of the home feed. The type filter is applied server-side, so a page
+ * of fifteen is fifteen ratings rather than the ratings that happened to be
+ * among the last fifteen events.
+ */
+const ratings = ref<Activity[]>([])
+const ratingsCursor = ref<string | null>(null)
+const ratingsLoading = ref(false)
+const ratingsError = ref(false)
+const ratingsLoaded = ref(false)
+
+async function loadRatings(reset = false) {
+  if (ratingsLoading.value || !auth.isSignedIn) return
+  if (!reset && ratingsLoaded.value && !ratingsCursor.value) return
+
+  ratingsLoading.value = true
+  ratingsError.value = false
+
+  try {
+    const page = await api.feed.get({
+      scope: 'following',
+      type: 'rated_media',
+      limit: FEED_PAGE_SIZE_DEFAULT,
+      ...(reset ? {} : ratingsCursor.value ? { cursor: ratingsCursor.value } : {}),
+    })
+
+    // Replacing rather than appending on a reset keeps a refresh from
+    // duplicating the first page underneath itself.
+    ratings.value = reset ? page.items : [...ratings.value, ...page.items]
+    ratingsCursor.value = page.nextCursor
+    ratingsLoaded.value = true
+  } catch {
+    ratingsError.value = true
+  } finally {
+    ratingsLoading.value = false
+  }
+}
+
+const ratingsHasMore = computed(() => ratingsCursor.value !== null)
+
+/*
+ * Fetched on the client, after mount, rather than in `useAsyncData`.
+ *
+ * The roster above is server-rendered because the tab counters need it before
+ * first paint. This is a list the reader scrolls, and server-rendering the
+ * first page of it would put fifteen posters into the HTML document for a
+ * screen whose other three tabs do not use them.
+ */
+onMounted(() => {
+  if (auth.isSignedIn) void loadRatings(true)
+})
+
+/*
+ * Scrolling advances the list, and so does the button below it.
+ *
+ * Both, permanently -- the same rule `useInfiniteScroll` documents. A browser
+ * that delivers one intersection and then goes quiet would otherwise strand
+ * the rest of the feed behind a control that had withdrawn itself.
+ */
+const ratingsSentinel = ref<HTMLElement | null>(null)
+useInfiniteScroll(ratingsSentinel, () => {
+  if (ratingsHasMore.value && !ratingsLoading.value) void loadRatings()
+})
 
 /** Search filters the loaded list; a friend list is small enough for that. */
 const filter = ref('')
@@ -73,24 +154,26 @@ async function cancel(request: FriendRequest) {
   }
 }
 
-useHead({ title: 'Friends' })
+useHead(() => ({ title: t('friends.title') }))
 </script>
 
 <template>
   <div class="page">
     <header class="page__header">
-      <h1 class="page__title">Friends</h1>
+      <h1 class="page__title">{{ $t('friends.title') }}</h1>
       <UiTabNav v-model="tab" :tabs="tabs" />
     </header>
 
     <div class="page__body">
       <UiEmptyState
         v-if="!auth.isSignedIn && auth.initialised"
-        title="Sign in to see your friends."
-        description="Follow people whose taste you trust and their ratings show up in your feed."
+        :title="$t('friends.signInTitle')"
+        :description="$t('friends.signInBody')"
       >
         <template #action>
-          <UiAppButton variant="primary" @click="navigateTo('/signin')">Sign in</UiAppButton>
+          <UiAppButton variant="primary" @click="navigateTo('/signin')">
+            {{ $t('friends.signIn') }}
+          </UiAppButton>
         </template>
       </UiEmptyState>
 
@@ -104,11 +187,72 @@ useHead({ title: 'Friends' })
         </div>
       </div>
 
-      <UiEmptyState v-else-if="error" title="We couldn't load your friends.">
+      <UiEmptyState v-else-if="error" :title="$t('friends.loadFailed')">
         <template #action>
-          <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
+          <UiAppButton variant="secondary" @click="refresh()">{{ $t('friends.tryAgain') }}</UiAppButton>
         </template>
       </UiEmptyState>
+
+      <!-- What friends have been rating -->
+      <template v-else-if="tab === 'ratings'">
+        <UiEmptyState
+          v-if="friends.length === 0"
+          :title="$t('friends.noFriendsYet')"
+          :description="$t('friends.noFriendsYetBody')"
+        >
+          <template #action>
+            <UiAppButton variant="primary" @click="navigateTo('/search?tab=people')">
+              {{ $t('friends.findPeople') }}
+            </UiAppButton>
+          </template>
+        </UiEmptyState>
+
+        <div v-else-if="!ratingsLoaded && ratingsLoading" class="ratings">
+          <FeedActivitySkeleton v-for="i in 4" :key="i" />
+        </div>
+
+        <UiEmptyState
+          v-else-if="ratingsError && ratings.length === 0"
+          :title="$t('friends.ratingsFailed')"
+        >
+          <template #action>
+            <UiAppButton variant="secondary" @click="loadRatings(true)">{{ $t('friends.tryAgain') }}</UiAppButton>
+          </template>
+        </UiEmptyState>
+
+        <UiEmptyState
+          v-else-if="ratings.length === 0"
+          :title="$t('friends.noRatingsYet')"
+          :description="$t('friends.noRatingsYetBody')"
+        />
+
+        <div v-else class="ratings">
+          <FeedActivityCard
+            v-for="activity in ratings"
+            :key="activity.id"
+            :activity="activity"
+          />
+
+          <!--
+            The sentinel and the button are the same action. The button is
+            rendered unconditionally whenever there is more, never behind a
+            check for whether the observer looks healthy.
+          -->
+          <div v-if="ratingsHasMore" ref="ratingsSentinel" class="ratings__more">
+            <UiAppButton
+              variant="secondary"
+              :loading="ratingsLoading"
+              @click="loadRatings()"
+            >
+              {{ $t('friends.showMore') }}
+            </UiAppButton>
+          </div>
+
+          <p v-else-if="ratings.length >= 10" class="ratings__end">
+            {{ $t('friends.ratingsEnd') }}
+          </p>
+        </div>
+      </template>
 
       <!-- Friends -->
       <template v-else-if="tab === 'friends'">
@@ -121,26 +265,26 @@ useHead({ title: 'Friends' })
             v-model="filter"
             type="search"
             class="searchbar__input"
-            placeholder="Search friends..."
-            aria-label="Search friends"
+            :placeholder="$t('friends.searchPlaceholder')"
+            :aria-label="$t('friends.searchLabel')"
           />
         </div>
 
         <UiEmptyState
           v-if="friends.length === 0"
-          title="Add friends to see what they're watching and reading."
-          description="Search for someone by name, or open a profile and send a request."
+          :title="$t('friends.noneTitle')"
+          :description="$t('friends.noneBody')"
         >
           <template #action>
-            <UiAppButton variant="primary" @click="navigateTo('/search')">
-              Find people
+            <UiAppButton variant="primary" @click="navigateTo('/search?tab=people')">
+              {{ $t('friends.findPeople') }}
             </UiAppButton>
           </template>
         </UiEmptyState>
 
         <UiEmptyState
           v-else-if="visibleFriends.length === 0"
-          :title="`No friends matching &quot;${filter.trim()}&quot;.`"
+          :title="$t('friends.noMatches', { term: filter.trim() })"
         />
 
         <NuxtLink
@@ -165,8 +309,8 @@ useHead({ title: 'Friends' })
       <template v-else-if="tab === 'requests'">
         <UiEmptyState
           v-if="incoming.length === 0"
-          title="No pending requests."
-          description="When someone asks to be your friend, it shows up here."
+          :title="$t('friends.noRequests')"
+          :description="$t('friends.noRequestsBody')"
         />
 
         <div v-for="request in incoming" v-else :key="request.id" class="row">
@@ -187,7 +331,7 @@ useHead({ title: 'Friends' })
               :loading="pendingId === request.id"
               @click="respond(request, 'accept')"
             >
-              Accept
+              {{ $t('friends.accept') }}
             </UiAppButton>
             <UiAppButton
               variant="ghost"
@@ -195,7 +339,7 @@ useHead({ title: 'Friends' })
               :disabled="pendingId === request.id"
               @click="respond(request, 'reject')"
             >
-              Reject
+              {{ $t('friends.reject') }}
             </UiAppButton>
           </div>
         </div>
@@ -205,7 +349,7 @@ useHead({ title: 'Friends' })
       <template v-else>
         <UiEmptyState
           v-if="outgoing.length === 0"
-          title="No requests waiting on a reply."
+          :title="$t('friends.noSent')"
         />
 
         <div v-for="request in outgoing" v-else :key="request.id" class="row">
@@ -225,7 +369,7 @@ useHead({ title: 'Friends' })
             :loading="pendingId === request.id"
             @click="cancel(request)"
           >
-            Cancel
+            {{ $t('friends.cancel') }}
           </UiAppButton>
         </div>
       </template>
@@ -291,6 +435,26 @@ useHead({ title: 'Friends' })
 .rows {
   display: flex;
   flex-direction: column;
+}
+
+.ratings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+}
+
+.ratings__more {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-4);
+}
+
+.ratings__end {
+  padding-block: var(--space-4);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
 }
 
 .row {

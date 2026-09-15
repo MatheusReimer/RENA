@@ -1,5 +1,6 @@
 import type { Database } from '@revy/db'
 import { errors } from '@revy/shared/utils'
+import type { MessageCipher } from './crypto'
 import type { ProviderRegistry } from './providers'
 
 /**
@@ -20,6 +21,24 @@ export interface ServiceContext {
    * assert it, so an authorization check can never be silently skipped.
    */
   viewerId: string | null
+  /**
+   * Seals and opens direct message bodies (SPEC 12, 39).
+   *
+   * Null when no encryption key is configured, which disables messaging rather
+   * than downgrading it -- there is deliberately no path that stores a message
+   * body without this. `requireMessageCipher` is the only way to reach it, for
+   * the same reason `requireViewer` is the only way to reach `viewerId`.
+   */
+  messageCipher: MessageCipher | null
+  /**
+   * The language this request wants its catalogue text in (SPEC 31).
+   *
+   * Already applied to stored rows by `localiseMedia` at the API boundary.
+   * It is here for the case that boundary cannot reach: results fetched live
+   * from a provider have no translation row to swap in, so the provider has to
+   * be asked in the right language in the first place.
+   */
+  locale: string
 }
 
 /**
@@ -35,4 +54,17 @@ export interface AuthenticatedContext extends ServiceContext {
 export function requireViewer(ctx: ServiceContext): AuthenticatedContext {
   if (!ctx.viewerId) throw errors.unauthenticated()
   return ctx as AuthenticatedContext
+}
+
+/**
+ * Returns the message cipher, or refuses the request.
+ *
+ * Messaging is unavailable rather than degraded when there is no key. Reading
+ * a thread needs this as much as writing one does, so both call it -- a
+ * deployment that lost its key shows an error, not an empty conversation that
+ * looks like the messages were deleted.
+ */
+export function requireMessageCipher(ctx: ServiceContext): MessageCipher {
+  if (!ctx.messageCipher) throw errors.messagingUnavailable()
+  return ctx.messageCipher
 }

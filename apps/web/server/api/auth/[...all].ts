@@ -16,7 +16,24 @@ import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
  * needs the raw Request/Response -- so the error envelope is applied by hand
  * (SPEC 35, 39).
  */
-const CREDENTIAL_PATHS = ['/sign-in', '/sign-up', '/reset-password', '/forget-password']
+/*
+ * Paths these limits apply to, and they must match the library's actual routes.
+ *
+ * This listed `/forget-password`, which Better Auth does not serve -- the route
+ * is `/request-password-reset`. The effect was that the one endpoint that mails
+ * a bearer token to an arbitrary address was the one endpoint with no limit on
+ * it, which is both a spam vector and a way to probe for accounts at speed.
+ *
+ * `/send-verification-email` is here for the same reason: it also sends mail on
+ * demand to an address chosen by the caller.
+ */
+const CREDENTIAL_PATHS = [
+  '/sign-in',
+  '/sign-up',
+  '/reset-password',
+  '/request-password-reset',
+  '/send-verification-email',
+]
 
 export default defineEventHandler(async (event) => {
   try {

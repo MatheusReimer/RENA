@@ -13,16 +13,23 @@
     "preview": "pnpm --filter @revy/web preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "i18n:audit": "pnpm --filter @revy/web i18n:audit",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "pnpm --filter @revy/db generate",
     "db:migrate": "pnpm --filter @revy/db migrate",
+    "db:migrate:dev": "pnpm --filter @revy/seed migrate-dev",
     "db:push": "pnpm --filter @revy/db push",
     "db:seed": "pnpm --filter @revy/seed start",
+    "db:badges": "pnpm --filter @revy/seed badges",
     "db:import": "pnpm --filter @revy/seed catalogue",
+    "db:credits": "pnpm --filter @revy/seed credits",
+    "db:scores": "pnpm --filter @revy/seed scores",
+    "db:translate": "pnpm --filter @revy/seed translate",
     "db:verify": "pnpm --filter @revy/seed verify",
+    "ai:compare": "pnpm --filter @revy/seed compare",
     "db:studio": "pnpm --filter @revy/db studio"
   },
   "devDependencies": {
@@ -35,7 +42,7 @@
     "eslint-plugin-vue": "^9.33.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.70.0",
-    "vitest": "^3.2.7",
+    "vitest": "^4.1.11",
     "vue-eslint-parser": "^9.4.3",
     "vue-tsc": "^2.2.12"
   }

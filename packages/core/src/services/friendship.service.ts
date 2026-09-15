@@ -57,7 +57,7 @@ export const friendshipService = {
 
       // Previously rejected: reopen the same row.
       const reopened = await friendshipRepository.updateStatus(auth.db, existing.id, 'pending')
-      await notifyRequest(ctx, targetUserId, auth.viewerId)
+      await notifyRequest(ctx, targetUserId, auth.viewerId, existing.id)
       return {
         status: 'pending',
         isOutgoing: reopened?.requesterId === auth.viewerId,
@@ -72,7 +72,7 @@ export const friendshipService = {
       return toFriendshipState(current, auth.viewerId)
     }
 
-    await notifyRequest(ctx, targetUserId, auth.viewerId)
+    await notifyRequest(ctx, targetUserId, auth.viewerId, created.id)
 
     return { status: 'pending', isOutgoing: true, friendshipId: created.id }
   },
@@ -181,15 +181,31 @@ function toFriendshipState(
   }
 }
 
+/**
+ * Tells somebody a request is waiting (SPEC 12, 23).
+ *
+ * `friendshipId` is the load-bearing argument. The notifications screen offers
+ * Accept and Reject inline, and it renders those buttons only when the
+ * notification carries the id they would act on -- so a notification written
+ * without one is delivered, counted in the badge, and then inert: the reader
+ * sees "ana sent you a friend request" with nothing to press, and has to go
+ * find the profile to respond. That is exactly what this did until it was
+ * caught by a test that followed the notification through to the accept.
+ *
+ * `friend_request_accepted` has always set it. These two are a pair and are
+ * written the same way for that reason.
+ */
 async function notifyRequest(
   ctx: ServiceContext,
   recipientId: string,
   actorId: string,
+  friendshipId: string,
 ): Promise<void> {
   await notificationRepository.create(ctx.db, {
     userId: recipientId,
     type: 'friend_request',
     actorId,
+    entityId: friendshipId,
     context: {},
   })
 }

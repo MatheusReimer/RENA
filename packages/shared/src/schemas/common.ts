@@ -54,6 +54,24 @@ export const bioSchema = z
   .trim()
   .max(LIMITS.bio.max, `Bio must be at most ${LIMITS.bio.max} characters.`)
 
+/**
+ * The password rule, in one place.
+ *
+ * Extracted from `signUpSchema` when password reset was added, because the two
+ * had to agree and nothing was making them: a reset form with a laxer rule
+ * lets somebody set a password they could not have registered with, and a
+ * stricter one rejects the password they already have. Same rule, one
+ * definition.
+ *
+ * Length only. Composition rules -- a digit, a symbol, a capital -- push people
+ * towards predictable substitutions and are no longer recommended (OWASP ASVS
+ * 2.1); length is the property that actually costs an attacker anything.
+ */
+export const passwordSchema = z
+  .string()
+  .min(8, 'Passwords must be at least 8 characters.')
+  .max(128, 'Passwords must be at most 128 characters.')
+
 export const emailSchema = z.email({ error: 'Enter a valid email address.' }).trim().toLowerCase()
 
 /** Cursor pagination params, parsed from the query string (SPEC 38). */

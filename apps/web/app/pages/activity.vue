@@ -42,6 +42,29 @@ onMounted(async () => {
   }
 })
 
+/**
+ * "You are not the first."
+ *
+ * Names two people and counts the rest, because that is how somebody would
+ * say it out loud. A bare "11 others have read this" is a statistic; "marina
+ * and leo, and 9 others" is the beginning of a conversation, which is the
+ * entire point of the notification.
+ */
+function alsoConsumed(notification: Notification): string {
+  const title = notification.context.mediaTitle ?? 'this'
+  const names = notification.context.otherNames ?? []
+  const total = notification.context.otherCount ?? names.length
+
+  if (names.length === 0) return `Others here have finished ${title} too`
+
+  const named = names.length === 1 ? names[0]! : `${names[0]} and ${names[1]}`
+  const rest = total - names.length
+
+  return rest > 0
+    ? `${named}, and ${rest} other${rest === 1 ? '' : 's'}, have finished ${title} too`
+    : `${named} ${names.length === 1 ? 'has' : 'have'} finished ${title} too`
+}
+
 /** Copy for each notification type (SPEC 23). */
 function describe(notification: Notification): string {
   const actor = notification.actor?.displayName ?? 'Someone'
@@ -61,6 +84,8 @@ function describe(notification: Notification): string {
       return `${actor} mentioned you`
     case 'badge_earned':
       return `You earned the ${notification.context.badgeName ?? 'new'} badge`
+    case 'also_consumed':
+      return alsoConsumed(notification)
     default:
       return 'You have a new notification'
   }

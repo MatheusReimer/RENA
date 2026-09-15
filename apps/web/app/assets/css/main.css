@@ -21,6 +21,16 @@
 }
 
 html {
+  /*
+   * The custom arrow, applied once and inherited.
+   *
+   * `cursor` inherits, so this reaches every element that does not declare
+   * its own -- which is why text fields need the explicit rule below: an
+   * inherited arrow over a text field would hide the one affordance that
+   * tells you it is editable, and an I-beam has to stay pixel-precise to be
+   * usable for selecting text, which a decorated one would not be.
+   */
+  cursor: var(--cursor-arrow);
   -webkit-text-size-adjust: 100%;
   /* Prevents the iOS rubber-band from revealing a white page behind the app. */
   background: var(--surface-base);
@@ -59,7 +69,7 @@ select {
 button {
   background: none;
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
 }
 
 a {
@@ -101,13 +111,48 @@ ol {
   outline: none;
 }
 
+/* Anything natively clickable, so the hand does not depend on a component
+   remembering to ask for it. */
+a[href],
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+summary,
+select {
+  cursor: var(--cursor-hand);
+}
+
+/* Precision beats branding here; see the note on `html` above. */
+input,
+textarea,
+[contenteditable='true'] {
+  cursor: text;
+}
+
+/* A disabled control should still say so, and `not-allowed` is the only
+   cursor a reader already knows means exactly that. */
+button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
 /* ------------------------------------------------------------------ *
- * Scrollbars: present but recessive.
+ * Scrollbars: brand red, present but recessive.
+ *
+ * Stated twice because the two mechanisms do not overlap. `scrollbar-color`
+ * is the standard property -- Firefox has had it for years, Chrome since 121 --
+ * and the `::-webkit-scrollbar` pseudo-elements are what older Chrome, Edge
+ * and every Safari read. A browser that understands both prefers the standard
+ * property and ignores the pseudo-elements, so the two must agree rather than
+ * compete.
+ *
+ * Held well below full strength at rest. A scrollbar is a position indicator,
+ * not a feature: at full accent it competes with every red control on the page
+ * and turns into the brightest thing on screen on a long page.
  * ------------------------------------------------------------------ */
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-color: rgb(232 53 43 / 0.5) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -120,24 +165,42 @@ ol {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-default);
+  background: rgb(232 53 43 / 0.5);
   border-radius: var(--radius-full);
+  /* A transparent border plus `content-box` clipping is what insets the thumb
+     from the track -- the pseudo-element has no padding of its own. */
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  background: var(--accent);
   background-clip: content-box;
+}
+
+/* Grabbing it is the one moment the bar is the thing you are looking at. */
+::-webkit-scrollbar-thumb:active {
+  background: var(--accent-active);
+  background-clip: content-box;
+}
+
+/* Where two scrollbars meet, so the square is not a grey notch. */
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* ------------------------------------------------------------------ *
  * Selection
  * ------------------------------------------------------------------ */
 
+/*
+ * Stronger than `--accent-soft`, which at 12% barely registered as a
+ * selection at all. Still short of the solid accent, so selected text keeps
+ * its own contrast rather than being read white-on-red.
+ */
 ::selection {
-  background: var(--accent-soft);
-  color: var(--text-primary);
+  background: rgb(232 53 43 / 0.38);
+  color: #fff;
 }
 
 /* ------------------------------------------------------------------ *

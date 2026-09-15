@@ -56,6 +56,8 @@ export function statusForCode(code: ApiErrorCode): number {
     case 'THREAD_NOT_FOUND':
     case 'COMMENT_NOT_FOUND':
     case 'LIST_NOT_FOUND':
+    case 'CONVERSATION_NOT_FOUND':
+    case 'MESSAGE_NOT_FOUND':
       return 404
     case 'CONFLICT':
     case 'ALREADY_FRIENDS':
@@ -66,13 +68,16 @@ export function statusForCode(code: ApiErrorCode): number {
       return 409
     case 'VALIDATION_FAILED':
     case 'INVALID_RATING_SCORE':
+    case 'MEDIA_NOT_RELEASED':
     case 'USERNAME_RESERVED':
     case 'CANNOT_FRIEND_SELF':
     case 'COMMENT_DEPTH_EXCEEDED':
+    case 'NOT_FRIENDS':
       return 422
     case 'RATE_LIMITED':
       return 429
     case 'PROVIDER_UNAVAILABLE':
+    case 'MESSAGING_UNAVAILABLE':
       return 503
     case 'INTERNAL_ERROR':
       return 500
@@ -105,11 +110,37 @@ export const errors = {
   invalidScore: () =>
     new DomainError('INVALID_RATING_SCORE', 'Ratings must be between 0.5 and 5.0 in 0.5 steps.'),
 
+  /**
+   * Guards every opinion an unreleased title cannot have had yet.
+   *
+   * The UI hides these controls, so reaching this means either a stale page
+   * or a direct call -- both of which have to be refused here, because the
+   * client is not where this rule can live.
+   */
+  notReleased: (what = 'rate') =>
+    new DomainError('MEDIA_NOT_RELEASED', `You cannot ${what} something that is not out yet.`),
+
   rateLimited: (message = 'Too many requests. Try again shortly.') =>
     new DomainError('RATE_LIMITED', message),
 
   providerUnavailable: (provider: string) =>
     new DomainError('PROVIDER_UNAVAILABLE', `The ${provider} catalogue is unavailable right now.`),
+
+  /** Messaging is friends-only (SPEC 12), and this is the whole of the rule. */
+  notFriends: () =>
+    new DomainError('NOT_FRIENDS', 'You can only message people you are friends with.'),
+
+  /**
+   * No message encryption key is configured, so there is nowhere safe to put
+   * the text.
+   *
+   * Refusing is the only correct response: the alternative is writing private
+   * messages to Postgres in plaintext because an environment variable was
+   * missing, which is a silent downgrade of the one property this feature
+   * promises. See `createMessageCipher`.
+   */
+  messagingUnavailable: () =>
+    new DomainError('MESSAGING_UNAVAILABLE', 'Messaging is unavailable right now.'),
 
   internal: (cause?: unknown) =>
     new DomainError('INTERNAL_ERROR', 'Something went wrong on our end.', { cause }),

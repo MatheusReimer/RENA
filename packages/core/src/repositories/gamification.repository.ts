@@ -33,6 +33,39 @@ export const gamificationRepository = {
       .orderBy(desc(schema.userBadges.earnedAt))
   },
 
+  /**
+   * Points a user's displayed title at a badge, if it outranks the current one.
+   *
+   * The comparison happens in SQL rather than by reading the row first: two
+   * badges can be earned in the same evaluation pass, and a read-then-write
+   * would let the second overwrite the first's promotion with a lower tier.
+   *
+   * A null title always loses, so the first badge anybody earns becomes their
+   * title. A tie keeps the incumbent -- see `badgeService`.
+   */
+  async promoteTitleIfRarer(
+    db: Executor,
+    userId: string,
+    slug: string,
+    tier: number,
+  ): Promise<void> {
+    await db
+      .update(schema.users)
+      .set({ titleBadgeSlug: slug })
+      .where(
+        and(
+          eq(schema.users.id, userId),
+          sql`(
+            ${schema.users.titleBadgeSlug} IS NULL
+            OR ${tier} > COALESCE(
+              (SELECT b.tier FROM ${schema.badges} b
+               WHERE b.slug = ${schema.users.titleBadgeSlug}),
+              0)
+          )`,
+        ),
+      )
+  },
+
   async listEarnedBadgeIds(db: Executor, userId: string): Promise<Set<string>> {
     const rows = await db
       .select({ badgeId: schema.userBadges.badgeId })
@@ -135,6 +168,7 @@ export const gamificationRepository = {
           name: values.name,
           description: values.description,
           icon: values.icon,
+          tier: values.tier,
           requirementType: values.requirementType,
           requirementValue: values.requirementValue,
           requirementMediaType: values.requirementMediaType ?? null,

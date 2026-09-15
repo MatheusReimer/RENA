@@ -1,8 +1,16 @@
 import type { SetMediaStatusInput, UpsertRatingInput } from '@revy/shared/schemas'
 import type { MediaStatus, Rating } from '@revy/shared/types'
-import { errors, isValidScore, toHalfSteps, toScore } from '@revy/shared/utils'
+import { errors, isReleased, isValidScore, toHalfSteps, toScore } from '@revy/shared/utils'
 import { requireViewer, type ServiceContext } from '../context'
-import { activityRepository, mediaRepository, ratingRepository } from '../repositories'
+import {
+  activityRepository,
+  friendshipRepository,
+  mediaRepository,
+  notificationRepository,
+  othersWhoFinished,
+  presenceCounts,
+  ratingRepository,
+} from '../repositories'
 import { badgeService } from './badge.service'
 import { xpService } from './xp.service'
 
@@ -15,6 +23,14 @@ import { xpService } from './xp.service'
  * rating that failed to save, or XP for a rating that rolled back, would be
  * worse than the write failing outright.
  */
+/**
+ * Names spelled out in the "not the first" notification.
+ *
+ * Two, then a count. "marina and leo, and 9 others" is a sentence; five names
+ * and a count is a list, and a list is what the media page is for.
+ */
+const NAMED_OTHERS = 2
+
 export const ratingService = {
   async upsert(ctx: ServiceContext, input: UpsertRatingInput): Promise<Rating> {
     const auth = requireViewer(ctx)
@@ -25,6 +41,17 @@ export const ratingService = {
 
     const media = await mediaRepository.findById(auth.db, input.mediaId)
     if (!media) throw errors.mediaNotFound()
+
+    /*
+     * Nobody has seen it yet.
+     *
+     * The catalogue imports titles well before release -- Avengers: Doomsday
+     * is in it with a 2026 date -- and they were collecting scores, which
+     * makes every aggregate on the site a little less true. The rule belongs
+     * here rather than in the form, because a stale tab is enough to get
+     * round the form.
+     */
+    if (!isReleased(media.releaseDate)) throw errors.notReleased('rate')
 
     const halfSteps = toHalfSteps(input.score)
 
@@ -102,6 +129,19 @@ export const ratingService = {
 
     const status: MediaStatus = input.status
 
+    /*
+     * Planning is the one thing you *can* do with an unreleased title.
+     *
+     * "Want to watch" is exactly what a trailer is for, so blocking it would
+     * break the most reasonable thing anybody does on these pages. Watching,
+     * finishing and dropping all claim an experience nobody has had yet --
+     * and `completed` is the expensive one, because it emits a feed card and
+     * a "you are not the first" notification about a film that is not out.
+     */
+    if (status !== 'planned' && !isReleased(media.releaseDate)) {
+      throw errors.notReleased('track')
+    }
+
     await auth.db.transaction(async (tx) => {
       const existing = await ratingRepository.findStatus(tx, auth.viewerId, input.mediaId)
       if (existing?.status === status) return
@@ -122,6 +162,43 @@ export const ratingService = {
             ? { progress: input.progress }
             : {}),
       })
+
+      /*
+       * "You are not the first."
+       *
+       * The moment somebody finishes something is the moment they most want
+       * to know whether anyone else here has been through it -- that is the
+       * question this whole product exists to answer, and it is the one
+       * question a rating average cannot.
+       *
+       * Sent to the finisher, once, rather than broadcast to everyone who has
+       * read it: arriving somewhere and finding company is a good moment;
+       * being told every time a stranger turns up behind you is a nuisance.
+       */
+      const friendIds = await friendshipRepository.listFriendIds(tx, auth.viewerId)
+      const others =
+        status === 'completed'
+          ? await othersWhoFinished(tx, input.mediaId, auth.viewerId, friendIds, NAMED_OTHERS)
+          : []
+
+      if (others.length > 0) {
+        const { completedCount: total } = await presenceCounts(tx, input.mediaId, auth.viewerId)
+
+        await notificationRepository.create(tx, {
+          userId: auth.viewerId,
+          type: 'also_consumed',
+          // No actor: this is about a group, and picking one of them to be
+          // "the" actor would put a face on something nobody did.
+          actorId: null,
+          entityId: input.mediaId,
+          context: {
+            mediaId: input.mediaId,
+            mediaTitle: media.title,
+            otherCount: total,
+            otherNames: others.map((row) => row.displayName),
+          },
+        })
+      }
 
       // Only finishing something is feed-worthy. 'Want to watch' is a private
       // planning action and would flood friends' timelines.

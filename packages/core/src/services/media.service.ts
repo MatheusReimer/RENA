@@ -4,6 +4,7 @@ import type {
   MediaDetail,
   MediaSearchResult,
   MediaType,
+  Presence,
   ViewerMediaState,
 } from '@revy/shared/types'
 import { errors, toScore } from '@revy/shared/utils'
@@ -11,11 +12,14 @@ import type { ServiceContext } from '../context'
 import { toMedia, toRatingSummary, toUserSummary } from '../mappers'
 import { ProviderError } from '../providers'
 import {
+  communityRepository,
   discussionRepository,
   friendshipRepository,
   listRepository,
   mediaRepository,
+  presenceCounts,
   ratingRepository,
+  readersOf,
   reviewRepository,
 } from '../repositories'
 
@@ -26,6 +30,14 @@ import {
  * provider (SPEC 49.2). Provider results become local `media` rows the moment
  * a user acts on one, which is what gives ratings something stable to point at.
  */
+/**
+ * Faces shown on the presence panel.
+ *
+ * Twelve, because past that the panel stops reading as "these people" and
+ * starts reading as a table. The counts beside it carry the rest.
+ */
+const PRESENCE_LIMIT = 12
+
 export const mediaService = {
   /**
    * Global media search (SPEC 20).
@@ -40,7 +52,7 @@ export const mediaService = {
 
     const [local, remote] = await Promise.all([
       mediaRepository.searchLocal(ctx.db, query, input.type, input.limit),
-      ctx.providers.searchAll(query, input.limit, input.type),
+      ctx.providers.searchAll(query, input.limit, input.type, ctx.locale),
     ])
 
     // Scores for the local hits, in one query rather than one per row.
@@ -151,13 +163,21 @@ export const mediaService = {
     const row = await mediaRepository.findById(ctx.db, mediaId)
     if (!row) throw errors.mediaNotFound()
 
-    const [stats, reviewCount, discussionCount, viewerState, friendRatings] = await Promise.all([
-      mediaRepository.getRatingStats(ctx.db, mediaId),
-      reviewRepository.countForMedia(ctx.db, mediaId),
-      discussionRepository.countThreadsForMedia(ctx.db, mediaId),
-      loadViewerState(ctx, mediaId),
-      loadFriendRatings(ctx, mediaId),
-    ])
+    const [stats, reviewCount, discussionCount, viewerState, friendRatings, memberCounts, joined] =
+      await Promise.all([
+        mediaRepository.getRatingStats(ctx.db, mediaId),
+        reviewRepository.countForMedia(ctx.db, mediaId),
+        discussionRepository.countThreadsForMedia(ctx.db, mediaId),
+        loadViewerState(ctx, mediaId),
+        loadFriendRatings(ctx, mediaId),
+        // Both indexed point lookups, added to the batch rather than to a
+        // second round trip: the Join control is in the header and cannot
+        // afford to paint wrong and correct itself (SPEC 14).
+        communityRepository.memberCounts(ctx.db, [mediaId]),
+        ctx.viewerId
+          ? communityRepository.isMember(ctx.db, mediaId, ctx.viewerId)
+          : Promise.resolve(null),
+      ])
 
     return {
       ...toMedia(row),
@@ -166,6 +186,52 @@ export const mediaService = {
       friendRatings,
       reviewCount,
       discussionCount,
+      memberCount: memberCounts.get(mediaId) ?? 0,
+      joined,
+    }
+  },
+  /**
+   * Who else here has been through this title (SPEC 9, 12).
+   *
+   * Its own method rather than part of `getDetail`, and its own request from
+   * the client: the media page's own payload is already four queries deep, and
+   * this is a panel further down the screen. Nobody should wait on it to see
+   * what they came for.
+   *
+   * Public. A signed-out visitor seeing that eleven people here have read this
+   * book is the single best argument the page can make for joining.
+   */
+  async getPresence(ctx: ServiceContext, mediaId: string): Promise<Presence> {
+    const media = await mediaRepository.findById(ctx.db, mediaId)
+    if (!media) throw errors.mediaNotFound()
+
+    const friendIds = ctx.viewerId
+      ? await friendshipRepository.listFriendIds(ctx.db, ctx.viewerId)
+      : []
+
+    const [rows, counts] = await Promise.all([
+      readersOf(ctx.db, mediaId, ctx.viewerId, friendIds, PRESENCE_LIMIT),
+      presenceCounts(ctx.db, mediaId, ctx.viewerId),
+    ])
+
+    return {
+      readers: rows.map((row) => ({
+        user: {
+          id: row.userId,
+          username: row.username,
+          displayName: row.displayName,
+          avatarUrl: row.avatarUrl,
+          titleSlug: row.titleBadgeSlug,
+        },
+        status: row.status as 'completed' | 'in_progress',
+        at: (row.completedAt ?? row.updatedAt).toISOString(),
+        // Scores are stored as half-steps; /2 puts them on the 0.5-5 scale.
+        score: row.score === null ? null : toScore(row.score),
+        isFriend: row.isFriend,
+      })),
+      completedCount: counts.completedCount,
+      inProgressCount: counts.inProgressCount,
+      friendCount: rows.filter((row) => row.isFriend).length,
     }
   },
 }
@@ -227,4 +293,5 @@ function subtitleFor(mediaType: MediaType, metadata: Record<string, unknown>): s
   const genres = metadata.genres
   if (Array.isArray(genres) && typeof genres[0] === 'string') return genres[0]
   return null
+
 }

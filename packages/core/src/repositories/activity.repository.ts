@@ -1,4 +1,5 @@
 import { type Executor, schema } from '@revy/db'
+import type { ActivityType } from '@revy/shared/types'
 import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm'
 
 /** Data access for the activity feed (SPEC 13, 18). */
@@ -44,16 +45,26 @@ export const activityRepository = {
    * Fan-out on read. SPEC 13 rules out ranking for the MVP, so this is a
    * keyset scan over `activities_user_created_idx` with the friend id set --
    * which is exactly what that index is shaped for.
+   *
+   * `type` narrows it to one kind of event. Applied here rather than by
+   * filtering the page afterwards, because a post-filter returns short pages:
+   * ask for fifteen ratings, get back the ratings among the last fifteen
+   * events, and a friend who wrote three reviews this morning silently costs
+   * the reader three rows.
    */
   async listForUsers(
     db: Executor,
     userIds: string[],
     limit: number,
     cursor: Date | null,
+    type?: ActivityType,
   ) {
     if (userIds.length === 0) return []
 
-    const scope = inArray(schema.activities.userId, userIds)
+    const scope = and(
+      inArray(schema.activities.userId, userIds),
+      type ? eq(schema.activities.type, type) : undefined,
+    )
 
     return db
       .select({

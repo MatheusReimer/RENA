@@ -14,6 +14,7 @@ import {
   type Database,
 } from '@revy/db'
 import { schema } from '@revy/db'
+import { MEDIA_TYPES } from '@revy/shared/constants'
 import { hashPassword } from 'better-auth/crypto'
 import { eq, sql } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
@@ -230,18 +231,49 @@ async function seedUsers(db: Database): Promise<SeededUser[]> {
  *
  * Only titles with cover art are eligible. A demo built on rows that render as
  * a grey rectangle demonstrates the wrong thing.
+ *
+ * And only *recognisable* titles, which is the part that was wrong before.
+ * This picked at random from the whole catalogue, and at a thousand rows a
+ * random sixty is sixty titles nobody has heard of -- so every ranked row in
+ * the product ("trending", "what everyone is talking about", "fresh reviews")
+ * ended up ranking obscure films, because those were the only ones with any
+ * activity attached. The catalogue was fine; the demo activity was pointing at
+ * the wrong half of it.
+ *
+ * Ordered by the provider's vote count, which is the closest thing to "how
+ * many people in the world have seen this" that the data has. Books carry no
+ * such figure -- Open Library gives none -- so they fall back to import order,
+ * and the importer walks Open Library's reading-log ranking, which means the
+ * earliest-imported books are the most-read ones.
+ *
+ * Spread across the media types rather than taken globally, or the whole demo
+ * would be films: they have far higher vote counts than anything else.
  */
 async function pickCatalogue(db: Database, limit: number): Promise<SeededMedia[]> {
-  const rows = await db
-    .select({
-      id: schema.media.id,
-      mediaType: schema.media.mediaType,
-      metadata: schema.media.metadata,
-    })
-    .from(schema.media)
-    .where(sql`${schema.media.coverImageUrl} IS NOT NULL`)
-    .orderBy(sql`random()`)
-    .limit(limit)
+  const perType = Math.ceil(limit / MEDIA_TYPES.length)
+
+  const byType = await Promise.all(
+    MEDIA_TYPES.map((mediaType) =>
+      db
+        .select({
+          id: schema.media.id,
+          mediaType: schema.media.mediaType,
+          metadata: schema.media.metadata,
+        })
+        .from(schema.media)
+        .where(
+          sql`${schema.media.coverImageUrl} IS NOT NULL
+              AND ${schema.media.mediaType} = ${mediaType}`,
+        )
+        .orderBy(
+          sql`coalesce((${schema.media.metadata} -> 'externalRating' ->> 'votes')::int, 0) DESC`,
+          sql`${schema.media.createdAt} ASC`,
+        )
+        .limit(perType),
+    ),
+  )
+
+  const rows = byType.flat().slice(0, limit)
 
   return rows.map((row) => {
     const metadata = (row.metadata ?? {}) as { episodeCount?: number; pageCount?: number }

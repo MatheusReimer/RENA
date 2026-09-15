@@ -1,10 +1,10 @@
-import { MEDIA_TYPES, RESERVED_USERNAMES } from '@revy/shared/constants'
+import { MEDIA_TYPES, RESERVED_USERNAMES, toContentLanguage } from '@revy/shared/constants'
 import type { UpdateProfileInput } from '@revy/shared/schemas'
-import type { MediaType, User, UserProfile, UserSummary } from '@revy/shared/types'
+import type { EarnedBadge, MediaType, User, UserProfile, UserSummary } from '@revy/shared/types'
 import { errors, normalizeUsername } from '@revy/shared/utils'
 import { requireViewer, type ServiceContext } from '../context'
 import { toUserSummary } from '../mappers'
-import { userRepository } from '../repositories'
+import { gamificationRepository, userRepository } from '../repositories'
 import { friendshipService } from './friendship.service'
 import { xpService } from './xp.service'
 
@@ -20,7 +20,7 @@ export const userService = {
    */
   async createForAuthUser(
     ctx: ServiceContext,
-    params: { authUserId: string; username: string; displayName: string },
+    params: { authUserId: string; username: string; displayName: string; language?: string },
   ): Promise<User> {
     if (RESERVED_USERNAMES.includes(normalizeUsername(params.username))) {
       throw errors.notFound('USERNAME_RESERVED', 'That username is not available.')
@@ -34,6 +34,9 @@ export const userService = {
       authUserId: params.authUserId,
       username: params.username,
       displayName: params.displayName,
+      // Narrowed rather than trusted, and defaulted when absent: the column is
+      // not nullable, because "we never asked" is not a language.
+      language: toContentLanguage(params.language),
     })
 
     return toUser(row)
@@ -105,12 +108,34 @@ async function buildProfile(
   ctx: ServiceContext,
   row: Awaited<ReturnType<typeof userRepository.findById>> & object,
 ): Promise<UserProfile> {
-  const [stats, byType, xp, friendship] = await Promise.all([
+  const [stats, byType, xp, friendship, earned] = await Promise.all([
     userRepository.getStats(ctx.db, row.id),
     userRepository.getRatingsByType(ctx.db, row.id),
     xpService.getForUser(ctx.db, row.id),
     friendshipService.getState(ctx, row.id),
+    gamificationRepository.listEarned(ctx.db, row.id),
   ])
+
+  /*
+   * Rarest first, then most recent.
+   *
+   * The repository returns newest-first, which is the wrong order for a
+   * trophy cabinet: the thing somebody wants at the top is the hardest one
+   * they hold, not the one they happened to trip over this morning. Sorting
+   * here rather than in SQL keeps `listEarned` general -- the progress screen
+   * wants chronological.
+   */
+  const badges: EarnedBadge[] = earned
+    .map((entry) => ({
+      id: entry.badge.id,
+      slug: entry.badge.slug,
+      name: entry.badge.name,
+      description: entry.badge.description,
+      icon: entry.badge.icon,
+      tier: entry.badge.tier,
+      earnedAt: entry.earnedAt.toISOString(),
+    }))
+    .sort((a, b) => b.tier - a.tier || b.earnedAt.localeCompare(a.earnedAt))
 
   // Every media type appears, so the profile breakdown does not shift layout
   // depending on what the user happens to have rated.
@@ -125,6 +150,9 @@ async function buildProfile(
     friendship,
     isSelf: ctx.viewerId === row.id,
     xp,
+    badges,
+    // The first is the rarest, by the sort above.
+    title: badges[0] ?? null,
   }
 }
 
@@ -134,6 +162,8 @@ function toUser(row: {
   displayName: string
   avatarUrl: string | null
   bio: string | null
+  language: string
+  titleBadgeSlug: string | null
   createdAt: Date
 }): User {
   return {
@@ -141,7 +171,9 @@ function toUser(row: {
     username: row.username,
     displayName: row.displayName,
     avatarUrl: row.avatarUrl,
+    titleSlug: row.titleBadgeSlug,
     bio: row.bio,
+    language: row.language,
     createdAt: row.createdAt.toISOString(),
   }
 }

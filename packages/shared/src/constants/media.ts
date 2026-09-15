@@ -51,7 +51,7 @@ export const MEDIA_STATUS_LABELS = {
 /** Short singular noun for a media type, used in headings and chips. */
 export const MEDIA_TYPE_LABELS = {
   movie: 'Movie',
-  series: 'Series',
+  series: 'TV Show',
   book: 'Book',
   game: 'Game',
 } as const
@@ -64,7 +64,7 @@ export const MEDIA_TYPE_LABELS = {
  */
 export const MEDIA_TYPE_PLURALS = {
   movie: 'Movies',
-  series: 'Series',
+  series: 'TV Shows',
   book: 'Books',
   game: 'Games',
 } as const
@@ -76,3 +76,49 @@ export const MEDIA_TYPE_VERBS = {
   book: { present: 'reading', past: 'read' },
   game: { present: 'playing', past: 'played' },
 } as const
+
+/**
+ * How a person is credited on a title (SPEC 14 follow-on).
+ *
+ * One list across all four media types, because the question a reader asks is
+ * the same one -- "what else has this person made" -- whether the person
+ * directed it, wrote it or shipped it. A per-type credit model would have
+ * needed four joins to answer that and four UIs to render it.
+ *
+ * `cast` is the only role that carries a character, and `author`/`developer`
+ * are the book and game equivalents of a lead credit: both already existed as
+ * plain strings in `media.metadata`, which is where their rows come from.
+ */
+export const CREDIT_ROLES = [
+  'director',
+  'creator',
+  'writer',
+  'cast',
+  'author',
+  'developer',
+] as const
+
+/** Heading for a group of credits on a person's page. */
+export const CREDIT_ROLE_LABELS = {
+  director: 'Director',
+  creator: 'Creator',
+  writer: 'Writer',
+  cast: 'Actor',
+  author: 'Author',
+  developer: 'Developer',
+} as const
+
+/**
+ * The order credits are shown in, most defining first.
+ *
+ * A person who both directed and acted in something is billed as the
+ * director, because that is how the title is remembered.
+ */
+export const CREDIT_ROLE_ORDER = [
+  'director',
+  'creator',
+  'author',
+  'developer',
+  'writer',
+  'cast',
+] as const

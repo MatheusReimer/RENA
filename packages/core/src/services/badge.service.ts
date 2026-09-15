@@ -72,8 +72,22 @@ export const badgeService = {
         name: badge.name,
         description: badge.description,
         icon: badge.icon,
+        tier: badge.tier,
         earnedAt: new Date().toISOString(),
       })
+    }
+
+    /*
+     * Keep the displayed title on the rarest badge held.
+     *
+     * Only when something new was earned, and only when it outranks what is
+     * already shown -- earning a tier-1 badge should not demote somebody from
+     * a tier-4 title. Ties keep the incumbent: being promoted sideways is not
+     * a promotion, and rewriting the row for it is a write nobody asked for.
+     */
+    if (newlyEarned.length > 0) {
+      const best = newlyEarned.reduce((a, b) => (b.tier > a.tier ? b : a))
+      await gamificationRepository.promoteTitleIfRarer(db, userId, best.slug, best.tier)
     }
 
     return newlyEarned
@@ -98,6 +112,7 @@ export const badgeService = {
         name: badge.name,
         description: badge.description,
         icon: badge.icon,
+        tier: badge.tier,
         earnedAt: earnedAtById.get(badge.id)?.toISOString() ?? null,
         current: Math.min(
           currentValue(badge, counts, typeCounts),
@@ -125,6 +140,7 @@ export const badgeService = {
         name: definition.name,
         description: definition.description,
         icon: definition.icon,
+        tier: definition.tier,
         requirementType: definition.requirementType,
         requirementValue: definition.requirementValue,
         requirementMediaType: definition.requirementMediaType ?? null,

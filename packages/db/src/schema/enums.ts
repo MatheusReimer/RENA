@@ -1,5 +1,6 @@
 import {
   ACTIVITY_TYPES,
+  CREDIT_ROLES,
   FRIENDSHIP_STATUSES,
   LIST_VISIBILITIES,
   MEDIA_STATUSES,
@@ -22,3 +23,4 @@ export const friendshipStatusEnum = pgEnum('friendship_status', FRIENDSHIP_STATU
 export const listVisibilityEnum = pgEnum('list_visibility', LIST_VISIBILITIES)
 export const activityTypeEnum = pgEnum('activity_type', ACTIVITY_TYPES)
 export const notificationTypeEnum = pgEnum('notification_type', NOTIFICATION_TYPES)
+export const creditRoleEnum = pgEnum('credit_role', CREDIT_ROLES)

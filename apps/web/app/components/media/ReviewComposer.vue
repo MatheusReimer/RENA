@@ -226,7 +226,7 @@ async function submit() {
   gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--text-secondary);
-  cursor: pointer;
+  cursor: var(--cursor-hand);
 }
 
 .composer__spoiler input {

@@ -16,4 +16,19 @@ export const BRAND = {
   description: 'A social home for every story.',
   /** Reverse-DNS id used by Capacitor for the iOS/Android bundle. */
   appId: 'net.thinklogic.rena',
+
+  /**
+   * Store listings for the native apps.
+   *
+   * Null until each app is actually published, and the landing screen reads
+   * these rather than assuming: with a URL it offers a phone visitor the app,
+   * and without one it offers them the web sign-up exactly as it does on a
+   * desktop. A "Download on the App Store" button that 404s is worse than no
+   * button, and worse still because it is the first thing a phone visitor
+   * would touch.
+   */
+  stores: {
+    ios: null as string | null,
+    android: null as string | null,
+  },
 } as const

@@ -67,8 +67,23 @@ async function importType(
     return { imported: 0, provider: null }
   }
 
+  /*
+   * A provider that cannot bulk list is a configuration failure, not a note.
+   *
+   * This line used to read like the others and scrolled past with them. It
+   * was hiding the worst outcome the import has: the registry prefers a
+   * configured provider over the keyless fallback, so adding an API key --
+   * the thing you do to get a *better* catalogue -- could leave you with an
+   * empty one, reported in the same grey tone as a success.
+   *
+   * It now says what happened, what it cost, and what to do about it.
+   */
   if (!provider.listPopular) {
-    console.log(`  ${mediaType.padEnd(7)} ${provider.key} cannot bulk list - skipped`)
+    console.error(
+      `\n  ${mediaType}: ${provider.key} is configured but cannot bulk list, so nothing was` +
+        ' imported.\n  Unset its credentials to fall back to a provider that can, or give' +
+        ` ${provider.key} a listPopular implementation.\n`,
+    )
     return { imported: 0, provider: provider.key }
   }
 

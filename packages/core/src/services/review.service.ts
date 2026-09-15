@@ -2,7 +2,7 @@ import type { Executor } from '@revy/db'
 import { PAGE_SIZE_DEFAULT } from '@revy/shared/constants'
 import type { CreateReviewInput, UpdateReviewInput } from '@revy/shared/schemas'
 import type { Paginated, Review } from '@revy/shared/types'
-import { errors, isValidScore, toHalfSteps, toScore } from '@revy/shared/utils'
+import { errors, isReleased, isValidScore, toHalfSteps, toScore } from '@revy/shared/utils'
 import { requireViewer, type ServiceContext } from '../context'
 import { toUserSummary } from '../mappers'
 import {
@@ -30,6 +30,11 @@ export const reviewService = {
 
     const media = await mediaRepository.findById(auth.db, input.mediaId)
     if (!media) throw errors.mediaNotFound()
+
+    // Same rule as rating: a review of something nobody has seen is not a
+    // review. A review can also carry a score, so leaving this out would be a
+    // way round the rating check rather than merely an oversight.
+    if (!isReleased(media.releaseDate)) throw errors.notReleased('review')
 
     const existing = await reviewRepository.findByUserAndMedia(
       auth.db,
@@ -74,6 +79,9 @@ export const reviewService = {
         ratingId,
         content: input.content,
         spoiler: input.spoiler,
+        // Defaulted in the column too, so a client that never sends one stores
+        // a real language rather than a null nobody can filter on.
+        ...(input.language ? { language: input.language } : {}),
       })
 
       // A review supersedes the bare rating card for the same title, so the
@@ -96,6 +104,7 @@ export const reviewService = {
         mediaId: review.mediaId,
         score,
         content: review.content,
+        language: review.language,
         spoiler: review.spoiler,
         likeCount: 0,
         commentCount: 0,
@@ -152,6 +161,7 @@ export const reviewService = {
         mediaId: updated.mediaId,
         score,
         content: updated.content,
+        language: updated.language,
         spoiler: updated.spoiler,
         likeCount: updated.likeCount,
         commentCount: updated.commentCount,
@@ -212,6 +222,7 @@ export const reviewService = {
         mediaId: row.review.mediaId,
         score: row.score === null ? null : toScore(row.score),
         content: row.review.content,
+        language: row.review.language,
         spoiler: row.review.spoiler,
         likeCount: row.review.likeCount,
         commentCount: row.review.commentCount,

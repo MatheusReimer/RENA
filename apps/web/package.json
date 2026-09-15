@@ -12,14 +12,15 @@
     "typecheck": "nuxt typecheck",
     "cap:sync": "nuxt generate && cap sync",
     "cap:ios": "cap open ios",
-    "cap:android": "cap open android"
+    "cap:android": "cap open android",
+    "i18n:audit": "node i18n/audit.mjs"
   },
   "dependencies": {
     "@revy/core": "workspace:*",
     "@revy/db": "workspace:*",
     "@revy/shared": "workspace:*",
     "better-auth": "^1.2.0",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.2",
     "pinia": "^3.0.0",
     "vue": "^3.5.0",
     "zod": "^4.1.12"
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0",
+    "@nuxtjs/i18n": "^10.6.0",
     "@pinia/nuxt": "^0.11.0",
     "nuxt": "^4.0.0",
     "vue-tsc": "^2.2.0"

@@ -32,6 +32,10 @@ import { BRAND } from '@revy/shared/constants'
   gap: var(--space-8);
   min-height: 100dvh;
   padding: var(--space-6) var(--space-4);
+  /* No background of its own, but it still needs its own layer to paint above
+     the ambient backdrop. */
+  position: relative;
+  z-index: 1;
 }
 
 .auth-layout__panel {

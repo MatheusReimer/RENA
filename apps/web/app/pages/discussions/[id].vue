@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BRAND } from '@revy/shared/constants'
 /**
  * A discussion thread with its nested replies (SPEC 14).
  *
@@ -7,6 +8,7 @@
  */
 const route = useRoute()
 const api = useApi()
+const { absolute } = useShareLink()
 const auth = useAuthStore()
 
 const threadId = computed(() => String(route.params.id))
@@ -44,6 +46,19 @@ async function removeThread() {
 }
 
 useHead(() => ({ title: thread.value?.title ?? 'Discussion' }))
+useSeoMeta({
+  ogTitle: () => thread.value?.title ?? BRAND.name,
+  /*
+   * The title only, never the opening comment.
+   *
+   * Threads are flagged for spoilers and the body of one is exactly what a
+   * spoiler guard exists to hide -- putting it in a share card would leak it
+   * past every control the page has.
+   */
+  ogDescription: () => BRAND.description,
+  ogType: 'article',
+  ogUrl: () => (thread.value ? absolute(`/discussions/${thread.value.id}`) : undefined),
+})
 </script>
 
 <template>

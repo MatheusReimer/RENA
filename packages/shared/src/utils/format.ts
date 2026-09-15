@@ -19,6 +19,39 @@ export function releaseYear(releaseDate: string | null | undefined): string {
 }
 
 /**
+ * Whether a title is out yet.
+ *
+ * Nobody can have an opinion on something that does not exist, so this gates
+ * rating, reviewing, and any status past "planned". Avengers: Doomsday is in
+ * the catalogue with a 2026 date and was collecting scores.
+ *
+ * An unknown date counts as released. The catalogue is full of titles with no
+ * date at all -- most books, plenty of older films -- and refusing to let
+ * anyone rate those would break far more than it fixed. The rule is "we know
+ * it is in the future", not "we cannot prove it is in the past".
+ *
+ * Compared as date strings rather than `Date` objects, deliberately. A release
+ * date is a calendar day, not an instant: `new Date('2026-09-14')` is UTC
+ * midnight, which is still "tomorrow" for a reader in Auckland and already
+ * "yesterday" for one in Los Angeles. Lexicographic comparison of ISO dates is
+ * the same thing every timezone agrees on.
+ */
+export function isReleased(releaseDate: string | null | undefined, now: Date = new Date()): boolean {
+  if (!releaseDate) return true
+
+  const day = releaseDate.slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    // A bare year ('2026') is all some providers give. Treat it as released
+    // once that year has started, which is the most generous reading that is
+    // still true.
+    const year = releaseYear(releaseDate)
+    return year === '' || Number(year) <= now.getUTCFullYear()
+  }
+
+  return day <= now.toISOString().slice(0, 10)
+}
+
+/**
  * Compact relative time, matching the design: '2h ago', '5d ago', '3w ago'.
  * Falls back to an absolute date past ~1 year.
  */

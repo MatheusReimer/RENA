@@ -7,14 +7,20 @@
     "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "verify": "tsx src/verify.ts",
-    "catalogue": "tsx src/import.ts"
+    "catalogue": "tsx src/import.ts",
+    "credits": "tsx src/credits.ts",
+    "scores": "tsx src/scores.ts",
+    "translate": "tsx src/translate.ts",
+    "compare": "tsx src/compare.ts",
+    "badges": "tsx src/badges.ts",
+    "migrate-dev": "tsx src/migrate.ts"
   },
   "dependencies": {
     "@revy/core": "workspace:*",
     "@revy/db": "workspace:*",
     "@revy/shared": "workspace:*",
     "better-auth": "^1.2.0",
-    "drizzle-orm": "^0.44.0"
+    "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

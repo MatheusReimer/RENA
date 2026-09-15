@@ -1,0 +1,1 @@
+ALTER TABLE "badges" ADD COLUMN "tier" smallint DEFAULT 1 NOT NULL;

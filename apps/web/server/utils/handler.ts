@@ -1,7 +1,42 @@
+import { localiseMedia } from '@revy/core'
 import type { ApiErrorBody } from '@revy/shared/types'
 import { DomainError, isDomainError } from '@revy/shared/utils'
 import type { EventHandler, EventHandlerRequest, H3Event } from 'h3'
 import { z } from 'zod'
+import { useDatabase } from './db'
+
+/**
+ * Which language this request wants its catalogue text in.
+ *
+ * The cookie first, because it is the reader's own explicit choice and the
+ * i18n module has already written it -- `Accept-Language` is only what their
+ * browser was installed with, and on a borrowed laptop the two disagree.
+ *
+ * Unknown values fall through to English rather than being trusted: this
+ * string reaches a query, and the set of languages we serve is closed.
+ */
+const SUPPORTED = new Set(['en', 'pt-BR', 'es'])
+
+export function requestLocale(event: H3Event): string {
+  const cookie = getCookie(event, 'rena_locale')
+  if (cookie && SUPPORTED.has(cookie)) return cookie
+
+  const header = getRequestHeader(event, 'accept-language') ?? ''
+  for (const part of header.split(',')) {
+    const tag = part.split(';')[0]?.trim()
+    if (!tag) continue
+    if (SUPPORTED.has(tag)) return tag
+
+    // 'pt' and 'pt-PT' both mean the Portuguese we have; 'es-419' means the
+    // Spanish we have. Matching on the primary subtag is the difference
+    // between translating for most readers and translating for exact matches.
+    const primary = tag.split('-')[0]
+    const match = [...SUPPORTED].find((locale) => locale.split('-')[0] === primary)
+    if (match) return match
+  }
+
+  return 'en'
+}
 
 /**
  * The API boundary (SPEC 25, 35, 39).
@@ -21,7 +56,17 @@ export function defineApiHandler<T extends EventHandlerRequest, D>(
 ): EventHandler<T, Promise<D | ApiErrorBody>> {
   return defineEventHandler(async (event) => {
     try {
-      return await handler(event)
+      /*
+       * Catalogue text is swapped into the reader's language here, not in the
+       * queries that produced it.
+       *
+       * Two dozen queries return media rows and ten services map them. Doing
+       * this per query would mean the first one added without it silently
+       * renders English titles on a Portuguese screen -- nothing throws, and
+       * it only shows up on whichever screen happens to use that query. One
+       * boundary cannot drift. See `localiseMedia` for the shape test.
+       */
+      return await localiseMedia(useDatabase(), requestLocale(event), await handler(event))
     } catch (error) {
       const { status, body } = toErrorResponse(error)
 

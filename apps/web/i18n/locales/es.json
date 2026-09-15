@@ -1,0 +1,506 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "explore": "Explorar",
+    "community": "Comunidad",
+    "library": "Biblioteca",
+    "notifications": "Notificaciones",
+    "profile": "Perfil",
+    "search": "Buscar",
+    "signIn": "Iniciar sesión",
+    "join": "Únete",
+    "skipToContent": "Ir al contenido",
+    "searchPlaceholder": "Busca una película, un juego, un libro o una serie...",
+    "yourLibrary": "Tu biblioteca",
+    "discover": "Descubrir",
+    "watchlist": "Por ver",
+    "readlist": "Por leer",
+    "playlist": "Por jugar",
+    "yourReviews": "Tus reseñas",
+    "liked": "Me gusta",
+    "history": "Historial",
+    "greeting": "Hola, {name}",
+    "about": "Acerca de",
+    "footerTagline": "Hecho para quienes aman las historias.",
+    "friends": "Amigos",
+    "messages": "Mensajes"
+  },
+  "mediaType": {
+    "movie": "Película",
+    "series": "Serie",
+    "book": "Libro",
+    "game": "Juego",
+    "movie_plural": "Películas",
+    "series_plural": "Series",
+    "book_plural": "Libros",
+    "game_plural": "Juegos"
+  },
+  "landing": {
+    "eyebrow": "Reseñas. Debates. Gente real.",
+    "titleLead": "Las historias valen",
+    "titleRest": "más",
+    "titleAccent": "juntos.",
+    "lede": "RENA es una comunidad de reseñas honestas, conversaciones que importan y todo lo que te gusta ver, leer y jugar.",
+    "join": "Únete a la comunidad",
+    "explore": "Explorar",
+    "membersNote": "Compartiendo historias. Encontrando gente.",
+    "member": "miembro",
+    "members": "miembros",
+    "exploreEyebrow": "Explorar",
+    "exploreTitle": "¿Cuál es tu próxima historia?",
+    "trendingEyebrow": "Tendencia en {brand}",
+    "trendingTitle": "Reseñas recientes de la comunidad",
+    "carouselLabel": "Títulos reseñados recientemente",
+    "communityEyebrow": "La comunidad RENA",
+    "communityTitleLead": "Gente real.",
+    "communityTitleRest": "Opiniones reales.",
+    "likes": "me gusta",
+    "replies": "respuestas",
+    "closingLead": "Las buenas historias",
+    "closingRest": "encuentran buena gente.",
+    "closingLine": "Una línea nos conecta a todos.",
+    "titles": "Títulos"
+  },
+  "tagline": {
+    "movie": "De los clásicos a los estrenos.",
+    "series": "Maratón. Debate. Revisión.",
+    "book": "Pasad la página juntos.",
+    "game": "Todos los mundos, todos los jugadores."
+  },
+  "ask": {
+    "cardTitle": "¿No sabes qué ver ahora?",
+    "cardCue": "Descríbelo →",
+    "promoFallback": "Mejores historias, juntos.",
+    "dialogLabel": "Encuentra algo para ver, leer o jugar",
+    "title": "¿Qué te apetece?",
+    "lede": "Descríbelo tal y como lo tienes en la cabeza. Buscaremos en todo lo que hay en RENA — películas, series, libros y juegos.",
+    "placeholder": "Algo lento y bonito que no sea triste…",
+    "submit": "Buscar",
+    "thinking": "Pensando",
+    "close": "Cerrar",
+    "understood": "Buscando",
+    "again": "Pedir otra cosa",
+    "failed": "Algo ha salido mal.",
+    "notRated": "Aún sin valoraciones aquí",
+    "onRena": "en RENA",
+    "ratings": "{count} valoración | {count} valoraciones",
+    "waiting1": "Leyendo el catálogo…",
+    "waiting2": "Seiscientos títulos que sopesar…",
+    "waiting3": "Viendo qué encaja de verdad…",
+    "waiting4": "Sigue en marcha — este está tardando un poco…",
+    "opener1": "Algo de menos de dos horas para ver con mi novia",
+    "opener2": "Un libro que me haga llorar en un avión",
+    "opener3": "Como Black Mirror, pero con esperanza",
+    "opener4": "Un juego que pueda terminar en un fin de semana",
+    "noPreference": "Me da igual",
+    "replyPlaceholder": "O dilo a tu manera…",
+    "send": "Enviar",
+    "decideNow": "Muéstrame algo ya",
+    "narrowing": "Afinando la búsqueda"
+  },
+  "presence": {
+    "heading": "Quién ha estado aquí",
+    "firstLine": "Serías la primera persona.",
+    "firstSub": "Nadie aquí {verb} {title} todavía. Márcalo como terminado y la próxima persona te encontrará.",
+    "finished": "Terminado",
+    "readingNow": "Leyendo ahora,",
+    "friend": "Amigo",
+    "inProgress": "{count} persona va por la mitad ahora mismo. | {count} personas van por la mitad ahora mismo.",
+    "language": "{count} de ellas escribe en {language}. | {count} de ellas escriben en {language}."
+  },
+  "language": {
+    "label": "Idioma",
+    "switch": "Cambiar idioma",
+    "inYourLanguage": "En tu idioma",
+    "otherLanguages": "Hay {count} más en otro idioma | Hay {count} más en otros idiomas",
+    "showAll": "Mostrar todos los idiomas",
+    "writtenIn": "Escrito en {language}",
+    "hint": "Define tu interfaz y marca en qué idioma se escriben tus reseñas.",
+    "translated": "Traducido del {language}",
+    "seeOriginal": "Ver original",
+    "seeTranslation": "Ver traducción",
+    "translating": "Traduciendo…",
+    "machine": "Traducción automática",
+    "en": "inglés",
+    "pt-BR": "portugués",
+    "es": "español"
+  },
+  "common": {
+    "seeAll": "Ver todo",
+    "tryAgain": "Reintentar",
+    "loadMore": "Cargar más",
+    "viewDetails": "Ver detalles",
+    "all": "Todo",
+    "ratings": "{count} valoración | {count} valoraciones",
+    "reviews": "{count} reseña | {count} reseñas",
+    "loading": "Cargando…",
+    "showMore": "Mostrar más",
+    "signIn": "Iniciar sesión",
+    "clear": "Borrar",
+    "continue": "Continuar",
+    "copied": "Enlace copiado",
+    "copyFailed": "No se pudo copiar"
+  },
+  "explore": {
+    "heroTitle": "Explora. Descubre. Pertenece.",
+    "filterByType": "Filtrar por tipo",
+    "moodEyebrow": "Descubre por ánimo",
+    "moodTitle": "¿Qué te apetece?",
+    "sayEyebrow": "Lo que dice la comunidad",
+    "sayTitle": "Gente real. Opiniones reales.",
+    "sayClosingA": "Gente distinta.",
+    "sayClosingB": "Las mismas historias.",
+    "sayClosingC": "Ahí está la magia.",
+    "scrollBack": "Atrás",
+    "scrollForward": "Adelante",
+    "empty": "Aquí todavía no hay nada.",
+    "failed": "No pudimos cargar Explorar.",
+    "heroLead": "Encuentra",
+    "heroLeadRest": "algo",
+    "heroTail": "en lo que",
+    "heroAccent": "perderte.",
+    "heroSub": "Explora películas, series, juegos y libros a través de quienes los aman.",
+    "trendingSub": "Los títulos más comentados de esta semana.",
+    "moodEmptyBody": "Ningún título del catálogo encaja lo bastante con este ánimo como para recomendarlo. Prueba otro.",
+    "failedBody": "Algo ha salido mal por nuestra parte.",
+    "gems": "Joyas escondidas",
+    "gemsSub": "Puede que aún no conozcas estos."
+  },
+  "dash": {
+    "heroLead": "Las buenas historias",
+    "heroLineA": "Ves. Lees. Juegas. Compartes.",
+    "heroLineB": "Y no estás solo.",
+    "activity": "Tu actividad",
+    "viewAll": "Ver todo",
+    "friendsWatching": "Tus amigos están viendo",
+    "viewMoreFriends": "Ver más amigos",
+    "popularNow": "Popular ahora",
+    "trendingReviews": "Reseñas en tendencia",
+    "trendingSub": "De lo que habla la comunidad esta semana.",
+    "filterReviews": "Filtrar reseñas por tipo",
+    "main": "Principal",
+    "discoverByType": "Descubrir por tipo"
+  },
+  "discover": {
+    "trendingOfType": "{type} en tendencia",
+    "newOfType": "{type} recientes",
+    "moreOfType": "Más {type}",
+    "popularOfType": "{type} populares",
+    "topOfType": "{type} mejor valoradas",
+    "friendsWatching": "Tus amigos están viendo",
+    "forYou": "Más en los géneros que mejor valoras",
+    "highestRated": "Mejor valorado en {brand}",
+    "friendsRated": "Tus amigos han valorado hace poco",
+    "recommended": "Por lo que tú y tus amigos puntuáis",
+    "reasonFriend": "{name} le puso muy buena nota",
+    "reasonTwoFriends": "{first} y {second} le pusieron muy buena nota",
+    "reasonFriendsMore": "{name} y {count} amigos más le pusieron muy buena nota",
+    "reasonFriendCount": "{count} amigos le pusieron muy buena nota",
+    "reasonTaste": "{count} personas con tu mismo gusto le pusieron muy buena nota"
+  },
+  "mood": {
+    "stays-with-you": "Algo que se te queda dentro",
+    "stays-with-you_tags": "Emotivo · Significativo · Duradero",
+    "disappear-into": "Un mundo en el que perderse",
+    "disappear-into_tags": "Inmersivo · Inmenso · Inolvidable",
+    "make-me-think": "Algo que me haga pensar",
+    "make-me-think_tags": "Ingenioso · Con capas · Provocador",
+    "good-cry": "Necesito llorar un rato",
+    "good-cry_tags": "Tierno · Honesto · Demoledor",
+    "one-more-episode": "Solo un episodio más",
+    "one-more-episode_tags": "Adictivo · Lleno de giros · Para maratón",
+    "something-weird": "Algo un poco raro",
+    "something-weird_tags": "Extraño · Atrevido · Como nada más"
+  },
+  "search": {
+    "browseTitle": "Explora el catálogo",
+    "browseSub": "Aún no has escrito nada. Esto es lo que la gente está puntuando.",
+    "peopleTitle": "Buscar personas",
+    "peopleBody": "Escribe un nombre o nombre de usuario para encontrar miembros aquí.",
+    "emptyTitle": "Encuentra películas, series, libros y juegos.",
+    "emptyBody": "Busca en el catálogo para puntuar algo, añadirlo a una lista o ver qué opinaron tus amigos."
+  },
+  "credits": {
+    "heading": "Reparto y equipo"
+  },
+  "person": {
+    "failed": "No pudimos cargar a esta persona.",
+    "failedBody": "Inténtalo de nuevo en un momento.",
+    "credits": "{count} título | {count} títulos",
+    "workTitle": "Trabajos",
+    "workSub": "Todos los títulos acreditados a {name}, de lo más reciente a lo más antiguo.",
+    "noWork": "Nada acreditado todavía.",
+    "noWorkBody": "Aún no hemos importado los créditos de esta persona."
+  },
+  "media": {
+    "releasesOn": "Aún no disponible — se estrena el {date}",
+    "notReleased": "Aún no disponible",
+    "unreleasedHint": "Puedes añadirlo a tu lista ahora y puntuarlo cuando salga."
+  },
+  "recommend": {
+    "because": "Porque te gustó {title}",
+    "becauseSub": "La misma gente, el mismo terreno.",
+    "genres": "También {genres}",
+    "similar": "Parecido a lo que te gustó",
+    "role": {
+      "director": "Dirigida por {name}",
+      "creator": "Creada por {name}",
+      "writer": "Escrita por {name}",
+      "cast": "Con {name}",
+      "author": "De {name}",
+      "developer": "De {name}"
+    }
+  },
+  "score": {
+    "onRena": "{count} voto en RENA | {count} votos en RENA",
+    "fromSource": "{source} · {count} votos",
+    "fromSourceBare": "De {source}",
+    "unrated": "Aún sin puntuar"
+  },
+  "auth": {
+    "signOut": "Cerrar sesión",
+    "signOutFailed": "No pudimos cerrar tu sesión. Comprueba tu conexión e inténtalo de nuevo."
+  },
+  "badges": {
+    "first-rating": {
+      "name": "Oficialmente Opinante",
+      "description": "Puntúa tu primer título."
+    },
+    "ten-ratings": {
+      "name": "Evaluador Ávido",
+      "description": "Puntúa 10 títulos."
+    },
+    "fifty-ratings": {
+      "name": "Evaluador Implacable",
+      "description": "Puntúa 50 títulos."
+    },
+    "hundred-ratings": {
+      "name": "Autoridad Autoproclamada",
+      "description": "Puntúa 100 títulos."
+    },
+    "first-review": {
+      "name": "Tiene Opiniones",
+      "description": "Escribe tu primera reseña."
+    },
+    "ten-reviews": {
+      "name": "Crítico No Solicitado",
+      "description": "Escribe 10 reseñas."
+    },
+    "fifty-reviews": {
+      "name": "Nadie Preguntó",
+      "description": "Escribe 50 reseñas."
+    },
+    "first-movie": {
+      "name": "Espectador Casual",
+      "description": "Puntúa tu primera película."
+    },
+    "first-series": {
+      "name": "Sobrevivió al Piloto",
+      "description": "Puntúa tu primera serie."
+    },
+    "first-book": {
+      "name": "Lector, Supuestamente",
+      "description": "Puntúa tu primer libro."
+    },
+    "first-game": {
+      "name": "Pulsó Start",
+      "description": "Puntúa tu primer juego."
+    },
+    "movies-25": {
+      "name": "Ya Lo Vio Todo",
+      "description": "Puntúa 25 películas."
+    },
+    "series-25": {
+      "name": "Siempre a Media Temporada",
+      "description": "Puntúa 25 series."
+    },
+    "books-25": {
+      "name": "Sospechosamente Leído",
+      "description": "Puntúa 25 libros."
+    },
+    "games-25": {
+      "name": "Negando el Backlog",
+      "description": "Puntúa 25 juegos."
+    },
+    "first-friend": {
+      "name": "Hizo un Amigo",
+      "description": "Añade tu primer amigo."
+    },
+    "social-butterfly": {
+      "name": "Socialmente Funcional",
+      "description": "Haz 10 amigos."
+    },
+    "fifty-friends": {
+      "name": "Conoce a Todos",
+      "description": "Haz 50 amigos."
+    },
+    "hundred-friends": {
+      "name": "Celebridad Local",
+      "description": "Haz 100 amigos."
+    },
+    "discussion-starter": {
+      "name": "Empezó Algo",
+      "description": "Inicia tu primera discusión."
+    },
+    "ten-discussions": {
+      "name": "Instigador Serial",
+      "description": "Inicia 10 discusiones."
+    },
+    "ten-comments": {
+      "name": "Respondedor Crónico",
+      "description": "Deja 10 comentarios."
+    },
+    "fifty-comments": {
+      "name": "Le Gusta la Última Palabra",
+      "description": "Deja 50 comentarios."
+    },
+    "first-list": {
+      "name": "Tiene un Sistema",
+      "description": "Crea tu primera lista."
+    },
+    "five-lists": {
+      "name": "Organizador Compulsivo",
+      "description": "Crea 5 listas."
+    }
+  },
+  "friends": {
+    "title": "Amigos",
+    "tabRatings": "Puntuaciones",
+    "tabFriends": "Amigos",
+    "tabRequests": "Solicitudes",
+    "tabSent": "Enviadas",
+    "signInTitle": "Inicia sesión para ver a tus amigos.",
+    "signInBody": "Sigue a personas cuyo gusto te merece confianza y sus puntuaciones aparecerán en tu feed.",
+    "loadFailed": "No pudimos cargar tus amigos.",
+    "noFriendsYet": "Aún no tienes amigos, así que no hay nada que mostrar.",
+    "noFriendsYetBody": "Añade a algunas personas y esto se convierte en un feed de lo que van puntuando.",
+    "ratingsFailed": "No pudimos cargar lo que han puntuado tus amigos.",
+    "noRatingsYet": "Tus amigos aún no han puntuado nada.",
+    "noRatingsYetBody": "En cuanto alguno puntúe algo, aparecerá aquí.",
+    "ratingsEnd": "Eso es todo lo que han puntuado tus amigos.",
+    "searchPlaceholder": "Buscar amigos...",
+    "searchLabel": "Buscar amigos",
+    "noneTitle": "Añade amigos para ver qué están viendo y leyendo.",
+    "noneBody": "Busca a alguien por su nombre, o abre un perfil y envía una solicitud.",
+    "noMatches": "Ningún amigo coincide con \"{term}\".",
+    "noRequests": "No hay solicitudes pendientes.",
+    "noRequestsBody": "Cuando alguien te pida ser tu amigo, aparecerá aquí.",
+    "noSent": "No hay solicitudes esperando respuesta.",
+    "findPeople": "Encontrar personas",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "cancel": "Cancelar",
+    "sentAgo": "enviada {when}",
+    "tryAgain": "Inténtalo de nuevo",
+    "signIn": "Iniciar sesión",
+    "showMore": "Mostrar más"
+  },
+  "messages": {
+    "title": "Mensajes",
+    "privacyNote": "Privado entre vosotros dos. Guardado cifrado, y legible solo por quienes están en la conversación.",
+    "signInTitle": "Inicia sesión para ver tus mensajes.",
+    "signInBody": "Las conversaciones son entre amigos, así que primero necesitas una cuenta.",
+    "loadFailed": "No pudimos cargar tus mensajes.",
+    "noneTitle": "Aún no hay conversaciones.",
+    "noneBody": "Abre el perfil de un amigo y pulsa Mensaje para empezar.",
+    "yourFriends": "Tus amigos",
+    "noMessagesYet": "Aún no hay mensajes",
+    "you": "Tú:",
+    "unreadLabel": "{count} sin leer",
+    "loadingEarlier": "Cargando mensajes anteriores…",
+    "threadStart": "Este es el comienzo de vuestra conversación.",
+    "threadEmpty": "Aún no hay mensajes. Di algo.",
+    "openFailed": "No pudimos abrir esta conversación.",
+    "openFailedBody": "Puede haber sido eliminada, o puede que ya no tengas acceso.",
+    "backToMessages": "Volver a mensajes",
+    "hideMessage": "Ocultar este mensaje",
+    "hideForMe": "Ocultar para mí",
+    "composePlaceholder": "Escribe un mensaje…",
+    "composeLabel": "Escribe un mensaje",
+    "send": "Enviar",
+    "sendFailed": "No se pudo enviar. Inténtalo de nuevo.",
+    "closed": "Solo puedes enviar mensajes a tus amigos. Aún puedes leer esta conversación.",
+    "tryAgain": "Inténtalo de nuevo",
+    "signIn": "Iniciar sesión"
+  },
+  "profile": {
+    "share": "Compartir perfil",
+    "shareShort": "Compartir",
+    "copied": "Enlace copiado",
+    "shareFailed": "No se pudo copiar el enlace",
+    "shareText": "{name} en RENA",
+    "badges": "Insignias",
+    "signOut": "Cerrar sesión",
+    "message": "Mensaje",
+    "addFriend": "Añadir amigo",
+    "friends": "Amigos",
+    "cancelRequest": "Cancelar solicitud",
+    "acceptRequest": "Aceptar solicitud",
+    "notFound": "No encontramos ese perfil.",
+    "notFoundBody": "El nombre de usuario puede haber cambiado, o la cuenta ya no existe.",
+    "searchPeople": "Buscar personas",
+    "level": "Nivel {n}",
+    "ratings": "Puntuaciones",
+    "reviews": "Reseñas",
+    "friendCount": "Amigos",
+    "metaRatings": "{count} puntuaciones",
+    "metaReviews": "{count} reseñas"
+  },
+  "lists": {
+    "metaItems": "{count} elementos"
+  },
+  "community": {
+    "title": "Comunidad",
+    "subtitle": "Cada título es una comunidad. Únete a las que te interesen.",
+    "tabBrowse": "Explorar",
+    "tabActive": "Activas",
+    "tabJoined": "Unidas",
+    "join": "Unirse",
+    "joined": "Unido",
+    "threadCount": "{count} debate | {count} debates",
+    "memberCount": "{formatted} miembro | {formatted} miembros",
+    "activeAgo": "Activa {ago}",
+    "emptyJoined": "Todavía no te has unido a ninguna comunidad.",
+    "emptyActive": "Aún no pasa nada por aquí.",
+    "emptyHint": "Abre cualquier título y empieza un debate — con eso basta.",
+    "emptyAction": "Buscar algo de qué hablar",
+    "signInJoined": "Inicia sesión para ver las comunidades a las que te has unido.",
+    "loadFailed": "No pudimos cargar las comunidades.",
+    "tabFriends": "Amigos",
+    "searchPlaceholder": "Buscar comunidades…",
+    "friendsHere": "{name} está aquí | {name} y 1 más está aquí | {name} y {others} más están aquí",
+    "emptyFriends": "Ninguno de tus amigos se ha unido a una comunidad todavía.",
+    "signInFriends": "Inicia sesión para ver dónde están tus amigos.",
+    "emptySearch": "Nada coincide con «{query}».",
+    "emptySearchHint": "Prueba otra grafía o el título original."
+  },
+  "onboarding": {
+    "title": "Cuéntanos qué te gusta",
+    "kindsTitle": "¿Qué te gusta?",
+    "kindsSub": "Elige todo lo que corresponda. Puedes cambiarlo después.",
+    "moodsTitle": "¿Qué sueles buscar?",
+    "moodsSub": "Esto decide qué te mostramos, no lo que recibes.",
+    "rateTitle": "Puntúa algunos que conozcas",
+    "rateSub": "Con cinco basta para que las recomendaciones sean tuyas.",
+    "skip": "Omitir por ahora",
+    "done": "Listo — vamos",
+    "doneCount": "Has puntuado {count} de {target}",
+    "noTitles": "No hay nada que mostrar con esa combinación.",
+    "noTitlesBody": "Vuelve y elige algunas más, o sigue adelante — puedes puntuar lo que sea más tarde.",
+    "step": {
+      "kinds": "Paso 1 de 3",
+      "moods": "Paso 2 de 3",
+      "rate": "Paso 3 de 3"
+    }
+  },
+  "entry": {
+    "shareTitle": "{name} puntuó {title} con {score}",
+    "shareTitleNoScore": "{name} sobre {title}",
+    "logged": "Registrado {ago}",
+    "share": "Compartir esta puntuación",
+    "openTitle": "Abrir el título",
+    "missing": "Aquí no hay nada.",
+    "missingBody": "Puede que se haya eliminado esta puntuación, o que el enlace sea incorrecto.",
+    "backHome": "Ir al inicio"
+  }
+}

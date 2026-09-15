@@ -79,6 +79,7 @@ async function toggleLike() {
         <span class="card__author-text">
           <span class="card__headline">
             <strong>{{ activity.user.displayName }}</strong>
+            <UiUserTitle :slug="activity.user.titleSlug" />
             {{ headline }}
             <NuxtLink
               v-if="activity.media"

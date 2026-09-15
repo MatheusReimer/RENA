@@ -3,6 +3,7 @@ import {
   index,
   integer,
   pgTable,
+  smallint,
   text,
   timestamp,
   uniqueIndex,
@@ -27,6 +28,18 @@ export const badges = pgTable(
     name: text('name').notNull(),
     description: text('description').notNull(),
     icon: text('icon').notNull(),
+    /**
+     * Difficulty band, 1 (first time) to 4 (rare).
+     *
+     * Stored rather than derived, because "which badge is rarest" has to be
+     * answerable in SQL: it is how the default title beside somebody's name is
+     * chosen, and comparing a hundred ratings against five lists is not
+     * something `requirement_value` can do.
+     *
+     * Defaulted so the column can be added to a table that already has rows;
+     * `syncCatalogue` immediately overwrites every one from the definitions.
+     */
+    tier: smallint('tier').notNull().default(1),
     requirementType: text('requirement_type').notNull(),
     requirementValue: integer('requirement_value').notNull(),
     /** Narrows a rating_count_of_type requirement to one media type. */

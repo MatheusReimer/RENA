@@ -1,25 +1,43 @@
+import type { ContentLanguage } from '@revy/shared/constants'
 import type {
   Activity,
   ApiErrorBody,
   ApiErrorCode,
   CommunityDetail,
+  CommunityScope,
   CommunitySummary,
+  MediaEntry,
+  SeedTitle,
+  UserTaste,
+  ConversationDetail,
+  ConversationSummary,
   DiscoverSection,
+  DiscoveryAnswer,
+  ExploreSummary,
   DiscussionComment,
   DiscussionCommentNode,
   DiscussionThread,
+  DashboardSummary,
   FriendRequest,
   HomeSummary,
+  LibraryCounts,
   ListSummary,
   Media,
+  MediaCredit,
   MediaDetail,
   MediaList,
   MediaSearchResult,
   MediaStatus,
+  MediaType,
+  Message,
+  MoodRow,
   Notification,
   Paginated,
+  PersonDetail,
+  Presence,
   Rating,
   Review,
+  ReviewTranslation,
   UserProfile,
   UserSummary,
 } from '@revy/shared/types'
@@ -29,7 +47,9 @@ import type {
   CreateListInput,
   CreateReviewInput,
   CreateThreadInput,
+  DiscoveryAskBody,
   FeedQueryInput,
+  MessageQueryInput,
   NotificationQueryInput,
   UpdateListInput,
   UpdateProfileInput,
@@ -156,19 +176,66 @@ export function useApi() {
      * -------------------------------------------------------------- */
     auth: {
       me: () =>
-        request<{ user: UserProfile | null; unreadNotifications: number }>('/api/me'),
+        request<{
+          user: UserProfile | null
+          unreadNotifications: number
+          unreadMessages: number
+          /** False when the deployment has no message encryption key. */
+          messaging: boolean
+        }>('/api/me'),
 
       register: (body: {
         email: string
         password: string
         username: string
         displayName: string
+        language?: ContentLanguage
       }) => request<{ user: UserProfile }>('/api/auth/register', { method: 'POST', body }),
 
       signIn: (body: { email: string; password: string }) =>
         request<unknown>('/api/auth/sign-in/email', { method: 'POST', body }),
 
-      signOut: () => request<unknown>('/api/auth/sign-out', { method: 'POST' }),
+      /**
+       * The empty body is load-bearing.
+       *
+       * Better Auth rejects a POST whose content type is not JSON with a 415,
+       * and `ofetch` only sets `content-type: application/json` when there is
+       * a body to serialise. Without `body: {}` this request never reached the
+       * handler at all -- sign-out silently did nothing, the cookie stayed,
+       * and the only symptom was still being signed in.
+       */
+      signOut: () => request<unknown>('/api/auth/sign-out', { method: 'POST', body: {} }),
+
+      /**
+       * Asks for a reset link.
+       *
+       * Resolves the same way whether or not the address has an account --
+       * Better Auth answers identically by design, so this endpoint cannot be
+       * used to find out who is registered (OWASP A07). The screen's copy has
+       * to keep that promise too.
+       */
+      requestPasswordReset: (body: { email: string; redirectTo: string }) =>
+        request<unknown>('/api/auth/request-password-reset', { method: 'POST', body }),
+
+      /** Completes the reset with the token from the emailed link. */
+      resetPassword: (body: { newPassword: string; token: string }) =>
+        request<unknown>('/api/auth/reset-password', { method: 'POST', body }),
+
+      /** Sends the confirmation mail again, for an address that never got it. */
+      resendVerification: (body: { email: string; callbackURL: string }) =>
+        request<unknown>('/api/auth/send-verification-email', { method: 'POST', body }),
+
+/**
+       * The signed-in home screen. Authenticated and viewer-scoped, which is
+       * why it lives apart from `home()` rather than taking a flag.
+       */
+      dashboard: (mediaType?: MediaType) =>
+        request<DashboardSummary>('/api/me/dashboard', {
+          query: mediaType ? { type: mediaType } : undefined,
+        }),
+
+      /** The sidebar's six counters, and nothing else. */
+      library: () => request<LibraryCounts>('/api/me/library'),
 
       currently: () =>
         request<{
@@ -204,10 +271,26 @@ export function useApi() {
           query: cursor ? { cursor } : {},
         }),
 
+      /** Who else here has been through a title. Public. */
+      presence: (mediaId: string) => request<Presence>(`/api/media/${mediaId}/presence`),
+
       discussions: (id: string, cursor?: string | null) =>
         request<Paginated<DiscussionThread>>(`/api/media/${id}/discussions`, {
           query: cursor ? { cursor } : {},
         }),
+
+      /** Cast and crew. Its own request: a strip below the fold. */
+      credits: (id: string) => request<{ credits: MediaCredit[] }>(`/api/media/${id}/credits`),
+    },
+
+    /* -------------------------------------------------------------- *
+     * People
+     *
+     * A facet of the catalogue rather than a community: the answer to "what
+     * else has this person made", with the conversation left on the titles.
+     * -------------------------------------------------------------- */
+    people: {
+      get: (id: string) => request<{ person: PersonDetail }>(`/api/people/${id}`),
     },
 
     /* -------------------------------------------------------------- *
@@ -240,6 +323,31 @@ export function useApi() {
     /* -------------------------------------------------------------- *
      * Ratings and status (SPEC 9, 10)
      * -------------------------------------------------------------- */
+    /** One person's entry on one title -- what a shared rating link opens. */
+    entries: {
+      get: (username: string, mediaId: string) =>
+        request<{ entry: MediaEntry }>(
+          `/api/users/${encodeURIComponent(username)}/entries/${mediaId}`,
+        ),
+    },
+
+    /* ----------------------------------------------------------------
+     * Onboarding taste (SPEC 21)
+     * ---------------------------------------------------------------- */
+    taste: {
+      /** Null when the reader has never been asked. */
+      get: () => request<{ taste: UserTaste | null }>('/api/taste'),
+
+      save: (input: { mediaTypes: MediaType[]; moodKeys: string[]; skipped?: boolean }) =>
+        request<{ taste: UserTaste }>('/api/taste', { method: 'POST', body: input }),
+
+      /** Titles to offer for rating, for a selection not yet saved. */
+      seeds: (mediaTypes: MediaType[], moodKeys: string[], limit = 24) =>
+        request<{ titles: SeedTitle[] }>('/api/taste/seeds', {
+          query: { mediaTypes: mediaTypes.join(','), moodKeys: moodKeys.join(','), limit },
+        }),
+    },
+
     ratings: {
       upsert: (mediaId: string, score: number) =>
         request<{ rating: Rating }>('/api/ratings', {
@@ -272,6 +380,19 @@ export function useApi() {
 
       setLiked: (id: string, liked: boolean) =>
         request<{ ok: true }>(`/api/reviews/${id}/like`, { method: 'POST', body: { liked } }),
+
+      /**
+       * Translates one review into a language (SPEC 31).
+       *
+       * POST despite reading like a fetch: the first call for a given review
+       * and language spends money and writes a cache row, and a GET that does
+       * that is a GET something will make a thousand of.
+       */
+      translate: (id: string, language: ContentLanguage) =>
+        request<{ translation: ReviewTranslation }>(`/api/reviews/${id}/translate`, {
+          method: 'POST',
+          body: { language },
+        }),
     },
 
     /* -------------------------------------------------------------- *
@@ -329,15 +450,41 @@ export function useApi() {
 
       /** Artwork, counts and faces for the home opener. */
       home: () => request<HomeSummary>('/api/home'),
+
+      /**
+       * Describe what you're in the mood for (SPEC 40).
+       *
+       * Signed-in only and rate limited, unlike everything else on Discover:
+       * this one spends money per call rather than reading rows.
+       */
+      ask: (input: DiscoveryAskBody) =>
+        request<{ answer: DiscoveryAnswer }>('/api/discover/ask', {
+          method: 'POST',
+          body: input,
+        }),
+    },
+
+    /**
+     * Explore. Public, like Discover -- browsing is the one thing a visitor
+     * should be able to do before signing up.
+     */
+    explore: {
+      summary: (mediaType?: MediaType) =>
+        request<ExploreSummary>('/api/explore', {
+          query: mediaType ? { type: mediaType } : undefined,
+        }),
+
+      mood: (key: string) => request<MoodRow>('/api/explore/mood', { query: { key } }),
+
     },
 
     /* -------------------------------------------------------------- *
      * Communities (SPEC 14)
      * -------------------------------------------------------------- */
     communities: {
-      list: (scope: 'active' | 'joined' = 'active') =>
+      list: (scope: CommunityScope = 'browse', page = 0, q?: string) =>
         request<{ communities: CommunitySummary[] }>('/api/communities', {
-          query: { scope },
+          query: { scope, page, ...(q ? { q } : {}) },
         }),
 
       get: (mediaId: string) =>
@@ -387,6 +534,65 @@ export function useApi() {
         request<{ ok: true }>(`/api/lists/${id}/reorder`, {
           method: 'POST',
           body: { itemIds },
+        }),
+    },
+
+    /* -------------------------------------------------------------- *
+     * Direct messages (SPEC 12)
+     *
+     * Private, not end-to-end encrypted: bodies are sealed before they reach
+     * the database and opened on the way out, so the server can read them and
+     * a stolen dump cannot. The distinction matters in copy -- see
+     * `messageCipher` -- and nothing in the UI should claim otherwise.
+     * -------------------------------------------------------------- */
+    conversations: {
+      list: () => request<{ conversations: ConversationSummary[] }>('/api/conversations'),
+
+      /** Opens the thread with someone, creating it the first time. */
+      start: (userId: string) =>
+        request<{ conversation: ConversationDetail }>('/api/conversations', {
+          method: 'POST',
+          body: { userId },
+        }),
+
+      get: (id: string) =>
+        request<{ conversation: ConversationDetail }>(`/api/conversations/${id}`),
+
+      /**
+       * A page of a thread.
+       *
+       * `before` reads history backwards, `after` is the poll. Both are message
+       * ids; passing both is rejected server-side rather than guessed at.
+       */
+      messages: (id: string, params: Partial<MessageQueryInput> = {}) =>
+        request<{ messages: Message[]; hasMore: boolean }>(
+          `/api/conversations/${id}/messages`,
+          { query: params },
+        ),
+
+      send: (id: string, content: string) =>
+        request<{ message: Message }>(`/api/conversations/${id}/messages`, {
+          method: 'POST',
+          body: { content },
+        }),
+
+      /**
+       * Marks read up to the newest message actually on screen.
+       *
+       * Answers with the viewer's new unread total across every conversation,
+       * which is what the shell's badge needs and what the client would
+       * otherwise have to guess at.
+       */
+      markRead: (id: string, messageId: string) =>
+        request<{ ok: true; unreadMessages: number }>(`/api/conversations/${id}/read`, {
+          method: 'POST',
+          body: { messageId },
+        }),
+
+      /** Hides one message from the caller's view. The other side keeps it. */
+      hideMessage: (id: string, messageId: string) =>
+        request<{ ok: true }>(`/api/conversations/${id}/messages/${messageId}`, {
+          method: 'DELETE',
         }),
     },
 

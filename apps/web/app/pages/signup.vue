@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { LIMITS } from '@revy/shared/constants'
+import {
+  CONTENT_LANGUAGES,
+  LANGUAGE_NAMES,
+  LIMITS,
+  toContentLanguage,
+} from '@revy/shared/constants'
 import { signUpSchema } from '@revy/shared/schemas'
 
 /**
@@ -14,7 +19,20 @@ definePageMeta({ layout: 'auth' })
 const auth = useAuthStore()
 const api = useApi()
 
-const form = reactive({ displayName: '', username: '', email: '', password: '' })
+const { locale } = useI18n()
+
+/*
+ * Prefilled from the active locale, which is itself whatever the browser
+ * asked for. Somebody arriving with a Portuguese browser should find
+ * "Portugues" already chosen, not have to notice a field and set it.
+ */
+const form = reactive({
+  displayName: '',
+  username: '',
+  email: '',
+  password: '',
+  language: toContentLanguage(locale.value),
+})
 const fieldErrors = ref<Record<string, string[]>>({})
 const formError = ref<string | null>(null)
 const submitting = ref(false)
@@ -68,7 +86,15 @@ async function submit() {
   submitting.value = true
   try {
     await auth.register(parsed.data)
-    await navigateTo('/')
+    /*
+     * Straight to onboarding, not to the home screen (SPEC 21).
+     *
+     * This is the one moment a reader has agreed to spend time on us and has
+     * nothing to look at yet -- a home screen with no personalised rows is a
+     * worse first impression than four questions. It is skippable, and the
+     * skip is recorded, so nobody who declines is asked again.
+     */
+    await navigateTo('/onboarding')
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.fields) fieldErrors.value = error.fields
@@ -167,6 +193,25 @@ useHead({ title: 'Create account' })
       />
       <span v-if="fieldErrors.password" class="field__error">{{ fieldErrors.password[0] }}</span>
       <span v-else class="field__hint">At least 8 characters.</span>
+    </label>
+
+    <!--
+      Asked, not assumed.
+
+      It is prefilled from whatever the browser already told us, so for most
+      people this is a glance rather than a decision. It is still a question
+      because the answer is used for something a guess gets wrong: reviews
+      written from this account are recorded as being in this language, and
+      that is what a translation elsewhere will be attributed to.
+    -->
+    <label class="field">
+      <span class="field__label">{{ $t('language.label') }}</span>
+      <select v-model="form.language" class="field__input">
+        <option v-for="tag in CONTENT_LANGUAGES" :key="tag" :value="tag">
+          {{ LANGUAGE_NAMES[tag] }}
+        </option>
+      </select>
+      <span class="field__hint">{{ $t('language.hint') }}</span>
     </label>
 
     <p v-if="formError" class="auth-form__error" role="alert">{{ formError }}</p>

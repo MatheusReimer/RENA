@@ -52,6 +52,7 @@ async function toggleLike() {
       <NuxtLink :to="`/u/${review.user.username}`" class="review__author">
         <UiUserAvatar :user="review.user" size="sm" />
         <span class="review__name">{{ review.user.displayName }}</span>
+        <UiUserTitle :slug="review.user.titleSlug" />
       </NuxtLink>
 
       <UiStarRating v-if="review.score !== null" :score="review.score" size="sm" />
@@ -62,8 +63,20 @@ async function toggleLike() {
     </header>
 
     <UiSpoilerGuard :spoiler="review.spoiler">
-      <!-- Interpolation, never v-html: user content is untrusted (SPEC 39). -->
-      <p class="review__body">{{ review.content }}</p>
+      <!--
+        Interpolation, never v-html: user content is untrusted (SPEC 39), and
+        the same is true of a translation of it.
+
+        Inside the spoiler guard rather than around it, so a hidden review
+        stays hidden -- offering to translate something before the reader has
+        chosen to uncover it would be a way of reading it early.
+      -->
+      <MediaReviewTranslation
+        class="review__body"
+        :review-id="review.id"
+        :content="review.content"
+        :language="review.language"
+      />
     </UiSpoilerGuard>
 
     <footer class="review__footer">
@@ -80,11 +93,51 @@ async function toggleLike() {
         </svg>
         {{ likeCount }}
       </button>
+
+      <!--
+        The permalink for this review (SPEC 27).
+
+        On every review rather than only the reader's own: a link to somebody
+        else's take is the more useful of the two, and the page it opens shows
+        exactly what this card shows. Anchor rather than a button, so it can be
+        opened in a new tab, copied from the context menu, and read by a
+        crawler as a link between two real pages.
+      -->
+      <NuxtLink
+        class="review__permalink"
+        :to="`/u/${review.user.username}/${review.mediaId}`"
+        :aria-label="$t('entry.share')"
+        :title="$t('entry.share')"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" />
+          <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
+        </svg>
+      </NuxtLink>
     </footer>
   </article>
 </template>
 
 <style scoped>
+.review__permalink {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  color: var(--text-tertiary);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.review__permalink svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.review__permalink:hover {
+  color: var(--accent);
+}
+
 .review {
   padding-block: var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
