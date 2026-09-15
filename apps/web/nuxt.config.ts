@@ -229,8 +229,18 @@ export default defineNuxtConfig({
          * are the same mark: the lit red dot from the RE-NA wordmark, which is
          * what survives being 16 pixels wide when four letters do not.
          */
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        /*
+         * Versioned, and it has to be.
+         *
+         * Browsers cache a favicon in a store separate from ordinary HTTP
+         * caching, and Chrome in particular keeps serving the old one through
+         * reloads and even restarts. Replacing the file is not enough -- the
+         * previous "V" mark from the Revy working name survived a rebuild, a
+         * restart and a hard refresh. Changing the URL is what makes it a new
+         * resource. Bump `v` whenever the artwork changes.
+         */
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg?v=2' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png?v=2' },
         { rel: 'manifest', href: '/site.webmanifest' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
