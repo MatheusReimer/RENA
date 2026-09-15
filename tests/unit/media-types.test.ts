@@ -98,7 +98,7 @@ describe('plural labels', () => {
   it('does not produce "seriess"', () => {
     // The bug this exists to prevent: appending "s" to the singular label.
     // English has enough irregular plurals that deriving them is a trap.
-    expect(MEDIA_TYPE_PLURALS.series).toBe('Series')
+    expect(MEDIA_TYPE_PLURALS.series).toBe('TV Shows')
     for (const type of MEDIA_TYPES) {
       expect(MEDIA_TYPE_PLURALS[type]).not.toMatch(/ss$/)
     }

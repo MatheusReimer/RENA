@@ -119,12 +119,26 @@ describe('token lifecycle', () => {
 })
 
 describe('queries', () => {
+  /*
+   * The field is `game_type`, and this assertion previously named `category`.
+   *
+   * It passed the whole time IGDB was returning nothing, which is the lesson
+   * worth keeping: a stub confirms the string we send, never that the far end
+   * accepts it. IGDB renamed the field and retired the old name silently -- a
+   * `where category = (...)` clause matches zero rows and returns `[]` rather
+   * than erroring -- so the provider looked healthy while the catalogue came
+   * back empty from every query it makes.
+   *
+   * The guard against a repeat is not here. It is that an import which brings
+   * in nothing now fails loudly (see the seed's importer), because no unit
+   * test can tell you a remote schema moved.
+   */
   it('filters to standalone games, excluding DLC and bundles', async () => {
     const { impl, calls } = stub()
     await provider(impl).search({ query: 'hades', limit: 5 })
 
-    // Without this, expansions and soundtracks enter the catalogue as titles.
-    expect(calls[1]!.body).toContain('category = (0,4,8,9)')
+    expect(calls[1]!.body).toContain('game_type = (0,4,8,9)')
+    expect(calls[1]!.body).not.toContain('category =')
   })
 
   it('strips quotes that would break out of the query string', async () => {
