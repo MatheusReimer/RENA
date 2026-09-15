@@ -123,13 +123,72 @@ without each one. The ones that will stop the app starting:
 
 | Variable | Without it |
 |---|---|
-| `DATABASE_URL` | every route 503s |
-| `AUTH_SECRET` | nobody can sign in |
-| `MESSAGE_ENCRYPTION_KEY` | **the server refuses to start** |
+| `NUXT_DATABASE_URL` | every route 503s |
+| `NUXT_AUTH_SECRET` | nobody can sign in |
+| `NUXT_MESSAGE_ENCRYPTION_KEY` | messaging is disabled -- the server still starts |
 | `NUXT_PUBLIC_APP_URL` | share links, canonicals, sitemap and OG all point at the wrong origin |
+
+**Use the `NUXT_`-prefixed names.** See the section below; it is the difference
+between a secret you can rotate and one baked into the build.
 
 `NUXT_PUBLIC_APP_URL` is your final domain with scheme and no trailing slash.
 Set it to the Vercel URL first, then change it when the domain is live.
+
+
+---
+
+## The one that catches everyone: `NUXT_` prefixes
+
+Nuxt reads `runtimeConfig` from the environment **twice**, and the two reads use
+different names.
+
+- At **build** time it evaluates `process.env.DATABASE_URL` and bakes the value
+  into the bundle.
+- At **run** time it overrides those values only from variables named
+  `NUXT_<KEY>` — `NUXT_DATABASE_URL`, and so on.
+
+So a plain `MESSAGE_ENCRYPTION_KEY` set on your host is read during the build
+and never again. That mostly works on Vercel, because it exposes environment
+variables to the build as well — but it has two consequences worth knowing:
+
+1. **Changing a secret needs a full redeploy, not a restart.** The old value is
+   inside the built bundle.
+2. **The secret is inside the build artifact.**
+
+Setting the `NUXT_`-prefixed name avoids both: it is read at runtime, so
+rotating a key is a restart, and nothing is baked in.
+
+This was verified rather than assumed. With `MESSAGE_ENCRYPTION_KEY` set, a
+production server booted with:
+
+    [revy] messaging is DISABLED: no MESSAGE_ENCRYPTION_KEY is configured.
+
+With `NUXT_MESSAGE_ENCRYPTION_KEY` set instead, the same build booted with:
+
+    [revy] messaging enabled, encrypting at rest under key version 1
+
+### Set these on the host
+
+```
+NUXT_DATABASE_URL
+NUXT_AUTH_SECRET
+NUXT_MESSAGE_ENCRYPTION_KEY
+NUXT_PUBLIC_APP_URL
+NUXT_TMDB_API_KEY
+NUXT_RAWG_API_KEY
+NUXT_IGDB_CLIENT_ID
+NUXT_IGDB_CLIENT_SECRET
+NUXT_GEMINI_API_KEY
+NUXT_GROQ_API_KEY
+NUXT_MAIL_RESEND_API_KEY
+NUXT_MAIL_FROM
+```
+
+`NUXT_PUBLIC_APP_URL` was already correct because `appUrl` lives under
+`runtimeConfig.public`, where the prefix is part of the documented name.
+
+The unprefixed names in `.env` stay as they are — local development reads them
+at build time, which is the same process.
 
 ---
 
