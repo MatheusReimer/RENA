@@ -2,15 +2,20 @@
   <!--
     The brand mark, not the wordmark.
 
-    This replaces a "V" left over from when the product was called Revy. The
-    wordmark is RE-NA split by a glowing red dot, and at 16px in a browser tab
-    four letters are mush while a single mark reads instantly -- which is the
-    same reasoning that made every badge a circle.
+    Replaces a "V" left from when the product was called Revy. The wordmark is
+    RE NA split by a glowing red dot, and at 16px in a browser tab four letters
+    are mush while one mark reads instantly. Same reasoning as the circular
+    badges.
 
-    The gradient is `--accent-lit` from tokens.css, inlined because an SVG
-    served from /public has no access to the stylesheet. Highlight at 35%/30%,
-    accent through the middle, shade at the edge: the dot reads as lit from
-    above rather than as a flat circle.
+    The gradient is the accent-lit token from tokens.css, inlined because an
+    SVG served from /public cannot reach the stylesheet. Highlight at 35%/30%,
+    accent through the middle, shade at the edge, so it reads as lit from above
+    rather than as a flat circle.
+
+    NOTE: this is XML, so a comment may never contain two consecutive hyphens.
+    An earlier version of this file wrote the CSS custom property with its
+    leading hyphens and the whole SVG failed to parse, which the browser showed
+    as the previous favicon rather than as an error.
   -->
   <defs>
     <radialGradient id="lit" cx="35%" cy="30%" r="75%">

@@ -239,6 +239,16 @@ export default defineNuxtConfig({
          * restart and a hard refresh. Changing the URL is what makes it a new
          * resource. Bump `v` whenever the artwork changes.
          */
+        /*
+         * The .ico first, and it is not legacy.
+         *
+         * Browsers request /favicon.ico whether or not a link says so, and
+         * several reach for it before a declared SVG. Without a real one, the
+         * dev server answered that request with a 1x1 transparent GIF and
+         * production would have 404'd -- so anything preferring the .ico got
+         * nothing. Multi-size (16/32/48/64) because an .ico is a container.
+         */
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico?v=2', sizes: 'any' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg?v=2' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png?v=2' },
         { rel: 'manifest', href: '/site.webmanifest' },
