@@ -17,6 +17,9 @@ apps/web/android/
 .env
 .env.*
 !.env.example
+# Templates carry no secrets and must ship with the repo -- they are the only
+# record of which variables exist and what breaks without each one.
+!.env.production.example
 
 # editors / os
 .DS_Store

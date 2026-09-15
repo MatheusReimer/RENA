@@ -1,9 +1,15 @@
-# Revy (RENA)
+# RENA
 
-A social network for rating, reviewing and discussing movies, series and books.
+A social network for rating, reviewing and discussing films, television, books
+and games.
 
-> Letterboxd + Goodreads + a social graph, with one identity across every kind of
-> media. Full product scope is in [`docs/SPEC.md`](docs/SPEC.md).
+> Letterboxd + Goodreads + a social graph, with one identity across every kind
+> of media. Full product scope is in [`docs/SPEC.md`](docs/SPEC.md);
+> deployment is in [`DEPLOY.md`](DEPLOY.md).
+
+The package scope and repository history still say `revy`, which was the
+working name. `BRAND` in `packages/shared/src/constants/brand.ts` is the single
+source of the user-facing name -- anything that hardcodes it elsewhere is a bug.
 
 ---
 
