@@ -487,6 +487,8 @@
     "doneCount": "Has puntuado {count} de {target}",
     "noTitles": "No hay nada que mostrar con esa combinación.",
     "noTitlesBody": "Vuelve y elige algunas más, o sigue adelante — puedes puntuar lo que sea más tarde.",
+    "loadFailed": "No pudimos cargar ningún título.",
+    "loadFailedBody": "Es cosa nuestra, no de lo que elegiste. Inténtalo de nuevo o sáltate este paso y puntúa cuando quieras.",
     "step": {
       "kinds": "Paso 1 de 3",
       "moods": "Paso 2 de 3",

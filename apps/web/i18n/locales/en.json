@@ -487,6 +487,8 @@
     "doneCount": "Rated {count} of {target}",
     "noTitles": "Nothing to show for that combination.",
     "noTitlesBody": "Go back and pick a few more, or skip ahead — you can rate anything later.",
+    "loadFailed": "We couldn't load any titles.",
+    "loadFailedBody": "That's on us, not on what you picked. Try again, or skip ahead and rate things whenever you like.",
     "step": {
       "kinds": "Step 1 of 3",
       "moods": "Step 2 of 3",

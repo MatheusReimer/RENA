@@ -93,20 +93,50 @@ function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof cr
       autoSignInAfterVerification: true,
       expiresIn: LINK_TTL_SECONDS,
 
+      /*
+       * A failed send must not fail the sign-up.
+       *
+       * Better Auth calls this during registration, and an exception here
+       * propagates out of the request: the account row is written, the
+       * response is a 500, no session cookie is set, and the new user lands
+       * on an onboarding page where every request is a 401 and the screen is
+       * empty. That is exactly what an unverified Resend sending domain --
+       * a 403 on send -- did to this app in production.
+       *
+       * Swallowing it is only defensible because `requireEmailVerification`
+       * is false above. The address stays unconfirmed and the account works,
+       * which is the trade already made there. `sendResetPassword`
+       * deliberately does NOT do this: there the mail *is* the flow, and
+       * failing quietly leaves somebody waiting on an email that is never
+       * coming.
+       */
       async sendVerificationEmail({ user, url }) {
-        await mailer.send({
-          to: user.email,
-          subject: 'Confirm your email for RENA',
-          text: [
-            `Welcome to RENA, ${user.name || 'there'}.`,
-            '',
-            'Confirm this address so we can reach you about your account:',
-            '',
-            url,
-            '',
-            'The link expires in an hour. If you did not sign up, ignore this.',
-          ].join(NEWLINE),
-        })
+        try {
+          await mailer.send({
+            to: user.email,
+            subject: 'Confirm your email for RENA',
+            text: [
+              `Welcome to RENA, ${user.name || 'there'}.`,
+              '',
+              'Confirm this address so we can reach you about your account:',
+              '',
+              url,
+              '',
+              'The link expires in an hour. If you did not sign up, ignore this.',
+            ].join(NEWLINE),
+          })
+        } catch (error) {
+          /*
+           * Neither the address nor the link goes in the log line. The link
+           * is a bearer token and the address says who just signed up; this
+           * lands in a shared aggregator. The transport and the provider's
+           * own (already sanitised) message are enough to diagnose it.
+           */
+          console.error(
+            `[revy] confirmation mail failed via "${mailer.kind}"; sign-up continued.`,
+            error instanceof Error ? error.message : error,
+          )
+        }
       },
     },
 

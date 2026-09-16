@@ -487,6 +487,8 @@
     "doneCount": "Avaliou {count} de {target}",
     "noTitles": "Nada para mostrar com essa combinação.",
     "noTitlesBody": "Volte e escolha mais algumas, ou siga em frente — dá para avaliar qualquer coisa depois.",
+    "loadFailed": "Não conseguimos carregar nenhum título.",
+    "loadFailedBody": "O problema é nosso, não das suas escolhas. Tente de novo ou pule esta etapa e avalie quando quiser.",
     "step": {
       "kinds": "Passo 1 de 3",
       "moods": "Passo 2 de 3",

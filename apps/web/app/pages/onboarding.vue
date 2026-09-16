@@ -84,10 +84,22 @@ function toggleMood(key: string) {
 const {
   data: seeds,
   status: seedStatus,
+  error: seedError,
   execute: loadSeeds,
 } = await useAsyncData(
   'onboarding-seeds',
   () => api.taste.seeds(kinds.value, moods.value, SEED_LIMIT),
+  /*
+   * The default is what an *empty* answer looks like, and the error is kept
+   * separately on purpose.
+   *
+   * Without reading `error`, a request that 401s or 500s renders through the
+   * same `titles.length === 0` branch as a genuine no-match, and the screen
+   * says "nothing for that combination" -- blaming the reader's choices for a
+   * server fault. That is precisely how a broken registration hid behind this
+   * page in production: the sign-up 500'd, there was no session, the seed
+   * request 401'd, and this said the catalogue had nothing.
+   */
   { immediate: false, default: () => ({ titles: [] as SeedTitle[] }) },
 )
 
@@ -188,6 +200,18 @@ useHead({ title: t('onboarding.title') })
       <div v-if="seedStatus === 'pending'" class="grid">
         <UiSkeletonBlock v-for="i in 12" :key="i" height="9rem" radius="var(--radius-md)" />
       </div>
+
+      <UiEmptyState
+        v-else-if="seedError"
+        :title="t('onboarding.loadFailed')"
+        :description="t('onboarding.loadFailedBody')"
+      >
+        <template #action>
+          <UiAppButton variant="secondary" @click="loadSeeds()">
+            {{ t('common.tryAgain') }}
+          </UiAppButton>
+        </template>
+      </UiEmptyState>
 
       <UiEmptyState
         v-else-if="titles.length === 0"

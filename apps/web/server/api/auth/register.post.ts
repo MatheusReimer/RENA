@@ -42,6 +42,21 @@ export default defineApiHandler(async (event) => {
   const auth = useAuth()
 
   let authUserId: string
+  /*
+   * Better Auth's `Set-Cookie`, kept rather than discarded.
+   *
+   * `asResponse: false` alone returns the body and throws the headers away,
+   * and the session cookie is one of those headers. The effect is a sign-up
+   * that looks entirely successful -- 200, a user row, a session row in
+   * `auth_session` -- while the browser is handed nothing. The reader is then
+   * anonymous on the very next request, so `/onboarding` 401s on every call
+   * and renders as though the catalogue were empty.
+   *
+   * `returnHeaders` keeps the typed result and hands back the headers to
+   * forward. It has to be paired with `asResponse: false`; the two together
+   * are what the overload resolves to `{ headers, response }`.
+   */
+  let authHeaders: Headers
   try {
     const result = await auth.api.signUpEmail({
       body: {
@@ -51,8 +66,11 @@ export default defineApiHandler(async (event) => {
       },
       headers: event.headers,
       asResponse: false,
+      returnHeaders: true,
     })
-    authUserId = result.user.id
+    if (!result.response) throw new Error('sign-up returned no user')
+    authUserId = result.response.user.id
+    authHeaders = result.headers
   } catch (error) {
     // Better Auth signals a duplicate email through its own error shape;
     // translate it into our envelope rather than leaking the library's.
@@ -70,6 +88,18 @@ export default defineApiHandler(async (event) => {
       displayName: input.displayName,
       language: input.language,
     })
+
+    /*
+     * Only now, on the success path.
+     *
+     * The rollback below deletes the auth account, and `auth_session` cascades
+     * from it. Setting the cookie before that point would hand out a session
+     * that is about to stop existing.
+     */
+    for (const cookie of authHeaders.getSetCookie()) {
+      appendResponseHeader(event, 'set-cookie', cookie)
+    }
+
     return { user }
   } catch (error) {
     // Roll back the auth account so the email is not permanently stranded.

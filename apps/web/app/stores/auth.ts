@@ -70,8 +70,15 @@ export const useAuthStore = defineStore('auth', () => {
     displayName: string
   }): Promise<void> {
     await useApi().auth.register(input)
-    // Better Auth signs the user in as part of sign-up, so the session is
-    // already valid; just refresh what we hold.
+    /*
+     * The session cookie arrives on the register response itself.
+     *
+     * Better Auth does create a session during sign-up, but the endpoint has
+     * to forward its `Set-Cookie` explicitly -- see the note in
+     * `server/api/auth/register.post.ts`. It did not, once, and the symptom
+     * was invisible from here: `register` resolved, this `load` returned no
+     * user, and the reader landed on `/onboarding` silently signed out.
+     */
     await load(true)
   }
 
