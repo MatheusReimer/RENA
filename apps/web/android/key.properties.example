@@ -1,0 +1,9 @@
+# Copy to key.properties and fill in the password you chose when the key was
+# generated. That file is gitignored; this one is the record of what it needs.
+#
+# storeFile is an absolute path on purpose -- the keystore lives outside the
+# repository so it cannot be committed by accident.
+storeFile=C:/Users/mathe/rena-upload-key.jks
+storePassword=
+keyAlias=rena-upload
+keyPassword=

@@ -1,5 +1,23 @@
 apply plugin: 'com.android.application'
 
+/*
+ * Release signing (Play Console).
+ *
+ * Play ties the listing to this key forever: a different key is a different
+ * app, so the file and its password outlive every other decision in here.
+ * Neither is in the repository -- `key.properties` sits beside this file,
+ * gitignored, and names a keystore kept outside the project entirely.
+ *
+ * Absent, the release build is simply unsigned rather than broken, so a clone
+ * of this repository still builds and runs. `bundleRelease` is the only task
+ * that needs the real thing.
+ */
+def keystorePropertiesFile = rootProject.file("key.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "net.thinklogic.rena"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,10 +34,24 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (keystoreProperties.containsKey('storeFile')) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (keystoreProperties.containsKey('storeFile')) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
