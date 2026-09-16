@@ -2,10 +2,19 @@
 import { BRAND } from '@revy/shared/constants'
 
 /**
- * Layout for sign-in and sign-up.
+ * Layout for the four credential screens: sign in, sign up, forgot password
+ * and reset password.
  *
  * No navigation: there is nothing to navigate to until there is a session, and
  * a tab bar on an auth screen is an invitation to bounce off.
+ *
+ * It owns `auth-form.css` because all four pages render an `.auth-form`.
+ * That import used to sit inside `signin.vue` and `signup.vue`, which meant
+ * the reset screens were styled only if somebody had already been to one of
+ * those two in the same session -- so arriving at `/forgot-password` from a
+ * bookmark, or at `/reset-password` straight from an email link, got raw
+ * unstyled markup. Emailed links are always a first page load, which is the
+ * one case that was guaranteed to be broken.
  */
 </script>
 
@@ -22,6 +31,12 @@ import { BRAND } from '@revy/shared/constants'
     <p class="auth-layout__footnote">{{ BRAND.description }}</p>
   </div>
 </template>
+
+<!-- Not scoped: these class names belong to the page rendered into the slot,
+     and a scoped block would not reach it. -->
+<style>
+@import '~/assets/css/auth-form.css';
+</style>
 
 <style scoped>
 .auth-layout {

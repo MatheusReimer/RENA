@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PASSWORD_MIN_LENGTH } from '@revy/shared/constants'
 import { passwordSchema } from '@revy/shared/schemas'
 
 /**
@@ -18,6 +19,7 @@ definePageMeta({ layout: 'auth' })
 
 const api = useApi()
 const route = useRoute()
+const { t } = useI18n()
 
 const token = computed(() => {
   const value = route.query.token
@@ -37,7 +39,7 @@ async function submit() {
 
   const parsed = passwordSchema.safeParse(password.value)
   if (!parsed.success) {
-    fieldErrors.value.password = parsed.error.issues[0]?.message ?? 'Choose a longer password.'
+    fieldErrors.value.password = parsed.error.issues[0]?.message ?? t('auth.passwordTooShort')
     return
   }
 
@@ -45,12 +47,12 @@ async function submit() {
   // one password -- the confirmation exists to catch a typo, not to be
   // validated.
   if (password.value !== confirm.value) {
-    fieldErrors.value.confirm = 'These two do not match.'
+    fieldErrors.value.confirm = t('auth.passwordMismatch')
     return
   }
 
   if (!token.value) {
-    formError.value = 'This link is missing its token. Request a new one.'
+    formError.value = t('auth.linkDead')
     return
   }
 
@@ -67,58 +69,60 @@ async function submit() {
      * which it was would tell somebody holding a stolen link whether it is
      * worth trying another.
      */
-    formError.value = 'That link has expired or has already been used. Request a new one.'
+    formError.value = t('auth.linkDead')
   } finally {
     submitting.value = false
   }
 }
 
-useHead({ title: 'Set a new password' })
+useHead({ title: () => t('auth.resetTitle') })
 </script>
 
 <template>
   <div v-if="done" class="auth-form">
-    <h1 class="auth-form__title">Password changed</h1>
-    <p class="auth-form__subtitle">
-      You have been signed out everywhere else, on every device. Sign in with your new
-      password.
-    </p>
+    <h1 class="auth-form__title">{{ t('auth.changedTitle') }}</h1>
+    <p class="auth-form__subtitle">{{ t('auth.changedBody') }}</p>
 
-    <UiAppButton variant="primary" block @click="navigateTo('/signin')">Sign in</UiAppButton>
+    <UiAppButton variant="primary" block @click="navigateTo('/signin')">
+      {{ t('common.signIn') }}
+    </UiAppButton>
   </div>
 
   <!-- No token at all: somebody has opened this page directly. Say so rather
        than showing a form that cannot possibly work. -->
   <div v-else-if="!token" class="auth-form">
-    <h1 class="auth-form__title">This link is incomplete</h1>
-    <p class="auth-form__subtitle">
-      Password reset links only work in full, straight from the email. Ask for a new one
-      and open it from your inbox.
-    </p>
+    <h1 class="auth-form__title">{{ t('auth.incompleteTitle') }}</h1>
+    <p class="auth-form__subtitle">{{ t('auth.incompleteBody') }}</p>
 
     <UiAppButton variant="primary" block @click="navigateTo('/forgot-password')">
-      Request a new link
+      {{ t('auth.requestNewLink') }}
     </UiAppButton>
   </div>
 
   <form v-else class="auth-form" @submit.prevent="submit">
-    <h1 class="auth-form__title">Set a new password</h1>
-    <p class="auth-form__subtitle">Pick something you are not using anywhere else.</p>
+    <h1 class="auth-form__title">{{ t('auth.resetTitle') }}</h1>
+    <p class="auth-form__subtitle">{{ t('auth.resetSubtitle') }}</p>
 
     <label class="field">
-      <span class="field__label">New password</span>
+      <span class="field__label">{{ t('auth.newPassword') }}</span>
       <input
         v-model="password"
         type="password"
         class="field__input"
         autocomplete="new-password"
+        autofocus
         required
       />
-      <span v-if="fieldErrors.password" class="field__error">{{ fieldErrors.password }}</span>
+      <!-- Stated before they type, not after they are rejected. The number
+           comes from the same constant `passwordSchema` validates against. -->
+      <span v-if="!fieldErrors.password" class="field__hint">
+        {{ t('auth.passwordHint', { min: PASSWORD_MIN_LENGTH }) }}
+      </span>
+      <span v-else class="field__error">{{ fieldErrors.password }}</span>
     </label>
 
     <label class="field">
-      <span class="field__label">Confirm new password</span>
+      <span class="field__label">{{ t('auth.confirmPassword') }}</span>
       <input
         v-model="confirm"
         type="password"
@@ -132,9 +136,9 @@ useHead({ title: 'Set a new password' })
     <p v-if="formError" class="auth-form__error" role="alert">{{ formError }}</p>
 
     <UiAppButton type="submit" variant="primary" :loading="submitting" block>
-      Change password
+      {{ t('auth.changePassword') }}
     </UiAppButton>
 
-    <NuxtLink to="/signin" class="auth-form__link">Back to sign in</NuxtLink>
+    <NuxtLink to="/signin" class="auth-form__link">{{ t('auth.backToSignIn') }}</NuxtLink>
   </form>
 </template>

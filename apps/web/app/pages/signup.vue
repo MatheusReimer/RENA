@@ -3,6 +3,7 @@ import {
   CONTENT_LANGUAGES,
   LANGUAGE_NAMES,
   LIMITS,
+  PASSWORD_MIN_LENGTH,
   toContentLanguage,
 } from '@revy/shared/constants'
 import { signUpSchema } from '@revy/shared/schemas'
@@ -192,7 +193,9 @@ useHead({ title: 'Create account' })
         required
       />
       <span v-if="fieldErrors.password" class="field__error">{{ fieldErrors.password[0] }}</span>
-      <span v-else class="field__hint">At least 8 characters.</span>
+      <span v-else class="field__hint">
+        {{ $t('auth.passwordHint', { min: PASSWORD_MIN_LENGTH }) }}
+      </span>
     </label>
 
     <!--
@@ -228,5 +231,5 @@ useHead({ title: 'Create account' })
 </template>
 
 <style scoped>
-@import '~/assets/css/auth-form.css';
+/* Shared form styles come from the `auth` layout. */
 </style>

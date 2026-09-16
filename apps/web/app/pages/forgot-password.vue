@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AUTH_LINK_TTL_MINUTES, AUTH_RESEND_COOLDOWN_SECONDS } from '@revy/shared/constants'
 import { emailSchema } from '@revy/shared/schemas'
 
 /**
@@ -12,95 +13,169 @@ import { emailSchema } from '@revy/shared/schemas'
  * So the success state says *if*. It reads slightly awkwardly and that is the
  * correct trade: the alternative turns this form into a tool for checking
  * whether someone you know is a member.
+ *
+ * The same rule decides what the resend button is allowed to do. It reports
+ * that it sent, never what happened -- a spinner that resolves differently for
+ * a real address than an invented one would hand back the oracle the copy is
+ * so careful not to give.
  */
 definePageMeta({ layout: 'auth' })
 
 const api = useApi()
+const route = useRoute()
+const { t } = useI18n()
 
-const email = ref('')
+/*
+ * Prefilled from the query, which `/signin` fills in from its own email field.
+ *
+ * Somebody arriving here has just failed to sign in; asking them to type the
+ * address again is asking them to repeat the step they were already stuck on.
+ */
+const email = ref(typeof route.query.email === 'string' ? route.query.email : '')
+
 const fieldError = ref<string | null>(null)
-const formError = ref<string | null>(null)
 const submitting = ref(false)
 const sent = ref(false)
 
-async function submit() {
-  fieldError.value = null
-  formError.value = null
+/** Seconds left before the link can be requested again; 0 means it can. */
+const cooldown = ref(0)
+/** Shown after a successful resend, cleared when the countdown restarts. */
+const resentNotice = ref(false)
 
-  const parsed = emailSchema.safeParse(email.value)
-  if (!parsed.success) {
-    fieldError.value = parsed.error.issues[0]?.message ?? 'Enter a valid email address.'
-    return
-  }
+let timer: ReturnType<typeof setInterval> | undefined
 
-  submitting.value = true
+function startCooldown() {
+  cooldown.value = AUTH_RESEND_COOLDOWN_SECONDS
+  clearInterval(timer)
+  timer = setInterval(() => {
+    cooldown.value -= 1
+    if (cooldown.value <= 0) clearInterval(timer)
+  }, 1000)
+}
+
+// An interval outlives the page without this, and fires against a component
+// that is no longer mounted.
+onBeforeUnmount(() => clearInterval(timer))
+
+/** Posts the request. Never throws, and never reports what came back. */
+async function request(address: string) {
   try {
     await api.auth.requestPasswordReset({
-      email: parsed.data,
+      email: address,
       // Where the link lands. Absolute is built server-side from the app URL;
       // this is the path within it.
       redirectTo: '/reset-password',
     })
-    sent.value = true
   } catch {
     /*
      * Even a failure shows the same screen.
      *
      * A distinguishable error here would reintroduce exactly the enumeration
-     * this endpoint is designed to prevent -- "unknown address" and "mail
-     * server down" must look the same from outside. Genuine outages surface in
-     * the server logs, where they belong.
+     * this endpoint is designed to prevent -- "unknown address", "rate
+     * limited" and "mail server down" must look the same from outside.
+     * Genuine outages surface in the server logs, where they belong.
      */
-    sent.value = true
-  } finally {
-    submitting.value = false
   }
 }
 
-useHead({ title: 'Reset your password' })
+async function submit() {
+  fieldError.value = null
+
+  const parsed = emailSchema.safeParse(email.value)
+  if (!parsed.success) {
+    fieldError.value = parsed.error.issues[0]?.message ?? t('auth.emailInvalid')
+    return
+  }
+
+  submitting.value = true
+  await request(parsed.data)
+  submitting.value = false
+
+  sent.value = true
+  resentNotice.value = false
+  startCooldown()
+}
+
+async function resend() {
+  if (cooldown.value > 0 || submitting.value) return
+
+  const parsed = emailSchema.safeParse(email.value)
+  if (!parsed.success) return
+
+  submitting.value = true
+  await request(parsed.data)
+  submitting.value = false
+
+  resentNotice.value = true
+  startCooldown()
+}
+
+function useAnotherAddress() {
+  sent.value = false
+  resentNotice.value = false
+  clearInterval(timer)
+  cooldown.value = 0
+}
+
+useHead({ title: () => t('auth.forgotTitle') })
 </script>
 
 <template>
-  <div v-if="sent" class="auth-form">
-    <h1 class="auth-form__title">Check your email</h1>
-    <p class="auth-form__subtitle">
-      If <strong>{{ email }}</strong> has a RENA account, a reset link is on its way. It
-      works once and expires in an hour.
-    </p>
+  <!-- `role="status"` because this replaces the form in place rather than
+       navigating: without it a screen reader is left on a submit button that
+       no longer exists, with no idea the request succeeded. -->
+  <div v-if="sent" class="auth-form" role="status">
+    <h1 class="auth-form__title">{{ t('auth.checkEmailTitle') }}</h1>
+    <i18n-t keypath="auth.checkEmailBody" tag="p" class="auth-form__subtitle" scope="global">
+      <template #email><strong>{{ email }}</strong></template>
+      <template #minutes>{{ AUTH_LINK_TTL_MINUTES }}</template>
+    </i18n-t>
 
-    <p class="note">
-      Nothing arrived? Check the spam folder, then
-      <button type="button" class="link" @click="sent = false">try another address</button>.
-    </p>
+    <p class="note">{{ t('auth.nothingArrived') }}</p>
 
-    <NuxtLink to="/signin" class="auth-form__link">Back to sign in</NuxtLink>
+    <UiAppButton
+      variant="secondary"
+      :disabled="cooldown > 0"
+      :loading="submitting"
+      block
+      @click="resend()"
+    >
+      {{ cooldown > 0 ? t('auth.resendIn', { seconds: cooldown }) : t('auth.resend') }}
+    </UiAppButton>
+
+    <!-- Announced separately from the block above, so a resend is audible
+         rather than being a button that silently re-disables itself. -->
+    <p v-if="resentNotice" class="note note--ok" role="status">{{ t('auth.resent') }}</p>
+
+    <button type="button" class="link" @click="useAnotherAddress()">
+      {{ t('auth.tryAnother') }}
+    </button>
+
+    <NuxtLink to="/signin" class="auth-form__link">{{ t('auth.backToSignIn') }}</NuxtLink>
   </div>
 
   <form v-else class="auth-form" @submit.prevent="submit">
-    <h1 class="auth-form__title">Forgot your password?</h1>
-    <p class="auth-form__subtitle">
-      Give us the address you signed up with and we'll send you a link to set a new one.
-    </p>
+    <h1 class="auth-form__title">{{ t('auth.forgotTitle') }}</h1>
+    <p class="auth-form__subtitle">{{ t('auth.forgotSubtitle') }}</p>
 
     <label class="field">
-      <span class="field__label">Email</span>
+      <span class="field__label">{{ t('auth.email') }}</span>
       <input
         v-model="email"
         type="email"
         class="field__input"
         autocomplete="email"
+        autofocus
         required
       />
       <span v-if="fieldError" class="field__error">{{ fieldError }}</span>
     </label>
 
-    <p v-if="formError" class="auth-form__error" role="alert">{{ formError }}</p>
-
     <UiAppButton type="submit" variant="primary" :loading="submitting" block>
-      Send the link
+      {{ t('auth.sendLink') }}
     </UiAppButton>
 
-    <NuxtLink to="/signin" class="auth-form__link">Back to sign in</NuxtLink>
+    <NuxtLink to="/signin" class="auth-form__link">{{ t('auth.backToSignIn') }}</NuxtLink>
   </form>
 </template>
 
@@ -110,6 +185,10 @@ useHead({ title: 'Reset your password' })
   font-size: var(--text-sm);
   line-height: 1.6;
   color: var(--text-tertiary);
+}
+
+.note--ok {
+  color: var(--text-secondary);
 }
 
 /* A button that looks like a link, because it is an action rather than a

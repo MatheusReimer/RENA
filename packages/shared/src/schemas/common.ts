@@ -5,6 +5,7 @@ import {
   MEDIA_TYPES,
   PAGE_SIZE_DEFAULT,
   PAGE_SIZE_MAX,
+  PASSWORD_MIN_LENGTH,
   RATING_VALUES,
   RESERVED_USERNAMES,
 } from '../constants'
@@ -69,7 +70,7 @@ export const bioSchema = z
  */
 export const passwordSchema = z
   .string()
-  .min(8, 'Passwords must be at least 8 characters.')
+  .min(PASSWORD_MIN_LENGTH, `Passwords must be at least ${PASSWORD_MIN_LENGTH} characters.`)
   .max(128, 'Passwords must be at most 128 characters.')
 
 export const emailSchema = z.email({ error: 'Enter a valid email address.' }).trim().toLowerCase()

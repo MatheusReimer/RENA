@@ -1,5 +1,6 @@
 import { createMailer } from '@revy/core'
 import { schema } from '@revy/db'
+import { AUTH_LINK_TTL_SECONDS } from '@revy/shared/constants'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import type { H3Event } from 'h3'
@@ -12,9 +13,6 @@ import { useDatabase } from './db'
  * requires authentication stay independent of the user domain model. Better
  * Auth owns the `auth_*` tables; `users` is ours and linked by `auth_user_id`.
  */
-
-/** How long a reset or confirmation link stays valid. */
-const LINK_TTL_SECONDS = 60 * 60
 
 /** Line break for the plain-text bodies below. */
 const NEWLINE = '\n'
@@ -50,7 +48,7 @@ function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof cr
        */
       requireEmailVerification: false,
       minPasswordLength: 8,
-      resetPasswordTokenExpiresIn: LINK_TTL_SECONDS,
+      resetPasswordTokenExpiresIn: AUTH_LINK_TTL_SECONDS,
 
       /*
        * Reset mail.
@@ -91,7 +89,7 @@ function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof cr
       // A fresh link whenever somebody follows an expired one, rather than a
       // dead end that tells them to find the newer email they do not have.
       autoSignInAfterVerification: true,
-      expiresIn: LINK_TTL_SECONDS,
+      expiresIn: AUTH_LINK_TTL_SECONDS,
 
       /*
        * A failed send must not fail the sign-up.

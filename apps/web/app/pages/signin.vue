@@ -72,8 +72,17 @@ useHead({ title: 'Sign in' })
     </label>
 
     <!-- Beside the password field, where somebody realises they have
-         forgotten it, rather than buried under the submit button. -->
-    <NuxtLink to="/forgot-password" class="auth-form__link forgot">Forgot your password?</NuxtLink>
+         forgotten it, rather than buried under the submit button.
+
+         The address travels with them. Whoever clicks this has just failed to
+         sign in, and making them retype the email is making them repeat the
+         step they were already stuck on. -->
+    <NuxtLink
+      :to="{ path: '/forgot-password', query: form.email ? { email: form.email } : undefined }"
+      class="auth-form__link forgot"
+    >
+      Forgot your password?
+    </NuxtLink>
 
     <p v-if="formError" class="auth-form__error" role="alert">{{ formError }}</p>
 
@@ -89,5 +98,5 @@ useHead({ title: 'Sign in' })
 </template>
 
 <style scoped>
-@import '~/assets/css/auth-form.css';
+/* Shared form styles come from the `auth` layout. */
 </style>
