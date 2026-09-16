@@ -51,16 +51,32 @@ function cardColumns() {
  * everybody argues over should.
  */
 export async function mostDiscussed(db: Executor, mediaType: MediaType | null, limit: number) {
-  const since = new Date(Date.now() - TALKING_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+  /*
+   * An ISO string, not a `Date`, and the cast says which kind of instant.
+   *
+   * A value bound through a column -- `gte(schema.ratings.createdAt, since)` --
+   * is encoded by that column's type on the way to the driver. A value
+   * interpolated into a raw `sql` fragment has no column to be encoded by, so
+   * it reaches the driver exactly as written here, and the two drivers this
+   * runs on disagree about what to do with a `Date`: PGlite accepts one,
+   * postgres-js refuses it with `The "string" argument must be of type string
+   * ... Received an instance of Date`.
+   *
+   * So this worked on every laptop and 500'd on production, which is the worst
+   * shape a bug can have. Passing a string means both drivers are handed the
+   * same thing, and `::timestamptz` means the server is told what it is rather
+   * than left to infer it from the comparison.
+   */
+  const since = new Date(Date.now() - TALKING_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
   const activity = sql<number>`(
     (SELECT count(*)::int FROM ${schema.ratings}
      WHERE ${schema.ratings.mediaId} = ${schema.media.id}
-       AND ${schema.ratings.createdAt} >= ${since})
+       AND ${schema.ratings.createdAt} >= ${since}::timestamptz)
     +
     (SELECT count(*)::int * 2 FROM ${schema.reviews}
      WHERE ${schema.reviews.mediaId} = ${schema.media.id}
-       AND ${schema.reviews.createdAt} >= ${since})
+       AND ${schema.reviews.createdAt} >= ${since}::timestamptz)
   )`
 
   const conditions = [isNotNull(schema.media.coverImageUrl)]

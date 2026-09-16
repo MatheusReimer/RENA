@@ -39,6 +39,7 @@
     "@revy/db": "workspace:*",
     "@revy/shared": "workspace:*",
     "@types/node": "^22.20.2",
+    "drizzle-orm": "^0.45.2",
     "eslint": "^9.39.5",
     "eslint-plugin-vue": "^9.33.0",
     "typescript": "^5.9.3",
