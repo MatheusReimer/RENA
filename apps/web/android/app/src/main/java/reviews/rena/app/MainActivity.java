@@ -1,4 +1,4 @@
-package net.thinklogic.rena;
+package reviews.rena.app;
 
 import com.getcapacitor.BridgeActivity;
 

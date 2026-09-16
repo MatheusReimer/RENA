@@ -19,10 +19,10 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "net.thinklogic.rena"
+    namespace = "reviews.rena.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "net.thinklogic.rena"
+        applicationId "reviews.rena.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

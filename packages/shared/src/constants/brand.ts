@@ -14,8 +14,19 @@ export const BRAND = {
   tagline: 'Watch. Read. Share. Repeat.',
   /** Longer positioning line used in headers and meta description. */
   description: 'A social home for every story.',
-  /** Reverse-DNS id used by Capacitor for the iOS/Android bundle. */
-  appId: 'net.thinklogic.rena',
+  /**
+   * Reverse-DNS id used by Capacitor for the iOS/Android bundle.
+   *
+   * `rena.reviews` reversed, because that is the domain this product owns. It
+   * was `net.thinklogic.rena` while the project was scaffolded, which read as
+   * the consultancy's app rather than this one -- the id grants nobody
+   * anything, but it is the name the stores show in a URL forever.
+   *
+   * Changing it after publication is not possible: Play identifies an app by
+   * this string, so a different one is a different listing with no installs.
+   * Before the first upload it costs a rebuild.
+   */
+  appId: 'reviews.rena.app',
 
   /**
    * Store listings for the native apps.
