@@ -71,7 +71,7 @@ function reasonOf(item: PopularItem | RecommendedItem): RecommendedItem | null {
 
     <ul class="rail">
       <li v-for="item in items" :key="item.id" class="poster">
-        <NuxtLink :to="`/media/${item.id}`">
+        <MediaQuickLink :media-id="item.id" :title="item.title" :cover-image-url="item.coverImageUrl">
           <span class="poster__frame">
             <img
               v-if="item.coverImageUrl"
@@ -130,7 +130,7 @@ function reasonOf(item: PopularItem | RecommendedItem): RecommendedItem | null {
             <template v-if="progress?.[item.id] !== undefined">
               {{ Math.round(progress[item.id]!) }}%</template>
           </span>
-        </NuxtLink>
+        </MediaQuickLink>
       </li>
     </ul>
   </section>

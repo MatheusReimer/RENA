@@ -84,7 +84,7 @@ const tabs = computed(() => [
 
     <ul v-else class="cards">
       <li v-for="(review, index) in reviews" :key="review.id" v-reveal="index" class="card">
-        <NuxtLink :to="`/media/${review.mediaId}`" class="card__art">
+        <MediaQuickLink :media-id="review.mediaId" :title="review.mediaTitle" :cover-image-url="review.coverImageUrl" class="card__art">
           <img
             v-if="review.coverImageUrl"
             :src="imageAtWidth(review.coverImageUrl, 342) ?? review.coverImageUrl"
@@ -92,7 +92,7 @@ const tabs = computed(() => [
             loading="lazy"
             decoding="async"
           />
-        </NuxtLink>
+        </MediaQuickLink>
 
         <div class="card__body">
           <header class="card__who">

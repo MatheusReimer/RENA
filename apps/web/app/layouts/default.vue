@@ -93,6 +93,22 @@ const primary = computed(() =>
 const tabs = computed(() => primary.value.filter((item) => item.tab))
 
 /**
+ * The compact label for a destination, where one exists.
+ *
+ * Six labels across a 320px screen is the tightest type in the product, and it
+ * is the longest word in any single locale that decides whether the row reads
+ * as six items or as one block of text. Falling back by key rather than by
+ * condition means adding a short form for another locale later is a locale
+ * file change and not a code change.
+ */
+const { te } = useI18n()
+
+function tabLabel(key: string): string {
+  const compact = `${key}Tab`
+  return te(compact) ? compact : key
+}
+
+/**
  * The unread count a nav item should badge, if any.
  *
  * A lookup rather than a chain of `item.to === '...'` comparisons, because the
@@ -402,7 +418,15 @@ onMounted(() => {
           <LayoutNavIcon :name="item.icon" class="tabbar__icon" />
           <span v-if="badgeCount(item.to)" class="tabbar__dot" aria-hidden="true" />
         </span>
-        <span class="tabbar__label">{{ $t(item.label) }}</span>
+        <!--
+          The tab bar gets its own label where the rail's does not fit.
+
+          `nav.notifications` is "Notificaciones" in Spanish, which measured
+          77px inside a 78px slot -- touching its neighbours on both sides. The
+          rail has room for the full word and keeps it; only the six-across bar
+          falls back to a shorter one, and only where a locale needs it.
+        -->
+        <span class="tabbar__label">{{ $t(tabLabel(item.label)) }}</span>
       </NuxtLink>
 
       <NuxtLink
@@ -418,6 +442,10 @@ onMounted(() => {
         </span>
       </NuxtLink>
     </nav>
+
+    <!-- Rate a title from wherever it was found. Mounted once, opened from
+         any media card by `MediaLink`. -->
+    <MediaQuickSheet />
 
     <!-- Where a refused action explains itself. One per layout. -->
     <LayoutNoticeHost />
@@ -934,9 +962,17 @@ onMounted(() => {
   place-items: center;
 }
 
+/*
+ * Smaller than they were, because the bar was full.
+ *
+ * Six destinations at 22px icons and 13px labels came to 391px of slot inside
+ * a 390px screen -- every label touching its neighbour, with "Notifications"
+ * alone taking 79px. Nothing overflowed, so nothing looked broken; it just
+ * read as a wall of text with no air in it.
+ */
 .tabbar__icon {
-  width: 1.375rem;
-  height: 1.375rem;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .tabbar__dot {
@@ -951,8 +987,15 @@ onMounted(() => {
 }
 
 .tabbar__label {
-  font-size: var(--text-2xs);
+  /* 11px. Below the 12px floor the rest of the product keeps, and deliberately
+     -- these six words are labels on icons that already carry the meaning, not
+     text anybody reads a sentence of. */
+  font-size: 0.6875rem;
   font-weight: 500;
+  letter-spacing: 0.01em;
+  /* One line, always. A wrapped label makes the bar ragged and taller than the
+     height it publishes to the pages offsetting against it. */
+  white-space: nowrap;
 }
 
 @media (min-width: 64rem) {

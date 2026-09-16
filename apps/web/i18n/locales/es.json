@@ -23,7 +23,8 @@
     "about": "Acerca de",
     "footerTagline": "Hecho para quienes aman las historias.",
     "friends": "Amigos",
-    "messages": "Mensajes"
+    "messages": "Mensajes",
+    "notificationsTab": "Avisos"
   },
   "mediaType": {
     "movie": "Película",
@@ -293,7 +294,10 @@
     "unrated": "Aún sin puntuar",
     "yourRating": "Tu puntuación",
     "notRated": "Sin puntuar",
-    "ratedOutOf": "Puntuada {score} de 5"
+    "ratedOutOf": "Puntuada {score} de 5",
+    "save": "Guardar puntuación",
+    "saved": "Puntuación guardada",
+    "openFullPage": "Ver página completa"
   },
   "auth": {
     "signOut": "Cerrar sesión",

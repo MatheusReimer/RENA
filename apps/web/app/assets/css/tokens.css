@@ -261,7 +261,9 @@
 
   /* Layout */
   /* Mobile bottom tab bar. */
-  --nav-height: 3.5rem;
+  /* The mobile tab bar. Trimmed from 3.5rem once the icons and labels inside
+     it came down -- the height was sized around the old 22px icon. */
+  --nav-height: 3.25rem;
   /* Desktop top bar. Content clears it; full-bleed artwork runs under it. */
   --topbar-height: 3.75rem;
   /*

@@ -86,7 +86,7 @@ function page(direction: 1 | -1) {
 
     <ul ref="rail" class="rail">
       <li v-for="item in items" :key="item.id" class="card">
-        <NuxtLink :to="`/media/${item.id}`">
+        <MediaQuickLink :media-id="item.id" :title="item.title" :cover-image-url="item.coverImageUrl">
           <span class="card__frame">
             <img
               v-if="item.coverImageUrl"
@@ -141,7 +141,7 @@ function page(direction: 1 | -1) {
           </span>
 
           <span v-else class="card__meta card__meta--external">Be the first to rate it</span>
-        </NuxtLink>
+        </MediaQuickLink>
       </li>
     </ul>
   </section>

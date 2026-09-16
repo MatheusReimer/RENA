@@ -212,16 +212,16 @@ useSeoMeta({
         <li v-for="(item, index) in items" :key="item.id" class="item">
           <span class="item__position">{{ index + 1 }}</span>
 
-          <NuxtLink :to="`/media/${item.media.id}`" class="item__poster">
+          <MediaQuickLink :media-id="item.media.id" :title="item.media.title" :cover-image-url="item.media.coverImageUrl" class="item__poster">
             <UiMediaPoster
         sizes="44px"
               :src="item.media.coverImageUrl"
               :title="item.media.title"
               :media-type="item.media.mediaType"
             />
-          </NuxtLink>
+          </MediaQuickLink>
 
-          <NuxtLink :to="`/media/${item.media.id}`" class="item__text">
+          <MediaQuickLink :media-id="item.media.id" :title="item.media.title" :cover-image-url="item.media.coverImageUrl" class="item__text">
             <span class="item__title clamp-2">{{ item.media.title }}</span>
             <span class="item__meta">
               {{ $t(`mediaType.${item.media.mediaType}`) }}
@@ -230,7 +230,7 @@ useSeoMeta({
               </template>
             </span>
             <span v-if="item.note" class="item__note clamp-2">{{ item.note }}</span>
-          </NuxtLink>
+          </MediaQuickLink>
 
           <div v-if="isOwner" class="item__controls">
             <button

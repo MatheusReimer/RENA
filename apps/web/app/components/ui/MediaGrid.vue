@@ -67,7 +67,7 @@ defineProps<{
 
     <ul class="grid">
       <li v-for="item in items" :key="item.id" class="card">
-        <NuxtLink :to="`/media/${item.id}`">
+        <MediaQuickLink :media-id="item.id" :title="item.title" :cover-image-url="item.coverImageUrl">
           <span class="card__frame">
             <img
               v-if="item.coverImageUrl"
@@ -116,7 +116,7 @@ defineProps<{
           <span v-if="item.ratingCount" class="card__meta card__meta--quiet">
             {{ $t('common.ratings', { count: formatRatingCount(item.ratingCount) }, item.ratingCount) }}
           </span>
-        </NuxtLink>
+        </MediaQuickLink>
       </li>
     </ul>
   </section>

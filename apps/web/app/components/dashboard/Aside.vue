@@ -110,7 +110,7 @@ const counters = computed(() => [
       <ol class="chart">
         <li v-for="(item, index) in popular" :key="item.id">
           <span class="chart__rank" aria-hidden="true">{{ index + 1 }}</span>
-          <NuxtLink :to="`/media/${item.id}`" class="chart__link">
+          <MediaQuickLink :media-id="item.id" :title="item.title" :cover-image-url="item.coverImageUrl" class="chart__link">
             <img
               v-if="item.coverImageUrl"
               :src="imageAtWidth(item.coverImageUrl, 185) ?? item.coverImageUrl"
@@ -122,7 +122,7 @@ const counters = computed(() => [
               <span class="chart__title">{{ item.title }}</span>
               <UiMediaTypeTag :media-type="item.mediaType" size="sm" />
             </span>
-          </NuxtLink>
+          </MediaQuickLink>
         </li>
       </ol>
     </section>

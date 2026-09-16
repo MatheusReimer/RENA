@@ -23,7 +23,8 @@
     "about": "About",
     "footerTagline": "Made for people who love stories.",
     "friends": "Friends",
-    "messages": "Messages"
+    "messages": "Messages",
+    "notificationsTab": "Notifications"
   },
   "mediaType": {
     "movie": "Movie",
@@ -293,7 +294,10 @@
     "unrated": "Not rated yet",
     "yourRating": "Your rating",
     "notRated": "Not rated",
-    "ratedOutOf": "Rated {score} out of 5"
+    "ratedOutOf": "Rated {score} out of 5",
+    "save": "Save rating",
+    "saved": "Rating saved",
+    "openFullPage": "Open full page"
   },
   "auth": {
     "signOut": "Sign out",

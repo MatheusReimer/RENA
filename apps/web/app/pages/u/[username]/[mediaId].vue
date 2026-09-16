@@ -137,14 +137,14 @@ async function shareEntry() {
     </UiEmptyState>
 
     <article v-else class="entry">
-      <NuxtLink :to="`/media/${entry.media.id}`" class="entry__art">
+      <MediaQuickLink :media-id="entry.media.id" :title="entry.media.title" :cover-image-url="entry.media.coverImageUrl" class="entry__art">
         <UiMediaPoster
           sizes="200px"
           :src="entry.media.coverImageUrl"
           :title="entry.media.title"
           :media-type="entry.media.mediaType"
         />
-      </NuxtLink>
+      </MediaQuickLink>
 
       <div class="entry__body">
         <NuxtLink :to="`/u/${entry.user.username}`" class="entry__who">

@@ -95,7 +95,7 @@ async function toggleLike() {
       </NuxtLink>
     </header>
 
-    <NuxtLink v-if="activity.media" :to="`/media/${activity.media.id}`" class="card__art">
+    <MediaQuickLink v-if="activity.media" :media-id="activity.media.id" :title="activity.media.title" :cover-image-url="activity.media.coverImageUrl" class="card__art">
       <!-- The backdrop is the hero when the provider has one; books and most
            series fall back to the poster, which still fills the frame. -->
       <img
@@ -114,7 +114,7 @@ async function toggleLike() {
           rounded="lg"
         />
       </div>
-    </NuxtLink>
+    </MediaQuickLink>
 
     <div v-if="activity.score !== null" class="card__rating">
       <UiStarRating :score="activity.score" size="lg" />

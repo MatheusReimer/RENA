@@ -23,7 +23,8 @@
     "about": "Sobre",
     "footerTagline": "Feito para quem ama histórias.",
     "friends": "Amigos",
-    "messages": "Mensagens"
+    "messages": "Mensagens",
+    "notificationsTab": "Notificações"
   },
   "mediaType": {
     "movie": "Filme",
@@ -293,7 +294,10 @@
     "unrated": "Ainda sem notas",
     "yourRating": "Sua nota",
     "notRated": "Sem nota",
-    "ratedOutOf": "Nota {score} de 5"
+    "ratedOutOf": "Nota {score} de 5",
+    "save": "Salvar nota",
+    "saved": "Nota salva",
+    "openFullPage": "Ver página completa"
   },
   "auth": {
     "signOut": "Sair",

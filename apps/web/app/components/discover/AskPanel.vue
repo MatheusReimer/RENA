@@ -381,7 +381,7 @@ const hasAnswer = computed(() => answer.value !== null)
                 class="pick"
                 :style="{ '--i': index }"
               >
-                <NuxtLink :to="`/media/${item.id}`" class="pick__link" @click="close">
+                <MediaQuickLink :media-id="item.id" :title="item.title" :cover-image-url="item.coverImageUrl" class="pick__link" @click="close">
                   <UiMediaPoster
                     :src="item.coverImageUrl"
                     :title="item.title"
@@ -410,7 +410,7 @@ const hasAnswer = computed(() => answer.value !== null)
                       <span v-else class="pick__dim">{{ $t('ask.notRated') }}</span>
                     </p>
                   </div>
-                </NuxtLink>
+                </MediaQuickLink>
               </li>
             </ul>
 

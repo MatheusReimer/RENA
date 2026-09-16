@@ -125,7 +125,7 @@ function reasonFor(item: DiscoverItem): string | null {
         v-reveal="index"
         class="card"
       >
-        <NuxtLink :to="`/media/${item.media.id}`" class="card__link">
+        <MediaQuickLink :media-id="item.media.id" :title="item.media.title" :cover-image-url="item.media.coverImageUrl" class="card__link">
           <UiMediaPoster
             sizes="(min-width: 48rem) 184px, 22vw"
             :src="item.media.coverImageUrl"
@@ -185,7 +185,7 @@ function reasonFor(item: DiscoverItem): string | null {
             name you know is worth more than a count of strangers.
           -->
           <span v-if="reasonFor(item)" class="card__reason">{{ reasonFor(item) }}</span>
-        </NuxtLink>
+        </MediaQuickLink>
       </li>
     </ul>
   </section>
