@@ -1,5 +1,28 @@
 # Deploying Rena
 
+## Where this actually runs
+
+- **App**: https://rena.reviews (Vercel, project `rena-web`). `www` 308s to the
+  bare domain, which is the canonical everywhere -- sitemap, `og:url`,
+  `rel=canonical` and `NUXT_PUBLIC_APP_URL` all have to agree on it.
+- **Database**: Neon `jolly-wind-77146466`, branch `production`, `us-east-2`.
+  Vercel's functions run in `iad1`, which is the same coast.
+- **DNS**: Hostinger. An `A` on the apex to Vercel, a `CNAME` on `www`, and
+  four records for Resend (DKIM, two SPF CNAMEs, DMARC).
+- **Mail**: Resend, sending as `noreply@rena.reviews`.
+
+Two things learned the hard way and worth keeping in mind here:
+
+**Deployment URLs are not the site.** `rena-<hash>-<org>.vercel.app` is pinned
+to one build forever. Testing one of those will show you a frozen old version
+no matter how many times you redeploy -- use the project alias or the domain.
+
+**A truncated display is not the value.** Both a DNS CNAME target pasted into
+`NUXT_PUBLIC_APP_URL` and a DKIM key copied with its display ellipsis (`...`)
+in the middle broke this deployment. Long credentials come from the copy
+button, never from selecting the text on screen.
+
+
 A first deploy, in order. Roughly two to three hours, most of it waiting.
 
 The order matters: each step needs something from the one above it. Do not
