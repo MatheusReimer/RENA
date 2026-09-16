@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MEDIA_TYPES, MOODS } from '@revy/shared/constants'
+import { MEDIA_TYPES } from '@revy/shared/constants'
 import type { MediaType, SeedTitle } from '@revy/shared/types'
 
 /**
@@ -11,19 +11,23 @@ import type { MediaType, SeedTitle } from '@revy/shared/types'
  * ratings is the difference between a recommender that can find taste
  * neighbours and one that cannot.
  *
- * Two screens. The kinds and the moods share the first, because they are one
- * question -- the moods are only there to colour the kinds, and they narrow to
- * match as soon as a kind is picked. They had a screen of their own once; a
- * whole click-through for a question whose own subtitle admits it "decides what
- * we put in front of you, not what you get" is a step that costs more signups
- * than it earns signal.
+ * Two screens, and only two questions: which kinds, then rate a few.
  *
- * The rating grid keeps its own screen, and comes second, because it is the
- * part that actually feeds the recommender. Asking for ratings first would mean
- * offering romantic comedies to somebody who only plays strategy games.
+ * A mood picker sat between them once -- "what are you usually after?" -- and
+ * was cut. Its own subtitle conceded it only decided what got put in front of
+ * you, and a self-reported mood is a far weaker signal than a single rating;
+ * once somebody has rated fifteen things it is noise. Moods still exist as a
+ * way to browse (`components/explore/MoodGrid.vue`), which is where a question
+ * about mood actually pays for itself -- asked when it is wanted, rather than
+ * charged as a toll on the way in.
  *
- * The moods still reach the model -- `recommend.service.ts` puts their titles
- * in the prompt. Folding the screen away does not drop the answer.
+ * `moodKeys` stays in the payload and in `user_taste`, written empty. The
+ * column and the prompt slot in `recommend.service.ts` both handle that, so
+ * offering the question somewhere later is a screen, not a migration.
+ *
+ * The rating grid comes second because it is the part that actually feeds the
+ * recommender. Asking for ratings first would mean offering romantic comedies
+ * to somebody who only plays strategy games.
  *
  * Skippable at every step, and that is not a courtesy -- a wall between signup
  * and the product is the single most reliable way to lose the signup. A skip
@@ -43,7 +47,6 @@ type Step = 'kinds' | 'rate'
 const step = ref<Step>('kinds')
 
 const kinds = ref<MediaType[]>([])
-const moods = ref<string[]>([])
 
 /** Scores given so far, by media id. Posted as they are given, not at the end. */
 const scores = ref<Record<string, number>>({})
@@ -51,36 +54,10 @@ const rated = computed(() => Object.keys(scores.value).length)
 
 const saving = ref(false)
 
-/*
- * Moods offered are narrowed to the kinds chosen.
- *
- * "One more episode" is about television; showing it to somebody who picked
- * books only is a question they cannot answer, and a question nobody can
- * answer is worse than one fewer question.
- */
-const availableMoods = computed(() =>
-  MOODS.filter(
-    (mood) => !mood.mediaTypes || mood.mediaTypes.some((type) => kinds.value.includes(type)),
-  ),
-)
-
-/*
- * One toggle per list rather than a generic one taking a `Ref`.
- *
- * A template auto-unwraps refs, so `toggle(kinds, kind)` in the markup hands
- * over the array, not the ref -- it typechecks in the script and silently
- * mutates nothing from the template.
- */
 function toggleKind(kind: MediaType) {
   kinds.value = kinds.value.includes(kind)
     ? kinds.value.filter((value) => value !== kind)
     : [...kinds.value, kind]
-}
-
-function toggleMood(key: string) {
-  moods.value = moods.value.includes(key)
-    ? moods.value.filter((value) => value !== key)
-    : [...moods.value, key]
 }
 
 /*
@@ -106,7 +83,7 @@ const {
   execute: loadSeeds,
 } = useAsyncData(
   'onboarding-seeds',
-  () => api.taste.seeds(kinds.value, moods.value, SEED_LIMIT),
+  () => api.taste.seeds(kinds.value, [], SEED_LIMIT),
   /*
    * The default is what an *empty* answer looks like, and the error is kept
    * separately on purpose.
@@ -155,7 +132,8 @@ async function finish(skipped: boolean) {
   try {
     await api.taste.save({
       mediaTypes: skipped ? [] : kinds.value,
-      moodKeys: skipped ? [] : moods.value,
+      // Nothing asks for these any more; the column stays, written empty.
+      moodKeys: [],
       skipped,
     })
     // The badge and rating counts in the shell are stale after a rating run.
@@ -177,49 +155,19 @@ useHead({ title: t('onboarding.title') })
       <p class="onboard__sub">{{ t(`onboarding.${step}Sub`) }}</p>
     </header>
 
-    <!-- 1. Kinds, and the moods they narrow to. -->
-    <div v-if="step === 'kinds'" class="pick">
-      <div class="chips">
-        <button
-          v-for="kind in MEDIA_TYPES"
-          :key="kind"
-          type="button"
-          class="chip"
-          :class="{ 'chip--on': kinds.includes(kind) }"
-          :aria-pressed="kinds.includes(kind)"
-          @click="toggleKind(kind)"
-        >
-          {{ t(`mediaType.${kind}_plural`) }}
-        </button>
-      </div>
-
-      <!--
-        Revealed by the first pick rather than shown from the start.
-
-        `availableMoods` is filtered by the chosen kinds, so before anything is
-        picked this is either every mood or, read honestly, a question asked
-        before the thing it depends on. Waiting also keeps the first thing a new
-        account sees down to four chips.
-      -->
-      <section v-if="kinds.length > 0" class="pick__moods">
-        <h2 class="pick__heading">{{ t('onboarding.moodsTitle') }}</h2>
-        <p class="pick__sub">{{ t('onboarding.moodsSub') }}</p>
-
-        <div class="moods">
-          <button
-            v-for="mood in availableMoods"
-            :key="mood.key"
-            type="button"
-            class="mood"
-            :class="{ 'mood--on': moods.includes(mood.key) }"
-            :aria-pressed="moods.includes(mood.key)"
-            @click="toggleMood(mood.key)"
-          >
-            <img class="mood__art" :src="`/moods/${mood.key}.webp`" alt="" loading="lazy" />
-            <span class="mood__name">{{ t(`mood.${mood.key}`) }}</span>
-          </button>
-        </div>
-      </section>
+    <!-- 1. Kinds -->
+    <div v-if="step === 'kinds'" class="chips">
+      <button
+        v-for="kind in MEDIA_TYPES"
+        :key="kind"
+        type="button"
+        class="chip"
+        :class="{ 'chip--on': kinds.includes(kind) }"
+        :aria-pressed="kinds.includes(kind)"
+        @click="toggleKind(kind)"
+      >
+        {{ t(`mediaType.${kind}_plural`) }}
+      </button>
     </div>
 
     <!-- 2. Rate -->
@@ -256,6 +204,7 @@ useHead({ title: t('onboarding.title') })
           />
           <p class="seed__title clamp-2">{{ title.title }}</p>
           <UiStarInput
+            compact
             :model-value="scores[title.id] ?? null"
             @update:model-value="(value: number | null) => rate(title, value)"
           />
@@ -317,30 +266,6 @@ useHead({ title: t('onboarding.title') })
   color: var(--text-secondary);
 }
 
-.pick {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-}
-
-.pick__moods {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.pick__heading {
-  text-align: center;
-  font-size: var(--text-lg);
-}
-
-.pick__sub {
-  margin-bottom: var(--space-4);
-  text-align: center;
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -365,49 +290,6 @@ useHead({ title: t('onboarding.title') })
   color: var(--accent);
 }
 
-.moods {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: var(--space-3);
-}
-
-.mood {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 16 / 10;
-  padding: 0;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--surface-overlay);
-  cursor: var(--cursor-hand);
-}
-
-.mood--on {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
-}
-
-.mood__art {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.55;
-}
-
-.mood__name {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  padding: var(--space-3);
-  background: linear-gradient(to top, rgb(10 10 12 / 0.9), transparent);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-align: left;
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
@@ -420,6 +302,17 @@ useHead({ title: t('onboarding.title') })
   align-items: center;
   gap: var(--space-2);
   text-align: center;
+
+  /*
+   * Stars scaled to the cell.
+   *
+   * At the default 2rem a rating control is about 220px wide and the column is
+   * about 136px, so every one of them overlapped its neighbours -- twenty-four
+   * controls running together into one unreadable row. `compact` drops the
+   * numeric readout as well; between them the control fits inside its own
+   * poster's width at every column count the grid produces.
+   */
+  --star-size: 1.25rem;
 }
 
 .seed__title {

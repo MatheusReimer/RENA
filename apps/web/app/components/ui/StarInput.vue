@@ -8,6 +8,15 @@
  */
 const model = defineModel<number | null>({ default: null })
 
+/**
+ * `compact` drops the numeric readout beside the stars.
+ *
+ * For a dense grid where the control sits under its own poster: the score is
+ * already legible from the fill, and the readout is a fixed ~2.75rem that a
+ * narrow column cannot spare.
+ */
+defineProps<{ compact?: boolean }>()
+
 const hovered = ref<number | null>(null)
 
 /** What to paint: the hovered value while hovering, otherwise the real one. */
@@ -67,7 +76,7 @@ const starIndexes = [1, 2, 3, 4, 5]
       />
     </div>
 
-    <span class="value" :class="{ 'value--empty': shown === 0 }">
+    <span v-if="!compact" class="value" :class="{ 'value--empty': shown === 0 }">
       {{ shown > 0 ? shown.toFixed(1) : '—' }}
     </span>
 
@@ -86,10 +95,18 @@ const starIndexes = [1, 2, 3, 4, 5]
   gap: var(--space-1);
 }
 
+/*
+ * Sized by an inherited custom property, not a fixed width.
+ *
+ * The fallback lives in the `var()` rather than as a declaration on
+ * `.star-input`, deliberately: a declaration there would sit on the element
+ * itself and beat anything an ancestor set, so `--star-size` on a parent grid
+ * would silently do nothing.
+ */
 .star-slot {
   position: relative;
-  width: 2rem;
-  height: 2rem;
+  width: var(--star-size, 2rem);
+  height: var(--star-size, 2rem);
 }
 
 .star-bg,
