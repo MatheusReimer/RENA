@@ -26,6 +26,7 @@ import type { ExploreSummary, MediaType, MoodRow } from '@revy/shared/types'
  * frame it is in.
  */
 const api = useApi()
+const { t } = useI18n()
 const { absolute } = useShareLink()
 const route = useRoute()
 
@@ -124,7 +125,7 @@ async function openMoodRow(key: string) {
   }
 }
 
-useHead({ title: 'Explore' })
+useHead({ title: () => t('nav.explore') })
 useSeoMeta({
   description: BRAND.description,
   ogTitle: () => `Explore · ${BRAND.name}`,

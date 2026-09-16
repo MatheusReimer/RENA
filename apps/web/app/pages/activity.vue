@@ -116,7 +116,7 @@ async function respond(notificationId: string, friendshipId: string, action: 'ac
   }
 }
 
-useHead({ title: 'Activity' })
+useHead({ title: () => t('activity.title') })
 </script>
 
 <template>

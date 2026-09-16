@@ -23,6 +23,7 @@ definePageMeta({ layout: false })
 
 const auth = useAuthStore()
 const api = useApi()
+const { t } = useI18n()
 const { absolute } = useShareLink()
 
 /* ------------------------------------------------------------------ *
@@ -107,7 +108,7 @@ const continueItems = computed(() =>
  * title for a visitor: `titleTemplate` in `app.vue` renders the brand alone,
  * which is what a landing page should say.
  */
-useHead({ title: auth.isSignedIn ? 'Home' : null })
+useHead({ title: () => (auth.isSignedIn ? t('nav.home') : null) })
 useSeoMeta({
   description: BRAND.description,
   ogTitle: `${BRAND.name} — ${BRAND.tagline}`,

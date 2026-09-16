@@ -670,7 +670,8 @@
     "loadFailed": "We couldn't load your notifications.",
     "empty": "Nothing to catch up on.",
     "emptyBody": "Friend requests, replies and badges show up here.",
-    "unread": "Unread"
+    "unread": "Unread",
+    "title": "Activity"
   },
   "app": {
     "appStore": "Get it on the App Store",

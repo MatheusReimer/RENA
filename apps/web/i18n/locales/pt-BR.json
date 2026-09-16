@@ -670,7 +670,8 @@
     "loadFailed": "Não conseguimos carregar suas notificações.",
     "empty": "Nada para colocar em dia.",
     "emptyBody": "Pedidos de amizade, respostas e conquistas aparecem aqui.",
-    "unread": "Não lida"
+    "unread": "Não lida",
+    "title": "Atividade"
   },
   "app": {
     "appStore": "Baixe na App Store",

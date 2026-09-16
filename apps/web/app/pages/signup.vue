@@ -20,7 +20,7 @@ definePageMeta({ layout: 'auth' })
 const auth = useAuthStore()
 const api = useApi()
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 /*
  * Prefilled from the active locale, which is itself whatever the browser
@@ -114,7 +114,7 @@ async function submit() {
   }
 }
 
-useHead({ title: 'Create account' })
+useHead({ title: () => t('auth.signUpAction') })
 </script>
 
 <template>

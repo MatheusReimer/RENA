@@ -168,7 +168,7 @@ async function toggleMembership(community: CommunitySummary) {
   }
 }
 
-useHead({ title: 'Community' })
+useHead({ title: () => t('nav.community') })
 useSeoMeta({
   description: BRAND.description,
   ogTitle: () => `Community · ${BRAND.name}`,

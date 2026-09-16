@@ -360,7 +360,7 @@ if (route.query.type && typeof route.query.type === 'string') {
   if (['movie', 'series', 'book', 'game'].includes(preset)) tab.value = preset
 }
 
-useHead({ title: 'Search' })
+useHead({ title: () => t('nav.search') })
 </script>
 
 <template>

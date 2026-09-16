@@ -5,6 +5,7 @@ import { signInSchema } from '@revy/shared/schemas'
 definePageMeta({ layout: 'auth' })
 
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const form = reactive({ email: '', password: '' })
 const fieldErrors = ref<Record<string, string[]>>({})
@@ -39,7 +40,7 @@ async function submit() {
   }
 }
 
-useHead({ title: 'Sign in' })
+useHead({ title: () => t('auth.signInAction') })
 </script>
 
 <template>

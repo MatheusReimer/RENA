@@ -670,7 +670,8 @@
     "loadFailed": "No pudimos cargar tus notificaciones.",
     "empty": "Nada que ponerte al día.",
     "emptyBody": "Las solicitudes de amistad, respuestas e insignias aparecen aquí.",
-    "unread": "Sin leer"
+    "unread": "Sin leer",
+    "title": "Actividad"
   },
   "app": {
     "appStore": "Consíguelo en el App Store",
