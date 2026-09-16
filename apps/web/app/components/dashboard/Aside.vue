@@ -16,6 +16,8 @@ const props = defineProps<{
   popular: PopularItem[]
 }>()
 
+const { t } = useI18n()
+
 /**
  * The counters, in the order the design sets them.
  *
@@ -34,7 +36,7 @@ const counters = computed(() => [
     icon: 'M20.5 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 20.5 12Z',
   },
   {
-    label: 'Likes received',
+    label: t('profile.likesReceived'),
     value: props.activity.likesReceived,
     icon: 'M12 20.3 4.8 13a4.6 4.6 0 1 1 7.2-5.7 4.6 4.6 0 1 1 7.2 5.7Z',
   },

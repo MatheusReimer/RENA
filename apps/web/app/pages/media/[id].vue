@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BRAND, MEDIA_STATUS_LABELS, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
+import { BRAND } from '@revy/shared/constants'
 import type {
   CommunityMember,
   DiscussionThread,
@@ -29,7 +29,7 @@ const route = useRoute()
 const api = useApi()
 const { absolute } = useShareLink()
 const auth = useAuthStore()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const mediaId = computed(() => String(route.params.id))
 
@@ -186,7 +186,7 @@ const metaLine = computed(() => {
   const year = releaseYear(media.value.releaseDate)
   if (year) parts.push(year)
 
-  parts.push(MEDIA_TYPE_LABELS[media.value.mediaType])
+  parts.push(t(`mediaType.${media.value.mediaType}`))
 
   const genres = media.value.metadata.genres
   if (genres?.length) parts.push(genres.slice(0, 2).join(', '))
@@ -226,7 +226,7 @@ async function saveRating() {
     rateOpen.value = false
     await refresh()
   } catch (err) {
-    rateError.value = err instanceof ApiError ? err.message : 'Could not save your rating.'
+    rateError.value = err instanceof ApiError ? err.message : t('media.rateFailed')
   } finally {
     savingRating.value = false
   }
@@ -464,8 +464,8 @@ useSeoMeta({
 
     <UiEmptyState
       v-else-if="error || !media"
-      title="We couldn't load this title."
-      description="It may have been removed, or the catalogue is unavailable."
+      :title="t('media.loadFailed')"
+      :description="t('media.loadFailedBody')"
     >
       <template #action>
         <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
@@ -551,7 +551,11 @@ useSeoMeta({
                 :score="media.viewerState.score"
                 size="sm"
               />
-              {{ media.viewerState?.score ? `Your rating · ${media.viewerState.score.toFixed(1)}` : 'Rate this' }}
+              {{
+                media.viewerState?.score
+                  ? t('media.yourRating', { score: media.viewerState.score.toFixed(1) })
+                  : t('media.rateThis')
+              }}
             </UiAppButton>
           </div>
 
@@ -566,7 +570,7 @@ useSeoMeta({
 
           <UiAppButton variant="secondary" size="lg" @click="openAddToList">
             <span class="actions__plus" aria-hidden="true">+</span>
-            {{ media.viewerState?.inListIds.length ? 'In your lists' : 'Add to list' }}
+            {{ media.viewerState?.inListIds.length ? t('media.inYourLists') : t('media.addToList') }}
           </UiAppButton>
         </div>
 
@@ -581,7 +585,7 @@ useSeoMeta({
             :aria-pressed="media.viewerState?.status === option"
             @click="setStatus(option)"
           >
-            {{ MEDIA_STATUS_LABELS[media.mediaType][option] }}
+            {{ t(`status.${media.mediaType}_${option}`) }}
           </button>
         </div>
 
@@ -663,7 +667,7 @@ useSeoMeta({
               size="sm"
               @click="auth.isSignedIn ? (composeOpen = true) : navigateTo('/signin')"
             >
-              Write a review
+              {{ t('review.write') }}
             </UiAppButton>
           </div>
 
@@ -673,8 +677,8 @@ useSeoMeta({
 
           <UiEmptyState
             v-else-if="reviews.length === 0"
-            title="No reviews yet."
-            description="Be the first person to share what you thought."
+            :title="t('media.noReviews')"
+            :description="t('media.noReviewsBody')"
           />
 
           <MediaReviewCard
@@ -713,8 +717,8 @@ useSeoMeta({
 
           <UiEmptyState
             v-else-if="threads.length === 0"
-            title="Be the first person to start a discussion."
-            description="Ask a question, share a theory, or argue about the ending."
+            :title="t('media.noThreads')"
+            :description="t('media.noThreadsBody')"
           />
 
           <DiscussionThreadRow
@@ -744,8 +748,8 @@ useSeoMeta({
 
           <UiEmptyState
             v-else-if="members.length === 0"
-            title="No members yet."
-            description="Join to be the first."
+            :title="t('media.noMembers')"
+            :description="t('media.noMembersBody')"
           />
 
           <NuxtLink
@@ -773,8 +777,8 @@ useSeoMeta({
           />
           <UiEmptyState
             v-else-if="media.friendRatings.length === 0"
-            title="None of your friends have rated this yet."
-            description="Add friends to see their ratings here."
+            :title="t('media.noFriendRatings')"
+            :description="t('media.noFriendRatingsBody')"
           />
           <NuxtLink
             v-for="friend in media.friendRatings"

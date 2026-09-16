@@ -7,6 +7,7 @@
  * keyboard-navigable by default, and correct without any drag handling.
  */
 const model = defineModel<number | null>({ default: null })
+const { t } = useI18n()
 
 /**
  * `compact` drops the numeric readout beside the stars.
@@ -35,7 +36,7 @@ const starIndexes = [1, 2, 3, 4, 5]
   <div
     class="star-input"
     role="group"
-    aria-label="Your rating"
+    :aria-label="t('score.yourRating')"
     @mouseleave="hovered = null"
   >
     <div v-for="i in starIndexes" :key="i" class="star-slot">
@@ -83,7 +84,7 @@ const starIndexes = [1, 2, 3, 4, 5]
     <!-- The visible control is a grid of buttons; this keeps the value
          available to assistive tech as a single number. -->
     <span class="sr-only" aria-live="polite">
-      {{ model === null ? 'Not rated' : `Rated ${model} out of 5` }}
+      {{ model === null ? t('score.notRated') : t('score.ratedOutOf', { score: model }) }}
     </span>
   </div>
 </template>

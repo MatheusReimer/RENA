@@ -15,12 +15,22 @@ const props = withDefaults(
     placeholder?: string
     autofocus?: boolean
   }>(),
-  { parentCommentId: null, placeholder: 'Add a comment...', autofocus: false },
+  { parentCommentId: null, placeholder: undefined, autofocus: false },
 )
+
+/*
+ * The default is resolved here rather than in `withDefaults`.
+ *
+ * A default in the props declaration is evaluated once, when the component is
+ * defined, so a translated one would freeze whichever language happened to be
+ * active first and keep it for the rest of the session.
+ */
+const placeholderText = computed(() => props.placeholder ?? t('discussion.commentPlaceholder'))
 
 const emit = defineEmits<{ posted: []; cancel: [] }>()
 
 const api = useApi()
+const { t } = useI18n()
 
 const content = ref('')
 const spoiler = ref(false)
@@ -57,7 +67,7 @@ async function submit() {
       // Depth and length failures both come back as readable messages.
       error.value = err.fields?.content?.[0] ?? err.message
     } else {
-      error.value = 'Could not post your comment.'
+      error.value = t('discussion.commentFailed')
     }
   } finally {
     saving.value = false
@@ -72,7 +82,7 @@ async function submit() {
       v-model="content"
       class="composer__input"
       rows="3"
-      :placeholder="placeholder"
+      :placeholder="placeholderText"
       :maxlength="LIMITS.commentContent.max + 100"
       required
     />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MEDIA_STATUS_LABELS, MEDIA_TYPE_VERBS } from '@revy/shared/constants'
+import { MEDIA_TYPE_VERBS } from '@revy/shared/constants'
 import type { Media, MediaStatus } from '@revy/shared/types'
 
 /**
@@ -98,7 +98,7 @@ const groups = computed(() => {
           <span class="item__title clamp-2">{{ entry.media.title }}</span>
 
           <span class="item__status">
-            {{ positionLabel(entry) ?? MEDIA_STATUS_LABELS[entry.media.mediaType][entry.status] }}
+            {{ positionLabel(entry) ?? $t(`status.${entry.media.mediaType}_${entry.status}`) }}
           </span>
 
           <span

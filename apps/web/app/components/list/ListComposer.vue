@@ -19,6 +19,7 @@ const props = withDefaults(
 const emit = defineEmits<{ close: []; created: [list: ListSummary]; updated: [list: ListSummary] }>()
 
 const api = useApi()
+const { t } = useI18n()
 
 const isEdit = computed(() => props.list !== null)
 
@@ -71,7 +72,7 @@ async function submit() {
       if (err.fields) fieldErrors.value = err.fields
       else formError.value = err.message
     } else {
-      formError.value = 'Could not save the list.'
+      formError.value = t('lists.saveFailed')
     }
   } finally {
     saving.value = false
@@ -88,7 +89,7 @@ async function submit() {
   >
     <form class="modal__panel" @submit.prevent="submit">
       <header class="modal__header">
-        <h2 class="modal__title">{{ isEdit ? 'Edit list' : 'New list' }}</h2>
+        <h2 class="modal__title">{{ isEdit ? t('lists.edit') : t('lists.new') }}</h2>
         <button type="button" class="modal__close" aria-label="Close" @click="emit('close')">
           ×
         </button>
@@ -100,7 +101,7 @@ async function submit() {
           v-model="name"
           type="text"
           class="field__input"
-          placeholder="Sci-Fi Essentials"
+          :placeholder="t('lists.namePlaceholder')"
           :maxlength="LIMITS.listName.max"
           required
         />
@@ -113,7 +114,7 @@ async function submit() {
           v-model="description"
           class="field__input field__input--area"
           rows="3"
-          placeholder="Where to start."
+          :placeholder="t('lists.notePlaceholder')"
           :maxlength="LIMITS.listDescription.max"
         />
       </label>
@@ -145,7 +146,7 @@ async function submit() {
           :loading="saving"
           :disabled="!canSubmit"
         >
-          {{ isEdit ? 'Save changes' : 'Create list' }}
+          {{ isEdit ? t('lists.saveChanges') : t('lists.create') }}
         </UiAppButton>
       </div>
     </form>

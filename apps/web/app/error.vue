@@ -9,13 +9,12 @@ import type { NuxtError } from '#app'
  * requires of every surface, this one included.
  */
 const props = defineProps<{ error: NuxtError }>()
+const { t } = useI18n()
 
 const message = computed(() => {
   const data = props.error.data as { error?: { message?: string } } | undefined
   if (data?.error?.message) return data.error.message
-  return props.error.statusCode === 404
-    ? 'We could not find that page.'
-    : 'Something went wrong on our end.'
+  return props.error.statusCode === 404 ? t('errors.notFound') : t('errors.server')
 })
 </script>
 

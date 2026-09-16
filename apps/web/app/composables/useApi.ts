@@ -96,15 +96,19 @@ function toApiError(error: unknown): ApiError {
     return new ApiError(response.error.code, response.error.message, status, response.error.fields)
   }
 
-  if (status === 0) {
-    return new ApiError(
-      'INTERNAL_ERROR',
-      'Could not reach the server. Check your connection.',
-      0,
-    )
-  }
+  /*
+   * Translated here, not at the call site.
+   *
+   * `ApiError.message` is rendered raw by every screen that catches one, so it
+   * has to arrive as a sentence rather than a key. `$i18n` off the Nuxt app
+   * rather than `useI18n()`, because this runs inside a fetch callback and not
+   * in a component's setup, where the composable has no instance to bind to.
+   */
+  const { t } = useNuxtApp().$i18n
 
-  return new ApiError('INTERNAL_ERROR', 'Something went wrong. Please try again.', status)
+  if (status === 0) return new ApiError('INTERNAL_ERROR', t('errors.offline'), 0)
+
+  return new ApiError('INTERNAL_ERROR', t('errors.generic'), status)
 }
 
 /**

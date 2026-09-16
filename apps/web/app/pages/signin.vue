@@ -33,7 +33,7 @@ async function submit() {
   } catch {
     // Deliberately generic: distinguishing "no such email" from "wrong
     // password" tells an attacker which accounts exist (OWASP A07).
-    formError.value = 'That email and password do not match.'
+    formError.value = $t('auth.signInFailed')
   } finally {
     submitting.value = false
   }
@@ -44,11 +44,11 @@ useHead({ title: 'Sign in' })
 
 <template>
   <form class="auth-form" @submit.prevent="submit">
-    <h1 class="auth-form__title">Welcome back</h1>
-    <p class="auth-form__subtitle">Pick up where you left off.</p>
+    <h1 class="auth-form__title">{{ $t('auth.welcomeBack') }}</h1>
+    <p class="auth-form__subtitle">{{ $t('auth.welcomeBackSub') }}</p>
 
     <label class="field">
-      <span class="field__label">Email</span>
+      <span class="field__label">{{ $t('auth.email') }}</span>
       <input
         v-model="form.email"
         type="email"
@@ -60,7 +60,7 @@ useHead({ title: 'Sign in' })
     </label>
 
     <label class="field">
-      <span class="field__label">Password</span>
+      <span class="field__label">{{ $t('auth.password') }}</span>
       <input
         v-model="form.password"
         type="password"
@@ -81,18 +81,18 @@ useHead({ title: 'Sign in' })
       :to="{ path: '/forgot-password', query: form.email ? { email: form.email } : undefined }"
       class="auth-form__link forgot"
     >
-      Forgot your password?
+      {{ $t('auth.forgotLink') }}
     </NuxtLink>
 
     <p v-if="formError" class="auth-form__error" role="alert">{{ formError }}</p>
 
     <UiAppButton type="submit" variant="primary" size="lg" block :loading="submitting">
-      Sign in
+      {{ $t('auth.signInAction') }}
     </UiAppButton>
 
     <p class="auth-form__switch">
-      New here?
-      <NuxtLink to="/signup" class="auth-form__link">Create an account</NuxtLink>
+      {{ $t('auth.newHere') }}
+      <NuxtLink to="/signup" class="auth-form__link">{{ $t('auth.createAnAccount') }}</NuxtLink>
     </p>
   </form>
 </template>

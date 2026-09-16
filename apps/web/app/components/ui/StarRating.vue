@@ -15,10 +15,12 @@ const props = withDefaults(
   { size: 'md' },
 )
 
+const { t } = useI18n()
+
 const parts = computed(() => toStarParts(props.score))
 
 const label = computed(() =>
-  props.score === null ? 'Not rated' : `Rated ${props.score} out of 5`,
+  props.score === null ? t('score.notRated') : t('score.ratedOutOf', { score: props.score }),
 )
 </script>
 

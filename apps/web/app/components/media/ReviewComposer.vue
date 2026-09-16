@@ -16,6 +16,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; created: [] }>()
 
 const api = useApi()
+const { t } = useI18n()
 
 const content = ref('')
 const score = ref<number | null>(props.initialScore)
@@ -51,7 +52,7 @@ async function submit() {
     if (err instanceof ApiError) {
       error.value = err.fields?.content?.[0] ?? err.message
     } else {
-      error.value = 'Could not post your review.'
+      error.value = t('review.postFailed')
     }
   } finally {
     saving.value = false
@@ -85,7 +86,7 @@ async function submit() {
         v-model="content"
         class="composer__textarea"
         rows="7"
-        placeholder="What did you think?"
+        :placeholder="t('review.placeholder')"
         :maxlength="LIMITS.reviewContent.max + 100"
         required
       />

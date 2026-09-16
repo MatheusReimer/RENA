@@ -9,6 +9,7 @@ import { releaseYear } from '@revy/shared/utils'
  * provider abstraction rather than any vendor API (SPEC 49.2).
  */
 const api = useApi()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -49,7 +50,7 @@ const tabs = [
   { value: 'series', label: 'Series' },
   { value: 'book', label: 'Books' },
   { value: 'game', label: 'Games' },
-  { value: 'people', label: 'People' },
+  { value: 'people', label: t('search.people') },
 ] as const
 
 /**
@@ -375,7 +376,7 @@ useHead({ title: 'Search' })
           v-model="query"
           type="search"
           class="searchbar__input"
-          placeholder="Search for movies, series, books..."
+          :placeholder="t('search.placeholder')"
           aria-label="Search"
           autocomplete="off"
         />
@@ -383,7 +384,7 @@ useHead({ title: 'Search' })
           v-if="query"
           type="button"
           class="searchbar__clear"
-          aria-label="Clear search"
+          :aria-label="t('search.clear')"
           @click="query = ''"
         >
           ×
@@ -456,7 +457,7 @@ useHead({ title: 'Search' })
       <!-- Error with retry (SPEC 36) -->
       <UiEmptyState
         v-else-if="failed"
-        title="Search is unavailable right now."
+        :title="t('search.unavailable')"
         description="The catalogue did not respond. Try again in a moment."
       >
         <template #action>
@@ -489,7 +490,7 @@ useHead({ title: 'Search' })
       <UiEmptyState
         v-else-if="searched && visibleMedia.length === 0 && (!showPeople || people.length === 0)"
         :title="`No results for &quot;${query.trim()}&quot;`"
-        description="Try a different spelling, or search by the original title."
+        :description="t('search.noMatchBody')"
       />
 
       <div v-else class="results">
@@ -511,7 +512,7 @@ useHead({ title: 'Search' })
         </button>
 
         <template v-if="showPeople && people.length">
-          <h2 class="results__heading">People</h2>
+          <h2 class="results__heading">{{ t('search.people') }}</h2>
           <NuxtLink
             v-for="person in people"
             :key="person.id"

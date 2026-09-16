@@ -9,6 +9,7 @@ import { relativeTime } from '@revy/shared/utils'
  * the navigation counts.
  */
 const api = useApi()
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const filter = ref<'all' | 'friends' | 'discussions' | 'system'>('all')
@@ -87,7 +88,7 @@ function describe(notification: Notification): string {
     case 'also_consumed':
       return alsoConsumed(notification)
     default:
-      return 'You have a new notification'
+      return t('activity.newNotification')
   }
 }
 
@@ -144,7 +145,7 @@ useHead({ title: 'Activity' })
 
       <UiEmptyState
         v-else-if="error"
-        title="We couldn't load your notifications."
+        :title="t('activity.loadFailed')"
       >
         <template #action>
           <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
@@ -153,8 +154,8 @@ useHead({ title: 'Activity' })
 
       <UiEmptyState
         v-else-if="items.length === 0"
-        title="Nothing to catch up on."
-        description="Friend requests, replies and badges show up here."
+        :title="t('activity.empty')"
+        :description="t('activity.emptyBody')"
       />
 
       <div v-else class="list">
@@ -171,7 +172,7 @@ useHead({ title: 'Activity' })
                only thing the row was actually missing was whether it is new. -->
           <span
             class="row__dot"
-            :aria-label="notification.readAt ? undefined : 'Unread'"
+            :aria-label="notification.readAt ? undefined : t('activity.unread')"
           />
           <UiUserAvatar v-if="notification.actor" :user="notification.actor" size="md" />
           <span class="row__text">

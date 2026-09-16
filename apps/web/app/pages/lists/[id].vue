@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BRAND, MEDIA_TYPE_LABELS } from '@revy/shared/constants'
+import { BRAND } from '@revy/shared/constants'
 import { releaseYear } from '@revy/shared/utils'
 
 /**
@@ -151,8 +151,8 @@ useSeoMeta({
 
     <UiEmptyState
       v-else-if="error || !list"
-      title="We couldn't find that list."
-      description="It may have been deleted, or it is private."
+      :title="t('lists.notFound')"
+      :description="t('lists.notFoundBody')"
     >
       <template #action>
         <UiAppButton variant="secondary" @click="navigateTo('/lists')">
@@ -190,7 +190,7 @@ useSeoMeta({
         title="Nothing in this list yet."
         :description="
           isOwner
-            ? 'Open any title and use Add to list.'
+            ? t('lists.emptyOwnBody')
             : undefined
         "
       >
@@ -217,7 +217,7 @@ useSeoMeta({
           <NuxtLink :to="`/media/${item.media.id}`" class="item__text">
             <span class="item__title clamp-2">{{ item.media.title }}</span>
             <span class="item__meta">
-              {{ MEDIA_TYPE_LABELS[item.media.mediaType] }}
+              {{ $t(`mediaType.${item.media.mediaType}`) }}
               <template v-if="releaseYear(item.media.releaseDate)">
                 · {{ releaseYear(item.media.releaseDate) }}
               </template>
@@ -240,7 +240,7 @@ useSeoMeta({
             <button
               type="button"
               class="item__control"
-              aria-label="Move down"
+              :aria-label="t('lists.moveDown')"
               :disabled="index === items.length - 1 || reordering"
               @click="move(index, 1)"
             >
@@ -251,7 +251,7 @@ useSeoMeta({
             <button
               type="button"
               class="item__control item__control--remove"
-              aria-label="Remove from list"
+              :aria-label="t('lists.removeItem')"
               :disabled="removing === item.media.id"
               @click="removeItem(item.media.id)"
             >

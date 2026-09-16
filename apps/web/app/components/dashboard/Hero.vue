@@ -29,12 +29,15 @@ defineProps<{
     </div>
 
     <div class="hero__panel">
-      <p class="hero__eyebrow">Welcome back, {{ name }}</p>
+      <p class="hero__eyebrow">{{ $t('dash.welcomeBack', { name }) }}</p>
 
       <h1 class="hero__statement">
+        <!-- Three spans because the last one is styled, not because the
+             sentence is three sentences. Each is its own key so a translator
+             can move the accent to wherever it falls in their word order. -->
         <span>{{ $t('dash.heroLead') }}</span>
-        <span>taste better</span>
-        <span class="hero__accent">here.</span>
+        <span>{{ $t('dash.heroMid') }}</span>
+        <span class="hero__accent">{{ $t('dash.heroAccent') }}</span>
       </h1>
 
       <p class="hero__sub">{{ $t('dash.heroLineA') }}<br />{{ $t('dash.heroLineB') }}</p>
@@ -44,7 +47,7 @@ defineProps<{
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z" />
           </svg>
-          Write a review
+          {{ $t('review.write') }}
         </NuxtLink>
 
         <NuxtLink v-magnetic="8" to="/discover" class="hero__cta">

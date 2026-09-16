@@ -17,6 +17,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; changed: [] }>()
 
 const api = useApi()
+const { t } = useI18n()
 
 const lists = ref<ListSummary[]>([])
 const loading = ref(true)
@@ -109,7 +110,7 @@ async function onCreated(list: ListSummary) {
 
       <UiEmptyState
         v-else-if="failed"
-        title="We couldn't load your lists."
+        :title="t('lists.loadFailed')"
       >
         <template #action>
           <UiAppButton variant="secondary" size="sm" @click="load">Try again</UiAppButton>
@@ -118,8 +119,8 @@ async function onCreated(list: ListSummary) {
 
       <UiEmptyState
         v-else-if="lists.length === 0"
-        title="No lists yet."
-        description="Create one to start collecting."
+        :title="t('lists.noneYet')"
+        :description="t('lists.noneYetBody')"
       />
 
       <ul v-else class="options">

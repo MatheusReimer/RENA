@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; created: [threadId: string] }>()
 
 const api = useApi()
+const { t } = useI18n()
 
 const title = ref('')
 const content = ref('')
@@ -53,7 +54,7 @@ async function submit() {
       if (err.fields) fieldErrors.value = err.fields
       else formError.value = err.message
     } else {
-      formError.value = 'Could not start the discussion.'
+      formError.value = t('discussion.startFailed')
     }
   } finally {
     saving.value = false
@@ -84,7 +85,7 @@ async function submit() {
           v-model="title"
           type="text"
           class="field__input"
-          placeholder="Is the second movie better than the first?"
+          :placeholder="t('discussion.titlePlaceholder')"
           :maxlength="LIMITS.discussionTitle.max"
           required
         />
@@ -100,7 +101,7 @@ async function submit() {
           v-model="content"
           class="field__input field__input--area"
           rows="5"
-          placeholder="What do you want to talk about?"
+          :placeholder="t('discussion.bodyPlaceholder')"
           :maxlength="LIMITS.commentContent.max"
         />
         <span v-if="fieldErrors.content" class="field__error">{{ fieldErrors.content[0] }}</span>

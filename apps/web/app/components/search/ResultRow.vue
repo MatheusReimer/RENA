@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { MEDIA_TYPE_LABELS } from '@revy/shared/constants'
 import type { MediaSearchResult } from '@revy/shared/types'
 import { formatAverage, releaseYear } from '@revy/shared/utils'
 
@@ -34,7 +33,7 @@ defineProps<{
       <span class="result__title clamp-2">{{ result.title }}</span>
 
       <span class="result__meta">
-        {{ MEDIA_TYPE_LABELS[result.mediaType] }}
+        {{ $t(`mediaType.${result.mediaType}`) }}
         <template v-if="releaseYear(result.releaseDate)">
           · {{ releaseYear(result.releaseDate) }}
         </template>

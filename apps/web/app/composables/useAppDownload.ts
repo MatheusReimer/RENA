@@ -16,6 +16,8 @@ import { BRAND } from '@revy/shared/constants'
  * desktop.
  */
 export function useAppDownload() {
+  const { t } = useI18n()
+
   const platform = ref<'ios' | 'android' | null>(null)
 
   onMounted(() => {
@@ -39,7 +41,7 @@ export function useAppDownload() {
   const available = computed(() => href.value !== null)
 
   const label = computed(() =>
-    platform.value === 'ios' ? 'Get it on the App Store' : 'Get it on Google Play',
+    platform.value === 'ios' ? t('app.appStore') : t('app.googlePlay'),
   )
 
   return { platform, href, available, label }

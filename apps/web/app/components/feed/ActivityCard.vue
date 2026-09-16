@@ -131,7 +131,7 @@ async function toggleLike() {
         class="card__action"
         :class="{ 'card__action--liked': liked }"
         :aria-pressed="liked"
-        :aria-label="liked ? 'Unlike' : 'Like'"
+        :aria-label="liked ? $t('common.unlike') : $t('common.like')"
         @click="toggleLike"
       >
         <svg viewBox="0 0 24 24" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -144,7 +144,7 @@ async function toggleLike() {
         v-if="activity.media"
         :to="`/media/${activity.media.id}`"
         class="card__action"
-        aria-label="View discussion"
+        :aria-label="$t('discussion.view')"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.4 8.4 0 0 1-3.8-.9L3 21l2-4.9A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z" />

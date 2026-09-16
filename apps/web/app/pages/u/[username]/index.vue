@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BRAND, MEDIA_STATUS_LABELS } from '@revy/shared/constants'
+import { BRAND } from '@revy/shared/constants'
 import type { ListSummary } from '@revy/shared/types'
 import { xpProgressRatio } from '@revy/shared/utils'
 
@@ -127,7 +127,7 @@ watch(tab, async (value) => {
 const emptyActivityTitle = computed(() => {
   if (!profile.value) return ''
   return profile.value.isSelf
-    ? 'You have not rated anything yet.'
+    ? t('profile.noRatings')
     : `${profile.value.displayName} has not rated anything yet.`
 })
 
@@ -421,7 +421,7 @@ useSeoMeta({
             :title="emptyActivityTitle"
             :description="
               profile.isSelf
-                ? 'Search for something you have watched or read, and give it a score.'
+                ? t('profile.noRatingsBody')
                 : undefined
             "
           >
@@ -442,11 +442,11 @@ useSeoMeta({
 
           <UiEmptyState
             v-else-if="lists.length === 0"
-            :title="profile.isSelf ? 'You have no lists yet.' : 'No lists to show.'"
+            :title="profile.isSelf ? t('profile.noListsSelf') : t('profile.noListsOther')"
             :description="
               profile.isSelf
-                ? 'Collections you create show up here.'
-                : 'This person has no lists you can see.'
+                ? t('profile.noListsSelfBody')
+                : t('profile.noListsOtherBody')
             "
           >
             <template v-if="profile.isSelf" #action>
@@ -463,7 +463,7 @@ useSeoMeta({
           <UiEmptyState
             v-if="currently.length === 0"
             title="Nothing in progress."
-            description="Titles marked as watching or reading show up here."
+            :description="t('profile.noCurrentlyBody')"
           />
 
           <NuxtLink
@@ -483,7 +483,7 @@ useSeoMeta({
             </div>
             <div class="current__text">
               <span class="current__status">
-                {{ MEDIA_STATUS_LABELS[entry.media.mediaType][entry.status] }}
+                {{ $t(`status.${entry.media.mediaType}_${entry.status}`) }}
               </span>
               <span class="current__title clamp-2">{{ entry.media.title }}</span>
             </div>

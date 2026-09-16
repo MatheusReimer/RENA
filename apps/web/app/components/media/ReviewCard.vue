@@ -85,7 +85,7 @@ async function toggleLike() {
         class="review__like"
         :class="{ 'review__like--active': liked }"
         :aria-pressed="liked"
-        :aria-label="liked ? 'Unlike review' : 'Like review'"
+        :aria-label="liked ? $t('review.unlike') : $t('review.like')"
         @click="toggleLike"
       >
         <svg viewBox="0 0 24 24" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

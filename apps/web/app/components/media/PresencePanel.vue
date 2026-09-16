@@ -96,7 +96,7 @@ const summary = computed(() => {
                 <!-- Someone part-way through is company too, and saying which
                      is the difference between "has read it" and "is reading it
                      right now" -- the second is the better conversation. -->
-                {{ reader.status === 'completed' ? 'Finished' : 'Reading now,' }}
+                {{ reader.status === 'completed' ? $t('presence.finished') : $t('presence.readingNowShort') }}
                 {{ relativeTime(reader.at) }}
               </span>
             </span>

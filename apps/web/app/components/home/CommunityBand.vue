@@ -36,7 +36,7 @@ const SLOTS = 3
 
     <div class="band__inner">
       <div v-reveal class="band__pitch">
-        <p class="band__eyebrow">The {{ BRAND.name }} community</p>
+        <p class="band__eyebrow">{{ $t('landing.communityEyebrow', { brand: BRAND.name }) }}</p>
 
         <h2 class="band__title">
           <span>{{ $t('landing.communityTitleLead') }}</span>
@@ -44,12 +44,11 @@ const SLOTS = 3
         </h2>
 
         <p class="band__sub">
-          Discover new favorites, dive into thoughtful discussions, and meet people
-          who see stories the way you do.
+          {{ $t('landing.communitySub') }}
         </p>
 
         <NuxtLink to="/signup" class="band__cta">
-          Join the community
+          {{ $t('landing.communityCta') }}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>

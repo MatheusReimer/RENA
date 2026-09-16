@@ -8,6 +8,7 @@ import { BRAND } from '@revy/shared/constants'
  */
 const route = useRoute()
 const api = useApi()
+const { t } = useI18n()
 const { absolute } = useShareLink()
 const auth = useAuthStore()
 
@@ -72,8 +73,8 @@ useSeoMeta({
 
     <UiEmptyState
       v-else-if="error || !thread || !media"
-      title="We couldn't load this discussion."
-      description="It may have been deleted by its author."
+      :title="t('discussion.loadFailed')"
+      :description="t('discussion.loadFailedBody')"
     >
       <template #action>
         <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
@@ -116,8 +117,8 @@ useSeoMeta({
 
       <UiEmptyState
         v-if="comments.length === 0"
-        title="No replies yet."
-        description="Be the first person to say something."
+        :title="t('discussion.noReplies')"
+        :description="t('discussion.noRepliesBody')"
       />
 
       <ul v-else class="comments">
@@ -133,7 +134,7 @@ useSeoMeta({
               v-if="replyingTo === commentId"
               :thread-id="thread.id"
               :parent-comment-id="commentId"
-              placeholder="Write a reply..."
+              :placeholder="t('discussion.replyPlaceholder')"
               autofocus
               @posted="onPosted"
               @cancel="replyingTo = null"

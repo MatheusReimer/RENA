@@ -51,7 +51,7 @@
     "trendingEyebrow": "Trending on {brand}",
     "trendingTitle": "Fresh reviews from the community",
     "carouselLabel": "Recently reviewed titles",
-    "communityEyebrow": "The RENA community",
+    "communityEyebrow": "The {brand} community",
     "communityTitleLead": "Real people.",
     "communityTitleRest": "Real perspectives.",
     "likes": "likes",
@@ -59,7 +59,9 @@
     "closingLead": "Good stories",
     "closingRest": "find good people.",
     "closingLine": "A line connects us all.",
-    "titles": "Titles"
+    "titles": "Titles",
+    "communitySub": "Discover new favorites, dive into thoughtful discussions, and meet people who see stories the way you do.",
+    "communityCta": "Join the community"
   },
   "tagline": {
     "movie": "From classics to new releases.",
@@ -106,7 +108,8 @@
     "readingNow": "Reading now,",
     "friend": "Friend",
     "inProgress": "{count} person is part-way through right now. | {count} people are part-way through right now.",
-    "language": "{count} of them writes in {language}. | {count} of them write in {language}."
+    "language": "{count} of them writes in {language}. | {count} of them write in {language}.",
+    "readingNowShort": "Reading now,"
   },
   "language": {
     "label": "Language",
@@ -139,7 +142,9 @@
     "clear": "Clear",
     "continue": "Continue",
     "copied": "Link copied",
-    "copyFailed": "Couldn't copy"
+    "copyFailed": "Couldn't copy",
+    "like": "Like",
+    "unlike": "Unlike"
   },
   "explore": {
     "heroTitle": "Explore. Discover. Belong.",
@@ -179,7 +184,15 @@
     "trendingSub": "What the community is talking about this week.",
     "filterReviews": "Filter reviews by type",
     "main": "Main",
-    "discoverByType": "Discover by type"
+    "discoverByType": "Discover by type",
+    "reviewsEmptyFiltered": "No one has reviewed anything of this kind recently. Try another filter.",
+    "reviewsEmpty": "Reviews from the community will show up here as people write them.",
+    "continueTitle": "Continue exploring",
+    "continueSub": "Pick up where you left off.",
+    "likesReceived": "Likes received",
+    "welcomeBack": "Welcome back, {name}",
+    "heroMid": "taste better",
+    "heroAccent": "here."
   },
   "discover": {
     "trendingOfType": "Trending {type}",
@@ -218,7 +231,12 @@
     "peopleTitle": "Find people",
     "peopleBody": "Type a name or username to find members here.",
     "emptyTitle": "Find movies, series, books and games.",
-    "emptyBody": "Search the catalogue to rate something, add it to a list, or see what your friends thought."
+    "emptyBody": "Search the catalogue to rate something, add it to a list, or see what your friends thought.",
+    "placeholder": "Search for movies, series, books...",
+    "clear": "Clear search",
+    "unavailable": "Search is unavailable right now.",
+    "noMatchBody": "Try a different spelling, or search by the original title.",
+    "people": "People"
   },
   "credits": {
     "heading": "Cast & crew"
@@ -235,7 +253,22 @@
   "media": {
     "releasesOn": "Not out yet — releases {date}",
     "notReleased": "Not released yet",
-    "unreleasedHint": "You can add it to your list now and rate it once it is out."
+    "unreleasedHint": "You can add it to your list now and rate it once it is out.",
+    "rateFailed": "Could not save your rating.",
+    "loadFailed": "We couldn't load this title.",
+    "loadFailedBody": "It may have been removed, or the catalogue is unavailable.",
+    "rateThis": "Rate this",
+    "yourRating": "Your rating · {score}",
+    "inYourLists": "In your lists",
+    "addToList": "Add to list",
+    "noReviews": "No reviews yet.",
+    "noReviewsBody": "Be the first person to share what you thought.",
+    "noThreads": "Be the first person to start a discussion.",
+    "noThreadsBody": "Ask a question, share a theory, or argue about the ending.",
+    "noMembers": "No members yet.",
+    "noMembersBody": "Join to be the first.",
+    "noFriendRatings": "None of your friends have rated this yet.",
+    "noFriendRatingsBody": "Add friends to see their ratings here."
   },
   "recommend": {
     "because": "Because you liked {title}",
@@ -255,7 +288,10 @@
     "onRena": "{count} rating on RENA | {count} ratings on RENA",
     "fromSource": "{source} · {count} votes",
     "fromSourceBare": "From {source}",
-    "unrated": "Not rated yet"
+    "unrated": "Not rated yet",
+    "yourRating": "Your rating",
+    "notRated": "Not rated",
+    "ratedOutOf": "Rated {score} out of 5"
   },
   "auth": {
     "signOut": "Sign out",
@@ -293,7 +329,27 @@
     "verifySendIn": "Send again in {seconds}s",
     "verifySent": "Sent. Check your inbox.",
     "verifyDismiss": "Not now",
-    "notVerified": "Confirm your email address to do that."
+    "notVerified": "Confirm your email address to do that.",
+    "signInFailed": "That email and password do not match.",
+    "signUpFailed": "Could not create your account. Please try again.",
+    "createAccount": "Create your account",
+    "usernameAvailable": "Username available",
+    "usernameTaken": "Username taken",
+    "welcomeBack": "Welcome back",
+    "welcomeBackSub": "Pick up where you left off.",
+    "signUpSub": "Rate what you watch and read. Share it with friends.",
+    "password": "Password",
+    "name": "Name",
+    "username": "Username",
+    "available": "Available",
+    "taken": "Taken",
+    "usernameHint": "Letters, numbers and underscores.",
+    "forgotLink": "Forgot your password?",
+    "signInAction": "Sign in",
+    "signUpAction": "Create account",
+    "newHere": "New here?",
+    "createAnAccount": "Create an account",
+    "haveAccount": "Already have an account?"
   },
   "badges": {
     "first-rating": {
@@ -478,10 +534,38 @@
     "reviews": "Reviews",
     "friendCount": "Friends",
     "metaRatings": "{count} ratings",
-    "metaReviews": "{count} reviews"
+    "metaReviews": "{count} reviews",
+    "noRatings": "You have not rated anything yet.",
+    "noRatingsBody": "Search for something you have watched or read, and give it a score.",
+    "noListsSelf": "You have no lists yet.",
+    "noListsOther": "No lists to show.",
+    "noListsSelfBody": "Collections you create show up here.",
+    "noListsOtherBody": "This person has no lists you can see.",
+    "noCurrentlyBody": "Titles marked as watching or reading show up here.",
+    "likesReceived": "Likes received"
   },
   "lists": {
-    "metaItems": "{count} items"
+    "metaItems": "{count} items",
+    "title": "My Lists",
+    "subtitle": "Keep track of what you want to watch, read and play.",
+    "loadFailed": "We couldn't load your lists.",
+    "empty": "Create your first collection.",
+    "emptyBody": "Favourites, a watchlist, the books you keep meaning to start — anything you want to keep together.",
+    "visibilityHint": "Change a list's visibility from its own page.",
+    "notFound": "We couldn't find that list.",
+    "notFoundBody": "It may have been deleted, or it is private.",
+    "emptyOwnBody": "Open any title and use Add to list.",
+    "moveDown": "Move down",
+    "removeItem": "Remove from list",
+    "noneYet": "No lists yet.",
+    "noneYetBody": "Create one to start collecting.",
+    "saveFailed": "Could not save the list.",
+    "edit": "Edit list",
+    "new": "New list",
+    "namePlaceholder": "Sci-Fi Essentials",
+    "notePlaceholder": "Where to start.",
+    "saveChanges": "Save changes",
+    "create": "Create list"
   },
   "community": {
     "title": "Community",
@@ -535,5 +619,61 @@
     "missing": "There's nothing here.",
     "missingBody": "This rating may have been removed, or the link may be wrong.",
     "backHome": "Go home"
+  },
+  "errors": {
+    "notFound": "We could not find that page.",
+    "server": "Something went wrong on our end.",
+    "offline": "Could not reach the server. Check your connection.",
+    "generic": "Something went wrong. Please try again.",
+    "fields": "Some fields need attention."
+  },
+  "discussion": {
+    "loadFailed": "We couldn't load this discussion.",
+    "loadFailedBody": "It may have been deleted by its author.",
+    "noReplies": "No replies yet.",
+    "noRepliesBody": "Be the first person to say something.",
+    "replyPlaceholder": "Write a reply...",
+    "commentPlaceholder": "Add a comment...",
+    "commentFailed": "Could not post your comment.",
+    "startFailed": "Could not start the discussion.",
+    "titlePlaceholder": "Is the second movie better than the first?",
+    "bodyPlaceholder": "What do you want to talk about?",
+    "view": "View discussion"
+  },
+  "review": {
+    "postFailed": "Could not post your review.",
+    "placeholder": "What did you think?",
+    "like": "Like review",
+    "unlike": "Unlike review",
+    "write": "Write a review"
+  },
+  "status": {
+    "movie_planned": "Want to watch",
+    "movie_in_progress": "Watching",
+    "movie_completed": "Watched",
+    "movie_dropped": "Dropped",
+    "series_planned": "Want to watch",
+    "series_in_progress": "Watching",
+    "series_completed": "Watched",
+    "series_dropped": "Dropped",
+    "book_planned": "Want to read",
+    "book_in_progress": "Reading",
+    "book_completed": "Read",
+    "book_dropped": "Dropped",
+    "game_planned": "Want to play",
+    "game_in_progress": "Playing",
+    "game_completed": "Played",
+    "game_dropped": "Dropped"
+  },
+  "activity": {
+    "newNotification": "You have a new notification",
+    "loadFailed": "We couldn't load your notifications.",
+    "empty": "Nothing to catch up on.",
+    "emptyBody": "Friend requests, replies and badges show up here.",
+    "unread": "Unread"
+  },
+  "app": {
+    "appStore": "Get it on the App Store",
+    "googlePlay": "Get it on Google Play"
   }
 }

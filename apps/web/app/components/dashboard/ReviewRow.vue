@@ -77,8 +77,8 @@ const tabs = computed(() => [
       :title="$t('explore.empty')"
       :description="
         filter
-          ? 'No one has reviewed anything of this kind recently. Try another filter.'
-          : 'Reviews from the community will show up here as people write them.'
+          ? $t('dash.reviewsEmptyFiltered')
+          : $t('dash.reviewsEmpty')
       "
     />
 

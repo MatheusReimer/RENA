@@ -107,7 +107,7 @@ async function submit() {
         formError.value = error.message
       }
     } else {
-      formError.value = 'Could not create your account. Please try again.'
+      formError.value = $t('auth.signUpFailed')
     }
   } finally {
     submitting.value = false
@@ -119,11 +119,11 @@ useHead({ title: 'Create account' })
 
 <template>
   <form class="auth-form" @submit.prevent="submit">
-    <h1 class="auth-form__title">Create your account</h1>
-    <p class="auth-form__subtitle">Rate what you watch and read. Share it with friends.</p>
+    <h1 class="auth-form__title">{{ $t('auth.createAccount') }}</h1>
+    <p class="auth-form__subtitle">{{ $t('auth.signUpSub') }}</p>
 
     <label class="field">
-      <span class="field__label">Name</span>
+      <span class="field__label">{{ $t('auth.name') }}</span>
       <input
         v-model="form.displayName"
         type="text"
@@ -138,7 +138,7 @@ useHead({ title: 'Create account' })
     </label>
 
     <label class="field">
-      <span class="field__label">Username</span>
+      <span class="field__label">{{ $t('auth.username') }}</span>
       <div class="field__wrap">
         <span class="field__prefix">@</span>
         <input
@@ -154,24 +154,24 @@ useHead({ title: 'Create account' })
         <span
           v-if="usernameState === 'available'"
           class="field__badge field__badge--ok"
-          aria-label="Username available"
+          :aria-label="$t('auth.usernameAvailable')"
         >
-          Available
+          {{ $t('auth.available') }}
         </span>
         <span
           v-else-if="usernameState === 'taken'"
           class="field__badge field__badge--bad"
-          aria-label="Username taken"
+          :aria-label="$t('auth.usernameTaken')"
         >
-          Taken
+          {{ $t('auth.taken') }}
         </span>
       </div>
       <span v-if="fieldErrors.username" class="field__error">{{ fieldErrors.username[0] }}</span>
-      <span v-else class="field__hint">Letters, numbers and underscores.</span>
+      <span v-else class="field__hint">{{ $t('auth.usernameHint') }}</span>
     </label>
 
     <label class="field">
-      <span class="field__label">Email</span>
+      <span class="field__label">{{ $t('auth.email') }}</span>
       <input
         v-model="form.email"
         type="email"
@@ -183,7 +183,7 @@ useHead({ title: 'Create account' })
     </label>
 
     <label class="field">
-      <span class="field__label">Password</span>
+      <span class="field__label">{{ $t('auth.password') }}</span>
       <input
         v-model="form.password"
         type="password"
@@ -220,12 +220,12 @@ useHead({ title: 'Create account' })
     <p v-if="formError" class="auth-form__error" role="alert">{{ formError }}</p>
 
     <UiAppButton type="submit" variant="primary" size="lg" block :loading="submitting">
-      Create account
+      {{ $t('auth.signUpAction') }}
     </UiAppButton>
 
     <p class="auth-form__switch">
-      Already have an account?
-      <NuxtLink to="/signin" class="auth-form__link">Sign in</NuxtLink>
+      {{ $t('auth.haveAccount') }}
+      <NuxtLink to="/signin" class="auth-form__link">{{ $t('auth.signInAction') }}</NuxtLink>
     </p>
   </form>
 </template>

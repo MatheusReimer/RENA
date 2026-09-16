@@ -51,7 +51,7 @@
     "trendingEyebrow": "Em alta na {brand}",
     "trendingTitle": "Resenhas recentes da comunidade",
     "carouselLabel": "Títulos resenhados recentemente",
-    "communityEyebrow": "A comunidade RENA",
+    "communityEyebrow": "A comunidade {brand}",
     "communityTitleLead": "Gente de verdade.",
     "communityTitleRest": "Opiniões de verdade.",
     "likes": "curtidas",
@@ -59,7 +59,9 @@
     "closingLead": "Boas histórias",
     "closingRest": "encontram boas pessoas.",
     "closingLine": "Uma linha conecta todos nós.",
-    "titles": "Títulos"
+    "titles": "Títulos",
+    "communitySub": "Descubra novos favoritos, entre em discussões de verdade e conheça gente que enxerga as histórias como você.",
+    "communityCta": "Entrar na comunidade"
   },
   "tagline": {
     "movie": "Dos clássicos aos lançamentos.",
@@ -106,7 +108,8 @@
     "readingNow": "Lendo agora,",
     "friend": "Amigo",
     "inProgress": "{count} pessoa está no meio agora. | {count} pessoas estão no meio agora.",
-    "language": "{count} delas escreve em {language}. | {count} delas escrevem em {language}."
+    "language": "{count} delas escreve em {language}. | {count} delas escrevem em {language}.",
+    "readingNowShort": "Lendo agora,"
   },
   "language": {
     "label": "Idioma",
@@ -139,7 +142,9 @@
     "clear": "Limpar",
     "continue": "Continuar",
     "copied": "Link copiado",
-    "copyFailed": "Não foi possível copiar"
+    "copyFailed": "Não foi possível copiar",
+    "like": "Curtir",
+    "unlike": "Descurtir"
   },
   "explore": {
     "heroTitle": "Explore. Descubra. Pertença.",
@@ -179,7 +184,15 @@
     "trendingSub": "O que a comunidade está comentando esta semana.",
     "filterReviews": "Filtrar resenhas por tipo",
     "main": "Principal",
-    "discoverByType": "Descobrir por tipo"
+    "discoverByType": "Descobrir por tipo",
+    "reviewsEmptyFiltered": "Ninguém avaliou nada desse tipo recentemente. Tente outro filtro.",
+    "reviewsEmpty": "As avaliações da comunidade vão aparecer aqui conforme as pessoas escreverem.",
+    "continueTitle": "Continue explorando",
+    "continueSub": "Retome de onde você parou.",
+    "likesReceived": "Curtidas recebidas",
+    "welcomeBack": "Bem-vindo de volta, {name}",
+    "heroMid": "ficam melhores",
+    "heroAccent": "aqui."
   },
   "discover": {
     "trendingOfType": "{type} em alta",
@@ -218,7 +231,12 @@
     "peopleTitle": "Encontrar pessoas",
     "peopleBody": "Digite um nome ou nome de usuário para encontrar membros aqui.",
     "emptyTitle": "Encontre filmes, séries, livros e jogos.",
-    "emptyBody": "Busque no catálogo para avaliar algo, adicionar a uma lista ou ver o que seus amigos acharam."
+    "emptyBody": "Busque no catálogo para avaliar algo, adicionar a uma lista ou ver o que seus amigos acharam.",
+    "placeholder": "Busque filmes, séries, livros...",
+    "clear": "Limpar busca",
+    "unavailable": "A busca está indisponível agora.",
+    "noMatchBody": "Tente outra grafia, ou busque pelo título original.",
+    "people": "Pessoas"
   },
   "credits": {
     "heading": "Elenco e equipe"
@@ -235,7 +253,22 @@
   "media": {
     "releasesOn": "Ainda não lançado — estreia em {date}",
     "notReleased": "Ainda não lançado",
-    "unreleasedHint": "Você pode adicionar à sua lista agora e avaliar quando lançar."
+    "unreleasedHint": "Você pode adicionar à sua lista agora e avaliar quando lançar.",
+    "rateFailed": "Não foi possível salvar sua nota.",
+    "loadFailed": "Não conseguimos carregar este título.",
+    "loadFailedBody": "Ele pode ter sido removido, ou o catálogo está indisponível.",
+    "rateThis": "Avaliar",
+    "yourRating": "Sua nota · {score}",
+    "inYourLists": "Nas suas listas",
+    "addToList": "Adicionar à lista",
+    "noReviews": "Ainda não há avaliações.",
+    "noReviewsBody": "Seja a primeira pessoa a dizer o que achou.",
+    "noThreads": "Seja a primeira pessoa a começar uma discussão.",
+    "noThreadsBody": "Faça uma pergunta, compartilhe uma teoria ou discuta o final.",
+    "noMembers": "Ainda não há membros.",
+    "noMembersBody": "Entre e seja o primeiro.",
+    "noFriendRatings": "Nenhum amigo seu avaliou isso ainda.",
+    "noFriendRatingsBody": "Adicione amigos para ver as notas deles aqui."
   },
   "recommend": {
     "because": "Porque você gostou de {title}",
@@ -255,7 +288,10 @@
     "onRena": "{count} nota na RENA | {count} notas na RENA",
     "fromSource": "{source} · {count} votos",
     "fromSourceBare": "Do {source}",
-    "unrated": "Ainda sem notas"
+    "unrated": "Ainda sem notas",
+    "yourRating": "Sua nota",
+    "notRated": "Sem nota",
+    "ratedOutOf": "Nota {score} de 5"
   },
   "auth": {
     "signOut": "Sair",
@@ -293,7 +329,27 @@
     "verifySendIn": "Enviar de novo em {seconds}s",
     "verifySent": "Enviado. Confira sua caixa de entrada.",
     "verifyDismiss": "Agora não",
-    "notVerified": "Confirme seu endereço de e-mail para fazer isso."
+    "notVerified": "Confirme seu endereço de e-mail para fazer isso.",
+    "signInFailed": "Esse e-mail e senha não conferem.",
+    "signUpFailed": "Não foi possível criar sua conta. Tente de novo.",
+    "createAccount": "Crie sua conta",
+    "usernameAvailable": "Nome de usuário disponível",
+    "usernameTaken": "Nome de usuário já usado",
+    "welcomeBack": "Bem-vindo de volta",
+    "welcomeBackSub": "Retome de onde você parou.",
+    "signUpSub": "Avalie o que você assiste e lê. Compartilhe com seus amigos.",
+    "password": "Senha",
+    "name": "Nome",
+    "username": "Nome de usuário",
+    "available": "Disponível",
+    "taken": "Já usado",
+    "usernameHint": "Letras, números e sublinhados.",
+    "forgotLink": "Esqueceu sua senha?",
+    "signInAction": "Entrar",
+    "signUpAction": "Criar conta",
+    "newHere": "Novo por aqui?",
+    "createAnAccount": "Crie uma conta",
+    "haveAccount": "Já tem uma conta?"
   },
   "badges": {
     "first-rating": {
@@ -478,10 +534,38 @@
     "reviews": "Críticas",
     "friendCount": "Amigos",
     "metaRatings": "{count} avaliações",
-    "metaReviews": "{count} críticas"
+    "metaReviews": "{count} críticas",
+    "noRatings": "Você ainda não avaliou nada.",
+    "noRatingsBody": "Busque algo que você já assistiu ou leu e dê uma nota.",
+    "noListsSelf": "Você ainda não tem listas.",
+    "noListsOther": "Nenhuma lista para mostrar.",
+    "noListsSelfBody": "As coleções que você criar aparecem aqui.",
+    "noListsOtherBody": "Esta pessoa não tem listas visíveis para você.",
+    "noCurrentlyBody": "Títulos marcados como assistindo ou lendo aparecem aqui.",
+    "likesReceived": "Curtidas recebidas"
   },
   "lists": {
-    "metaItems": "{count} itens"
+    "metaItems": "{count} itens",
+    "title": "Minhas listas",
+    "subtitle": "Acompanhe o que você quer assistir, ler e jogar.",
+    "loadFailed": "Não conseguimos carregar suas listas.",
+    "empty": "Crie sua primeira coleção.",
+    "emptyBody": "Favoritos, uma lista para assistir depois, os livros que você sempre adia — qualquer coisa que faça sentido junta.",
+    "visibilityHint": "Mude a visibilidade de uma lista na página dela.",
+    "notFound": "Não encontramos essa lista.",
+    "notFoundBody": "Ela pode ter sido apagada, ou é privada.",
+    "emptyOwnBody": "Abra qualquer título e use Adicionar à lista.",
+    "moveDown": "Mover para baixo",
+    "removeItem": "Remover da lista",
+    "noneYet": "Ainda não há listas.",
+    "noneYetBody": "Crie uma para começar a colecionar.",
+    "saveFailed": "Não foi possível salvar a lista.",
+    "edit": "Editar lista",
+    "new": "Nova lista",
+    "namePlaceholder": "Clássicos de ficção científica",
+    "notePlaceholder": "Por onde começar.",
+    "saveChanges": "Salvar alterações",
+    "create": "Criar lista"
   },
   "community": {
     "title": "Comunidade",
@@ -535,5 +619,61 @@
     "missing": "Não há nada aqui.",
     "missingBody": "Esta avaliação pode ter sido removida, ou o link pode estar errado.",
     "backHome": "Ir para o início"
+  },
+  "errors": {
+    "notFound": "Não encontramos essa página.",
+    "server": "Algo deu errado do nosso lado.",
+    "offline": "Não foi possível falar com o servidor. Verifique sua conexão.",
+    "generic": "Algo deu errado. Tente de novo.",
+    "fields": "Alguns campos precisam de atenção."
+  },
+  "discussion": {
+    "loadFailed": "Não conseguimos carregar esta discussão.",
+    "loadFailedBody": "Ela pode ter sido apagada por quem a criou.",
+    "noReplies": "Ainda não há respostas.",
+    "noRepliesBody": "Seja a primeira pessoa a dizer algo.",
+    "replyPlaceholder": "Escreva uma resposta...",
+    "commentPlaceholder": "Adicione um comentário...",
+    "commentFailed": "Não foi possível publicar seu comentário.",
+    "startFailed": "Não foi possível começar a discussão.",
+    "titlePlaceholder": "O segundo filme é melhor que o primeiro?",
+    "bodyPlaceholder": "Sobre o que você quer conversar?",
+    "view": "Ver discussão"
+  },
+  "review": {
+    "postFailed": "Não foi possível publicar sua avaliação.",
+    "placeholder": "O que você achou?",
+    "like": "Curtir avaliação",
+    "unlike": "Descurtir avaliação",
+    "write": "Escrever uma avaliação"
+  },
+  "status": {
+    "movie_planned": "Quero assistir",
+    "movie_in_progress": "Assistindo",
+    "movie_completed": "Assistido",
+    "movie_dropped": "Abandonado",
+    "series_planned": "Quero assistir",
+    "series_in_progress": "Assistindo",
+    "series_completed": "Assistida",
+    "series_dropped": "Abandonada",
+    "book_planned": "Quero ler",
+    "book_in_progress": "Lendo",
+    "book_completed": "Lido",
+    "book_dropped": "Abandonado",
+    "game_planned": "Quero jogar",
+    "game_in_progress": "Jogando",
+    "game_completed": "Zerado",
+    "game_dropped": "Abandonado"
+  },
+  "activity": {
+    "newNotification": "Você tem uma nova notificação",
+    "loadFailed": "Não conseguimos carregar suas notificações.",
+    "empty": "Nada para colocar em dia.",
+    "emptyBody": "Pedidos de amizade, respostas e conquistas aparecem aqui.",
+    "unread": "Não lida"
+  },
+  "app": {
+    "appStore": "Baixe na App Store",
+    "googlePlay": "Disponível no Google Play"
   }
 }

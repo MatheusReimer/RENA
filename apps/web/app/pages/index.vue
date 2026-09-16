@@ -148,8 +148,8 @@ useSeoMeta({
         <div class="board__main">
           <DashboardPosterRow
             v-if="continueItems.length"
-            title="Continue exploring"
-            subtitle="Pick up where you left off."
+            :title="$t('dash.continueTitle')"
+            :subtitle="$t('dash.continueSub')"
             see-all-to="/lists"
             :items="continueItems"
           />

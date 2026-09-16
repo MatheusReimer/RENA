@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { MEDIA_TYPE_LABELS } from '@revy/shared/constants'
 import type { MediaType } from '@revy/shared/types'
 import { POSTER_WIDTHS, imageSrcSet } from '@revy/shared/utils'
 
@@ -118,7 +117,7 @@ const displayTitle = computed(() =>
       <span class="poster__grain" aria-hidden="true" />
       <span class="poster__fallback-title clamp-3">{{ displayTitle }}</span>
       <span v-if="mediaType" class="poster__fallback-type">
-        {{ MEDIA_TYPE_LABELS[mediaType] }}
+        {{ $t(`mediaType.${mediaType}`) }}
       </span>
     </div>
   </div>

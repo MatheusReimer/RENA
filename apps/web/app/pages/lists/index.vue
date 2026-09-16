@@ -8,6 +8,7 @@ import type { ListSummary } from '@revy/shared/types'
  * with a New List action.
  */
 const api = useApi()
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const filter = ref<'all' | 'public' | 'friends' | 'private'>('all')
@@ -41,14 +42,14 @@ async function onCreated() {
   await refresh()
 }
 
-useHead({ title: 'My Lists' })
+useHead({ title: () => t('lists.title') })
 </script>
 
 <template>
   <div class="page">
     <header class="page__header">
       <div class="page__title-row">
-        <h1 class="page__title">My Lists</h1>
+        <h1 class="page__title">{{ t('lists.title') }}</h1>
         <UiAppButton
           v-if="auth.isSignedIn"
           variant="secondary"
@@ -65,7 +66,7 @@ useHead({ title: 'My Lists' })
       <UiEmptyState
         v-if="!auth.isSignedIn && auth.initialised"
         title="Sign in to build your collections."
-        description="Keep track of what you want to watch, read and play."
+        :description="t('lists.subtitle')"
       >
         <template #action>
           <UiAppButton variant="primary" @click="navigateTo('/signin')">Sign in</UiAppButton>
@@ -84,7 +85,7 @@ useHead({ title: 'My Lists' })
 
       <UiEmptyState
         v-else-if="error"
-        title="We couldn't load your lists."
+        :title="t('lists.loadFailed')"
       >
         <template #action>
           <UiAppButton variant="secondary" @click="refresh()">Try again</UiAppButton>
@@ -93,8 +94,8 @@ useHead({ title: 'My Lists' })
 
       <UiEmptyState
         v-else-if="lists.length === 0"
-        title="Create your first collection."
-        description="Favourites, a watchlist, the books you keep meaning to start — anything you want to keep together."
+        :title="t('lists.empty')"
+        :description="t('lists.emptyBody')"
       >
         <template #action>
           <UiAppButton variant="primary" @click="composerOpen = true">New list</UiAppButton>
@@ -104,7 +105,7 @@ useHead({ title: 'My Lists' })
       <UiEmptyState
         v-else-if="visible.length === 0"
         :title="`No ${filter} lists.`"
-        description="Change a list's visibility from its own page."
+        :description="t('lists.visibilityHint')"
       />
 
       <ListCard
