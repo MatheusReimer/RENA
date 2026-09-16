@@ -224,9 +224,16 @@ Then:
 
 ## Known before you start
 
-- **Password reset emails do not send** unless `MAIL_RESEND_API_KEY` is set.
-  Without it the mailer logs to the console, so in production a reset silently
-  goes nowhere. Set it, or accept that password reset is not available yet.
+- **Password reset fails** unless `NUXT_MAIL_RESEND_API_KEY` and
+  `NUXT_MAIL_FROM` are set -- loudly, not silently. `createMailer` falls back to
+  a null transport in production, which raises "No mail provider is
+  configured"; the console transport that prints the link is development-only
+  and production is explicitly stopped from reaching it. That is the right
+  trade: a reset link is a bearer token, and printing one into a log
+  aggregator hands the account to anyone with log access.
+
+  Note this needs a domain first -- Resend verifies a sending domain, and no
+  provider will let you send from a free mailbox address.
 - **No integration tests.** 424 unit tests, none of which touch an HTTP route.
   Every bug found during this project lived in that layer. Nothing is stopping
   a deploy; it is the thing most likely to bite after one.
