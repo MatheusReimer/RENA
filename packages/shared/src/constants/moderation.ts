@@ -61,12 +61,16 @@ export const DELETED_ACCOUNT_PREFIX = 'deleted-'
 /**
  * The address on the privacy policy and in both store listings.
  *
- * Published, so it has to be one somebody reads. The server sends reports to
- * whatever `MODERATION_EMAIL` is set to, which should be this or forward to
- * it -- a contact address in a policy that reaches nobody is worse than none,
- * because it is a promise.
+ * A personal inbox rather than `privacy@rena.reviews`, and deliberately: the
+ * branded address would need a mailbox to receive at, the domain host charges
+ * for one, and a contact address in a policy that reaches nobody is worse than
+ * none -- it is a promise. This one already works.
+ *
+ * Worth revisiting when there is a reason to: a free forwarder, or a mailbox
+ * on the domain, turns this into one line and a redeploy. Until then the
+ * honest address is the one that is read.
  */
-export const MODERATION_EMAIL = 'privacy@rena.reviews'
+export const MODERATION_EMAIL = 'matheusreimer1@gmail.com'
 
 /**
  * When the privacy policy last changed, as the page prints it.
