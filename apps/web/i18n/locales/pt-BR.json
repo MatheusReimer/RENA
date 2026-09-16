@@ -286,7 +286,14 @@
     "changedBody": "Você foi desconectado de todos os outros dispositivos. Entre com sua nova senha.",
     "incompleteTitle": "Este link está incompleto",
     "incompleteBody": "Links de redefinição só funcionam por inteiro, direto do e-mail. Peça um novo e abra pela sua caixa de entrada.",
-    "requestNewLink": "Pedir um novo link"
+    "requestNewLink": "Pedir um novo link",
+    "verifyBanner": "Confirme seu e-mail para publicar, avaliar e enviar mensagens.",
+    "verifyBannerShort": "Confirme seu e-mail",
+    "verifySend": "Enviar o e-mail",
+    "verifySendIn": "Enviar de novo em {seconds}s",
+    "verifySent": "Enviado. Confira sua caixa de entrada.",
+    "verifyDismiss": "Agora não",
+    "notVerified": "Confirme seu endereço de e-mail para fazer isso."
   },
   "badges": {
     "first-rating": {

@@ -1,6 +1,6 @@
 import { userService } from '@revy/core'
 import { defineApiHandler } from '../utils/handler'
-import { useServiceContext } from '../utils/context'
+import { isViewerVerified, useServiceContext } from '../utils/context'
 import { conversationService, notificationService } from '@revy/core'
 
 /**
@@ -12,6 +12,12 @@ import { conversationService, notificationService } from '@revy/core'
  * The two unread counts ride along because the shell draws both badges on
  * every screen, and a second round trip for a number is a round trip the first
  * paint waits on.
+ *
+ * `emailVerified` rides along for the same reason as the counts: the shell
+ * draws the confirm-your-address banner on every screen, and the soft gate
+ * decides which controls to offer. Reported here rather than kept on the
+ * profile, because it belongs to Better Auth's table and a copy would go stale
+ * the moment somebody confirms.
  *
  * `messaging` says whether the deployment has an encryption key, so the
  * interface can leave the feature out rather than offering an entry point that
@@ -25,14 +31,21 @@ export default defineApiHandler(async (event) => {
   const messaging = ctx.messageCipher !== null
 
   if (!ctx.viewerId) {
-    return { user: null, unreadNotifications: 0, unreadMessages: 0, messaging }
+    return {
+      user: null,
+      unreadNotifications: 0,
+      unreadMessages: 0,
+      messaging,
+      emailVerified: false,
+    }
   }
 
-  const [user, unreadNotifications, unreadMessages] = await Promise.all([
+  const [user, unreadNotifications, unreadMessages, emailVerified] = await Promise.all([
     userService.getById(ctx, ctx.viewerId),
     notificationService.countUnread(ctx),
     conversationService.countUnread(ctx),
+    isViewerVerified(event),
   ])
 
-  return { user, unreadNotifications, unreadMessages, messaging }
+  return { user, unreadNotifications, unreadMessages, messaging, emailVerified }
 })

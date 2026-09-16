@@ -286,7 +286,14 @@
     "changedBody": "You have been signed out everywhere else, on every device. Sign in with your new password.",
     "incompleteTitle": "This link is incomplete",
     "incompleteBody": "Password reset links only work in full, straight from the email. Ask for a new one and open it from your inbox.",
-    "requestNewLink": "Request a new link"
+    "requestNewLink": "Request a new link",
+    "verifyBanner": "Confirm your email to post, review and message.",
+    "verifyBannerShort": "Confirm your email",
+    "verifySend": "Send the email",
+    "verifySendIn": "Send again in {seconds}s",
+    "verifySent": "Sent. Check your inbox.",
+    "verifyDismiss": "Not now",
+    "notVerified": "Confirm your email address to do that."
   },
   "badges": {
     "first-rating": {

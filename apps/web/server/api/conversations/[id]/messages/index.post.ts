@@ -1,6 +1,6 @@
 import { conversationService } from '@revy/core'
 import { sendMessageSchema, uuidSchema } from '@revy/shared/schemas'
-import { useAuthenticatedContext } from '../../../../utils/context'
+import { useVerifiedContext } from '../../../../utils/context'
 import { defineApiHandler, readValidatedBodyOrThrow } from '../../../../utils/handler'
 import { RATE_LIMITS, assertRateLimit } from '../../../../utils/rate-limit'
 
@@ -18,7 +18,7 @@ import { RATE_LIMITS, assertRateLimit } from '../../../../utils/rate-limit'
 export default defineApiHandler(async (event) => {
   const conversationId = uuidSchema.parse(getRouterParam(event, 'id'))
   const input = await readValidatedBodyOrThrow(event, sendMessageSchema)
-  const ctx = await useAuthenticatedContext(event)
+  const ctx = await useVerifiedContext(event)
 
   await assertRateLimit(event, RATE_LIMITS.message)
   return { message: await conversationService.send(ctx, conversationId, input) }

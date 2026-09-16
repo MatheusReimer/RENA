@@ -78,5 +78,56 @@ if (seeds.ok) {
   )
 }
 
+// --- the soft gate --------------------------------------------------------
+/*
+ * A fresh account is unconfirmed by definition, so this is the one place the
+ * closed side of the gate can be checked without touching the database.
+ *
+ * Both halves matter. If the blocked calls start returning 200 the gate is
+ * off; if the allowed ones start returning 403 it has been fitted to the wrong
+ * doorway and is shutting everybody in.
+ */
+const pick = await fetch(`${BASE}/api/taste/seeds?mediaTypes=movie&limit=1`, {
+  headers: { cookie },
+})
+const mediaId = pick.ok
+  ? ((await pick.json()) as { titles: Array<{ id: string }> }).titles[0]?.id
+  : null
+
+if (!mediaId) {
+  check('found a media id to exercise the gate with', false)
+} else {
+  const post = (path: string, body: unknown) =>
+    fetch(`${BASE}${path}`, {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  const review = await post('/api/reviews', {
+    mediaId,
+    content: 'A smoke-test review, long enough to clear the minimum length rule for content.',
+    spoiler: false,
+  })
+  const code = review.ok
+    ? null
+    : ((await review.json()) as { error?: { code?: string } }).error?.code
+  check(
+    'unconfirmed account cannot post a review',
+    review.status === 403 && code === 'EMAIL_NOT_VERIFIED',
+    `got ${review.status} ${code ?? ''}`,
+  )
+
+  const join = await post(`/api/communities/${mediaId}/membership`, { joined: true })
+  check('unconfirmed account cannot join a community', join.status === 403, `got ${join.status}`)
+
+  // What the gate must NOT block.
+  const rate = await post('/api/ratings', { mediaId, score: 4 })
+  check('unconfirmed account can still rate', rate.status === 200, `got ${rate.status}`)
+
+  const leave = await post(`/api/communities/${mediaId}/membership`, { joined: false })
+  check('unconfirmed account can still leave', leave.status === 200, `got ${leave.status}`)
+}
+
 console.log(failures === 0 ? '\n  all checks passed\n' : `\n  ${failures} check(s) failed\n`)
 process.exit(failures === 0 ? 0 : 1)

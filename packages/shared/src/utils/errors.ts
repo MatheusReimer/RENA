@@ -48,6 +48,7 @@ export function statusForCode(code: ApiErrorCode): number {
       return 401
     case 'FORBIDDEN':
     case 'USER_BLOCKED':
+    case 'EMAIL_NOT_VERIFIED':
       return 403
     case 'NOT_FOUND':
     case 'MEDIA_NOT_FOUND':
@@ -141,6 +142,20 @@ export const errors = {
    */
   messagingUnavailable: () =>
     new DomainError('MESSAGING_UNAVAILABLE', 'Messaging is unavailable right now.'),
+
+  /**
+   * A confirmed address is required for this action, and there isn't one.
+   *
+   * 403 rather than 401: the session is perfectly valid and signing in again
+   * would change nothing. A 401 tells the client to send the reader back to
+   * the sign-in screen, which is the one thing that cannot help here.
+   *
+   * Its own code rather than plain FORBIDDEN because the client has a specific
+   * remedy to offer -- resend the email -- and cannot offer it for a generic
+   * permission failure.
+   */
+  emailNotVerified: () =>
+    new DomainError('EMAIL_NOT_VERIFIED', 'Confirm your email address to do that.'),
 
   internal: (cause?: unknown) =>
     new DomainError('INTERNAL_ERROR', 'Something went wrong on our end.', { cause }),

@@ -380,6 +380,11 @@ onMounted(() => {
         </div>
       </header>
 
+      <!-- Above the content and below the header: it is a standing condition
+           of the account, not of the page, so it should not scroll away with
+           one screen's content or sit inside the page transition. -->
+      <LayoutVerifyEmailBanner />
+
       <main id="content" class="main__body" tabindex="-1">
         <slot />
       </main>

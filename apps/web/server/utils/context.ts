@@ -7,6 +7,9 @@ import {
   type ServiceContext,
   userRepository,
 } from '@revy/core'
+import { schema } from '@revy/db'
+import { errors } from '@revy/shared/utils'
+import { eq } from 'drizzle-orm'
 import type { H3Event } from 'h3'
 import { getAuthSession } from './auth'
 import { useDatabase } from './db'
@@ -82,13 +85,48 @@ async function resolveViewerId(event: H3Event): Promise<string | null> {
   const session = await getAuthSession(event)
   if (!session?.user?.id) {
     event.context.viewerId = null
+    event.context.viewerEmailVerified = false
     return null
   }
 
-  const user = await userRepository.findByAuthUserId(useDatabase(), session.user.id)
+  const db = useDatabase()
+
+  /*
+   * Read from `auth_user`, NOT from `session.user.emailVerified`.
+   *
+   * Better Auth runs a five-minute cookie cache (`session.cookieCache`), and
+   * the session object it hands back inside that window is whatever was true
+   * when the cookie was written. Confirming an address does not rewrite the
+   * cookie in the browser that is holding it -- which is every browser except
+   * the one the link was opened in.
+   *
+   * Reading the session there meant somebody clicked the confirmation link,
+   * came back, and for up to five minutes was still told to confirm their
+   * email and still refused when they tried to post. Verified on a real
+   * session: the database said true and `/api/me` said false until the cookie
+   * aged out.
+   *
+   * The query is free in practice -- a primary-key lookup on a request that is
+   * already going to the database on the next line.
+   */
+  const [authUser] = await db
+    .select({ emailVerified: schema.authUser.emailVerified })
+    .from(schema.authUser)
+    .where(eq(schema.authUser.id, session.user.id))
+    .limit(1)
+
+  event.context.viewerEmailVerified = authUser?.emailVerified === true
+
+  const user = await userRepository.findByAuthUserId(db, session.user.id)
   const viewerId = user?.id ?? null
   event.context.viewerId = viewerId
   return viewerId
+}
+
+/** Whether the request's session has a confirmed address. */
+export async function isViewerVerified(event: H3Event): Promise<boolean> {
+  await resolveViewerId(event)
+  return event.context.viewerEmailVerified === true
 }
 
 /** Context for a route that works signed in or signed out. */
@@ -114,4 +152,25 @@ export async function useServiceContext(event: H3Event): Promise<ServiceContext>
 export async function useAuthenticatedContext(event: H3Event): Promise<AuthenticatedContext> {
   const ctx = await useServiceContext(event)
   return requireViewer(ctx)
+}
+
+/**
+ * Context for an action that reaches other people (SPEC 26).
+ *
+ * The soft gate. An unconfirmed account can read everything, rate anything and
+ * keep its own lists -- none of that touches anybody else, and blocking the
+ * first session is the largest single drop-off in any sign-up flow. What it
+ * cannot do is publish, message, or arrive in somebody's notifications, which
+ * is the whole of what an address actually buys us: somewhere to point abuse
+ * back at.
+ *
+ * Asked for per endpoint rather than applied by a blanket middleware, for the
+ * same reason `useAuthenticatedContext` is: a route either asks for this
+ * context or it is not gated, and that is visible in the file rather than in a
+ * matcher somewhere else.
+ */
+export async function useVerifiedContext(event: H3Event): Promise<AuthenticatedContext> {
+  const ctx = await useAuthenticatedContext(event)
+  if (event.context.viewerEmailVerified !== true) throw errors.emailNotVerified()
+  return ctx
 }

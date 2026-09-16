@@ -27,6 +27,15 @@ export const useAuthStore = defineStore('auth', () => {
    * instead of offering a link to a 503.
    */
   const messagingEnabled = ref(false)
+  /**
+   * Whether the signed-in address is confirmed (SPEC 26).
+   *
+   * Global for the same reason the counts are: the shell draws the banner on
+   * every screen, and the soft gate decides which controls to offer. Never
+   * trusted for permission -- the server re-checks every gated write, because
+   * a flag the client holds is a flag the client can set.
+   */
+  const emailVerified = ref(false)
   const initialised = ref(false)
   const pending = ref(false)
 
@@ -47,11 +56,13 @@ export const useAuthStore = defineStore('auth', () => {
       unreadNotifications.value = result.unreadNotifications
       unreadMessages.value = result.unreadMessages
       messagingEnabled.value = result.messaging
+      emailVerified.value = result.emailVerified
     } catch {
       // A failed session lookup means signed out, not a broken app.
       user.value = null
       unreadNotifications.value = 0
       unreadMessages.value = 0
+      emailVerified.value = false
     } finally {
       initialised.value = true
       pending.value = false
@@ -104,6 +115,7 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
       unreadNotifications.value = 0
       unreadMessages.value = 0
+      emailVerified.value = false
       await navigateTo('/signin')
     } finally {
       pending.value = false
@@ -164,6 +176,7 @@ export const useAuthStore = defineStore('auth', () => {
     load,
     signIn,
     register,
+    emailVerified,
     signOut,
     markNotificationsRead,
     refreshBadges,

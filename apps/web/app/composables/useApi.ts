@@ -182,6 +182,8 @@ export function useApi() {
           unreadMessages: number
           /** False when the deployment has no message encryption key. */
           messaging: boolean
+          /** False until the address is confirmed; gates outbound actions. */
+          emailVerified: boolean
         }>('/api/me'),
 
       register: (body: {
@@ -221,11 +223,18 @@ export function useApi() {
       resetPassword: (body: { newPassword: string; token: string }) =>
         request<unknown>('/api/auth/reset-password', { method: 'POST', body }),
 
-      /** Sends the confirmation mail again, for an address that never got it. */
-      resendVerification: (body: { email: string; callbackURL: string }) =>
-        request<unknown>('/api/auth/send-verification-email', { method: 'POST', body }),
+      /**
+       * Sends the confirmation mail again, for an address that never got it.
+       *
+       * Takes no address: the server reads it from the session. Better Auth's
+       * own `/send-verification-email` mails whoever the body names, and the
+       * client would have to hold its own address to call it -- which means
+       * putting one on the session payload the whole interface reads.
+       */
+      resendVerification: () =>
+        request<{ sent: boolean }>('/api/auth/resend-verification', { method: 'POST' }),
 
-/**
+      /**
        * The signed-in home screen. Authenticated and viewer-scoped, which is
        * why it lives apart from `home()` rather than taking a flag.
        */

@@ -286,7 +286,14 @@
     "changedBody": "Se ha cerrado tu sesión en todos los demás dispositivos. Inicia sesión con tu nueva contraseña.",
     "incompleteTitle": "Este enlace está incompleto",
     "incompleteBody": "Los enlaces de restablecimiento solo funcionan completos, directamente desde el correo. Pide uno nuevo y ábrelo desde tu bandeja.",
-    "requestNewLink": "Pedir un enlace nuevo"
+    "requestNewLink": "Pedir un enlace nuevo",
+    "verifyBanner": "Confirma tu correo para publicar, reseñar y enviar mensajes.",
+    "verifyBannerShort": "Confirma tu correo",
+    "verifySend": "Enviar el correo",
+    "verifySendIn": "Enviar de nuevo en {seconds}s",
+    "verifySent": "Enviado. Revisa tu bandeja de entrada.",
+    "verifyDismiss": "Ahora no",
+    "notVerified": "Confirma tu dirección de correo para hacer eso."
   },
   "badges": {
     "first-rating": {
