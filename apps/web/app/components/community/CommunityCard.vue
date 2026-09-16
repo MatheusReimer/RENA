@@ -207,7 +207,7 @@ const friendOthers = computed(
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
   border: 1px solid var(--accent);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: #fff;
   font-size: var(--text-2xs);
   font-weight: 600;
@@ -227,7 +227,7 @@ const friendOthers = computed(
 .card__join--in {
   background: var(--accent-soft);
   border-color: var(--accent-border);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .card__join--in:hover {

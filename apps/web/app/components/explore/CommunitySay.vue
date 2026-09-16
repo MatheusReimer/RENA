@@ -422,7 +422,7 @@ function page(direction: 1 | -1) {
     padding: var(--space-6);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
-    background: radial-gradient(80% 60% at 70% 20%, rgb(232 53 43 / 0.12), transparent 70%),
+    background: radial-gradient(80% 60% at 70% 20%, rgb(200 16 46 / 0.12), transparent 70%),
       linear-gradient(to bottom, #0e0e12, #131016);
   }
 
@@ -440,8 +440,8 @@ function page(direction: 1 | -1) {
   width: 1.75rem;
   height: 1.75rem;
   border-radius: var(--radius-full);
-  background: radial-gradient(circle at 35% 30%, #ff8a7d, var(--accent) 55%, #7d1611);
-  box-shadow: 0 0 1.25rem rgb(232 53 43 / 0.55);
+  background: radial-gradient(circle at 35% 30%, #ff8095, var(--accent) 55%, #5e0816);
+  box-shadow: 0 0 1.25rem rgb(200 16 46 / 0.55);
 }
 
 @media (prefers-reduced-motion: reduce) {

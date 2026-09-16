@@ -231,7 +231,7 @@ function page(direction: 1 | -1) {
 }
 
 .person__link:hover .person__name {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .person__role {

@@ -10,12 +10,15 @@
     "preview": "nuxt preview --dotenv ../../.env",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "cap:sync": "nuxt generate && cap sync",
+    "cap:sync": "nuxt generate --envName native && cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",
     "i18n:audit": "node i18n/audit.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/preferences": "^8.0.1",
     "@revy/core": "workspace:*",
     "@revy/db": "workspace:*",
     "@revy/shared": "workspace:*",
@@ -26,8 +29,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
+    "@capacitor/cli": "^8.5.2",
     "@nuxtjs/i18n": "^10.6.0",
     "@pinia/nuxt": "^0.11.0",
     "nuxt": "^4.0.0",

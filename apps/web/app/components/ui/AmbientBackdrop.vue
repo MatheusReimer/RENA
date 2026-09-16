@@ -140,7 +140,7 @@ onBeforeUnmount(() => {
      keeps it on its own layer for as long as it animates by transform only. */
   filter: blur(110px);
   will-change: transform;
-  background: rgb(232 53 43 / calc(0.11 * var(--ambient-intensity)));
+  background: rgb(200 16 46 / calc(0.11 * var(--ambient-intensity)));
 }
 
 .ambient__field--one {
@@ -157,7 +157,7 @@ onBeforeUnmount(() => {
   width: 48%;
   aspect-ratio: 1;
   /* Dimmer than its partner, so the two never read as a matched pair. */
-  background: rgb(232 53 43 / calc(0.07 * var(--ambient-intensity)));
+  background: rgb(200 16 46 / calc(0.07 * var(--ambient-intensity)));
   animation: ambient-drift-two 31s var(--ease-inout) infinite;
 }
 
@@ -187,8 +187,8 @@ onBeforeUnmount(() => {
   transition: opacity 500ms var(--ease-out);
   background: radial-gradient(
     closest-side,
-    rgb(232 53 43 / calc(0.26 * var(--ambient-intensity))),
-    rgb(232 53 43 / calc(0.09 * var(--ambient-intensity))) 36%,
+    rgb(200 16 46 / calc(0.26 * var(--ambient-intensity))),
+    rgb(200 16 46 / calc(0.09 * var(--ambient-intensity))) 36%,
     transparent 70%
   );
   /* Parked centre-screen until the first move; invisible until then anyway. */

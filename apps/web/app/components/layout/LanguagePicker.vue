@@ -329,7 +329,7 @@ onMounted(() => {
  */
 .menu__item--active {
   color: var(--text-primary);
-  background: linear-gradient(90deg, rgb(232 53 43 / 0.16), transparent 88%);
+  background: linear-gradient(90deg, rgb(200 16 46 / 0.16), transparent 88%);
 }
 
 .menu__item--on {
@@ -342,7 +342,7 @@ onMounted(() => {
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .menu__check svg {

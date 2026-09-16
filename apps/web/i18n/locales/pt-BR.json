@@ -24,7 +24,7 @@
     "footerTagline": "Feito para quem ama histórias.",
     "friends": "Amigos",
     "messages": "Mensagens",
-    "notificationsTab": "Notificações"
+    "notificationsTab": "Avisos"
   },
   "mediaType": {
     "movie": "Filme",
@@ -358,7 +358,8 @@
     "verifySentTo": "Enviamos um link de confirmação para {email}. Abra-o para terminar de configurar sua conta.",
     "verifyUndelivered": "Não conseguimos enviar seu e-mail de confirmação. Tente de novo e, se continuar falhando, fale com a gente.",
     "verifyResend": "Enviar de novo",
-    "verifyWrongAddress": "Endereço errado?"
+    "verifyWrongAddress": "Endereço errado?",
+    "footnote": "O lar de todas as histórias."
   },
   "badges": {
     "first-rating": {

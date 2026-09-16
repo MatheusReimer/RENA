@@ -53,7 +53,7 @@ withDefaults(
   left: -10%;
   width: 46%;
   aspect-ratio: 1;
-  background: rgb(232 53 43 / calc(0.28 * var(--aurora-intensity)));
+  background: rgb(200 16 46 / calc(0.28 * var(--aurora-intensity)));
   animation: drift-one 19s var(--ease-inout) infinite;
 }
 

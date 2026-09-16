@@ -1,4 +1,4 @@
-import type { ContentLanguage } from '@revy/shared/constants'
+import { SESSION_TOKEN_HEADER, type ContentLanguage } from '@revy/shared/constants'
 import type {
   Activity,
   ApiErrorBody,
@@ -155,19 +155,49 @@ function createRequest(fetcher: UrlFetch) {
     // On web `apiBase` is empty and the path stays relative. In the Capacitor
     // build it is the deployed origin, because the WebView's own origin
     // (capacitor://localhost) has no API behind it.
-    const base = useRuntimeConfig().public.apiBase
-    const url = base ? `${base}${path}` : path
+    const config = useRuntimeConfig().public
+    const url = config.apiBase ? `${config.apiBase}${path}` : path
 
     try {
       return (await fetcher(url, {
         ...options,
-        // Sessions are cookie-based, and a cross-origin native request drops
-        // cookies unless credentials are sent explicitly.
-        credentials: 'include',
+        ...(config.native ? await nativeRequestOptions() : { credentials: 'include' }),
       })) as T
     } catch (error) {
       throw toApiError(error)
     }
+  }
+}
+
+/**
+ * How the native apps authenticate, in place of the session cookie.
+ *
+ * The cookie cannot work there: to the app's WebView every API response comes
+ * from another site, and iOS refuses those cookies outright. So the session
+ * travels as a bearer token instead. The server hands one over on sign-in and
+ * sign-up, this catches it, and every later request sends it back.
+ *
+ * `credentials: 'omit'` rather than `include`. The server allows the app
+ * origins without allowing credentials, and a WebView refuses a credentialed
+ * response that does not say it was allowed.
+ *
+ * `Accept-Language` stands in for the `rena_locale` cookie, which the server
+ * reads for catalogue text and which does not cross origins either. It is
+ * read per request so a language switch applies from the next fetch.
+ */
+async function nativeRequestOptions(): Promise<Record<string, unknown>> {
+  const token = await nativeSession.token()
+
+  return {
+    credentials: 'omit',
+    headers: {
+      'accept-language': useNuxtApp().$i18n.locale.value,
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+    async onResponse({ response }: { response: Response }) {
+      const issued = response.headers.get(SESSION_TOKEN_HEADER)
+      if (issued) await nativeSession.save(issued)
+    },
   }
 }
 
@@ -214,7 +244,14 @@ export function useApi() {
        * handler at all -- sign-out silently did nothing, the cookie stayed,
        * and the only symptom was still being signed in.
        */
-      signOut: () => request<unknown>('/api/auth/sign-out', { method: 'POST', body: {} }),
+      signOut: async () => {
+        const result = await request<unknown>('/api/auth/sign-out', { method: 'POST', body: {} })
+        // After the server has ended the session, never before -- the same
+        // order the store keeps, for the same reason. A token forgotten
+        // locally but alive on the server is a session nobody can end.
+        if (useRuntimeConfig().public.native) await nativeSession.clear()
+        return result
+      },
 
       /**
        * Asks for a reset link.

@@ -18,6 +18,26 @@ import type { CapacitorConfig } from '@capacitor/cli'
  * into the native projects. The bundled app talks to the deployed API via
  * NUXT_PUBLIC_API_BASE, which must be set at generate time.
  */
+/*
+ * A build pointed at `pnpm dev` rather than production.
+ *
+ * Testing on a phone against the local server means plain `http`, which Android
+ * refuses twice: as cleartext traffic, and as insecure content on the app's
+ * https page. Both are lifted only when the API origin is itself `http://`, so
+ * a store build, which talks to https production, can never ship with either.
+ *
+ * Over USB, from apps/web in PowerShell:
+ *
+ *   $env:NUXT_PUBLIC_API_BASE = 'http://localhost:3000'
+ *   pnpm cap:sync
+ *   adb reverse tcp:3000 tcp:3000
+ *
+ * and run the dev server as `pnpm dev --host 127.0.0.1`. By default it listens
+ * on IPv6 `::1` only, and `adb reverse` connects over IPv4: the phone gets an
+ * empty response and the app hangs on its first request with nothing on screen.
+ */
+const localApi = (process.env.NUXT_PUBLIC_API_BASE ?? '').startsWith('http://')
+
 const config: CapacitorConfig = {
   appId: BRAND.appId,
   appName: BRAND.name,
@@ -30,6 +50,7 @@ const config: CapacitorConfig = {
   // 4.2, and offline-launch behaviour is far better this way.
   server: {
     androidScheme: 'https',
+    cleartext: localApi,
   },
 
   ios: {
@@ -40,6 +61,7 @@ const config: CapacitorConfig = {
 
   android: {
     backgroundColor: '#0a0a0b',
+    allowMixedContent: localApi,
   },
 
   plugins: {

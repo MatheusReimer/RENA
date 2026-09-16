@@ -217,7 +217,7 @@ defineProps<{
  * action should be unmistakable rather than tasteful.
  */
 .hero__cta--primary {
-  background: var(--accent);
+  background: var(--accent-fill);
   border-color: var(--accent);
 }
 

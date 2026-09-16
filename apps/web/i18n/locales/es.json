@@ -358,7 +358,8 @@
     "verifySentTo": "Enviamos un enlace de confirmación a {email}. Ábrelo para terminar de configurar tu cuenta.",
     "verifyUndelivered": "No pudimos enviar tu correo de confirmación. Inténtalo de nuevo y, si sigue fallando, escríbenos.",
     "verifyResend": "Enviar de nuevo",
-    "verifyWrongAddress": "¿Dirección equivocada?"
+    "verifyWrongAddress": "¿Dirección equivocada?",
+    "footnote": "El hogar de todas las historias."
   },
   "badges": {
     "first-rating": {

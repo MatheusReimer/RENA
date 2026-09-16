@@ -19,9 +19,9 @@
   -->
   <defs>
     <radialGradient id="lit" cx="35%" cy="30%" r="75%">
-      <stop offset="0%" stop-color="#ff8a7d"/>
-      <stop offset="55%" stop-color="#e8352b"/>
-      <stop offset="100%" stop-color="#7d1611"/>
+      <stop offset="0%" stop-color="#ff8095"/>
+      <stop offset="55%" stop-color="#c8102e"/>
+      <stop offset="100%" stop-color="#5e0816"/>
     </radialGradient>
   </defs>
 

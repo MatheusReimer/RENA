@@ -417,8 +417,11 @@ useHead(() => ({
   display: flex;
   flex-direction: column;
   /* The shell owns the chrome; this fills what is left so the composer sits
-     at the bottom and only the message list scrolls. */
-  height: calc(100dvh - var(--topbar-height, 0px));
+     at the bottom and only the message list scrolls. Both of the shell's
+     published heights, not `--topbar-height`: that token was the old 60px top
+     bar, and measuring against it left this ~100px taller than the room on a
+     phone -- so focusing the composer scrolled this header under the shell's. */
+  height: calc(100dvh - var(--shell-bar, 0px) - var(--shell-bottom, 0px));
   max-width: var(--content-max);
   margin-inline: auto;
   width: 100%;

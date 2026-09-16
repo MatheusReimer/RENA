@@ -125,6 +125,6 @@ const ICONS: Record<MediaType, string> = {
 }
 
 .tag--solid svg {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 </style>

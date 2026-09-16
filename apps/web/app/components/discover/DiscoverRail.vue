@@ -315,7 +315,7 @@ function reasonFor(item: DiscoverItem): string | null {
 }
 
 .card__link:hover .card__title {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .card__title {

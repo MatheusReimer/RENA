@@ -135,7 +135,7 @@ async function toggleLike() {
 }
 
 .review__permalink:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .review {
@@ -198,6 +198,6 @@ async function toggleLike() {
 }
 
 .review__like--active {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 </style>

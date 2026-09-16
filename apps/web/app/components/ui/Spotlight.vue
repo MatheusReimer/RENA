@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
   transition: opacity var(--duration-slow) var(--ease-out);
   background: radial-gradient(
     24rem 24rem at var(--spot-x, 50%) var(--spot-y, 50%),
-    rgb(232 53 43 / calc(0.14 * var(--spot-intensity))),
+    rgb(200 16 46 / calc(0.14 * var(--spot-intensity))),
     transparent 70%
   );
 }

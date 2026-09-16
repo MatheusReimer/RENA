@@ -171,7 +171,7 @@ const groups = computed(() => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .item__track {

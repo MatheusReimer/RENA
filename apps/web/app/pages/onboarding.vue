@@ -294,7 +294,7 @@ useHead({ title: t('onboarding.title') })
   font-size: var(--text-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .onboard__title {
@@ -328,7 +328,7 @@ useHead({ title: t('onboarding.title') })
 .chip--on {
   border-color: var(--accent);
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .grid {

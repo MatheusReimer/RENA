@@ -1,8 +1,9 @@
 import { createMailer } from '@revy/core'
 import { schema } from '@revy/db'
-import { AUTH_LINK_TTL_SECONDS } from '@revy/shared/constants'
+import { AUTH_LINK_TTL_SECONDS, NATIVE_APP_ORIGINS } from '@revy/shared/constants'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { bearer } from 'better-auth/plugins'
 import type { H3Event } from 'h3'
 import { useDatabase } from './db'
 import { recordVerificationMailFailure } from './verification-mail'
@@ -22,6 +23,28 @@ function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof cr
   return betterAuth({
     secret,
     ...(baseURL ? { baseURL } : {}),
+
+    /*
+     * The native apps (SPEC 4).
+     *
+     * A sign-in with no cookie on it still has its `Origin` checked against
+     * this list -- Better Auth's defence against a cross-site form logging
+     * somebody into an attacker's account -- and the apps' origins are not
+     * the deployment's. Without them every sign-in from a phone is a 403.
+     */
+    trustedOrigins: [...NATIVE_APP_ORIGINS],
+
+    /*
+     * Sessions for clients that cannot hold our cookie.
+     *
+     * iOS blocks cookies from a site other than the page's, and to the app's
+     * WebView that is every API response. This lets the same session travel as
+     * `Authorization: Bearer` instead. The plugin also copies the token into a
+     * readable response header, which the web must never see -- httpOnly is
+     * the point of the cookie -- so `[...all].ts` and `register.post.ts` strip
+     * it from every response that is not going to an app.
+     */
+    plugins: [bearer()],
 
     database: drizzleAdapter(useDatabase(), {
       provider: 'pg',

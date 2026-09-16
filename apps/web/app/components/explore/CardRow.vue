@@ -183,7 +183,7 @@ function page(direction: 1 | -1) {
   flex-shrink: 0;
   width: 2rem;
   height: 2rem;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .row__mark svg {

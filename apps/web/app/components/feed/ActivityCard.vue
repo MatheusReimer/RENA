@@ -195,7 +195,7 @@ async function toggleLike() {
 }
 
 .card__media-link:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .card__time {
@@ -309,7 +309,7 @@ async function toggleLike() {
 }
 
 .card__action--liked {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .card__action--liked:hover {

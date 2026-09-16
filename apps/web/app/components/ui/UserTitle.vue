@@ -49,7 +49,7 @@ const label = computed(() => name(props.slug))
 }
 
 .title__text {
-  color: var(--accent);
+  color: var(--accent-text);
   font-style: italic;
   font-weight: 400;
 }

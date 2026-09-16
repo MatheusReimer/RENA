@@ -477,10 +477,34 @@ const WORD_INDEX = computed(() =>
   margin-top: var(--space-6);
 }
 
+/*
+ * One row that scrolls sideways on a phone, rather than a row that wraps.
+ *
+ * Five chips need about 390px and a phone gives them 352, so wrapping left
+ * "Games" alone on a second line -- reading as an afterthought rather than one
+ * of five equal choices. A cut-off last chip says "there is more" on its own.
+ */
 .chips__group {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.chips__group::-webkit-scrollbar {
+  display: none;
+}
+
+.chips__group > .chip {
+  flex-shrink: 0;
+}
+
+@media (min-width: 30rem) {
+  .chips__group {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
 
 .chips__rule {
@@ -522,7 +546,7 @@ const WORD_INDEX = computed(() =>
 
 .chips__group:first-child .chip--on {
   border-color: var(--accent);
-  background: var(--accent);
+  background: var(--accent-fill);
 }
 
 /*

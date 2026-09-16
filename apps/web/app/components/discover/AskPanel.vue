@@ -429,7 +429,10 @@ const hasAnswer = computed(() => answer.value !== null)
   z-index: var(--z-modal, 200);
   display: grid;
   place-items: start center;
-  padding: var(--space-6) var(--space-4);
+  /* Clear of the status bar and home indicator once a long answer scrolls
+     the panel to the top of a phone screen. */
+  padding: calc(var(--space-6) + env(safe-area-inset-top, 0px)) var(--space-4)
+    calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -451,7 +454,7 @@ const hasAnswer = computed(() => answer.value !== null)
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl, 1.25rem);
   background:
-    radial-gradient(120% 70% at 50% 0%, rgb(232 53 43 / 0.14), transparent 62%),
+    radial-gradient(120% 70% at 50% 0%, rgb(200 16 46 / 0.14), transparent 62%),
     var(--surface-raised, #111114);
   box-shadow: 0 2.5rem 6rem rgb(0 0 0 / 0.6);
   transition: max-width var(--dur-slow, 480ms) var(--ease-out);
@@ -500,14 +503,14 @@ const hasAnswer = computed(() => answer.value !== null)
   width: 2.75rem;
   height: 2.75rem;
   border-radius: var(--radius-full);
-  background: radial-gradient(circle at 35% 30%, #ff8a7d, var(--accent) 55%, #7d1611);
-  box-shadow: 0 0 2rem rgb(232 53 43 / 0.6);
+  background: radial-gradient(circle at 35% 30%, #ff8095, var(--accent) 55%, #5e0816);
+  box-shadow: 0 0 2rem rgb(200 16 46 / 0.6);
   animation: orb-breathe 4s var(--ease-inout, ease-in-out) infinite;
 }
 
 @keyframes orb-breathe {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 2rem rgb(232 53 43 / 0.6); }
-  50% { transform: scale(1.06); box-shadow: 0 0 3rem rgb(232 53 43 / 0.75); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 2rem rgb(200 16 46 / 0.6); }
+  50% { transform: scale(1.06); box-shadow: 0 0 3rem rgb(200 16 46 / 0.75); }
 }
 
 .ask__title {
@@ -626,7 +629,7 @@ const hasAnswer = computed(() => answer.value !== null)
   margin: var(--space-5) 0 0;
   text-align: center;
   font-size: var(--text-sm);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* ------------------------------------------------------------------ *

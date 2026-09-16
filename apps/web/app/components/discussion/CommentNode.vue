@@ -151,7 +151,7 @@ const canReply = computed(() => props.comment.depth < COMMENT_MAX_DEPTH)
 }
 
 .comment__reply:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .comment__maxed {

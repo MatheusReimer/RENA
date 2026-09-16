@@ -675,12 +675,12 @@ function onFocusIn(index: number) {
 .edge:focus-visible .edge__disc {
   transform: scale(1.12);
   border-color: var(--accent);
-  background: rgb(232 53 43 / 0.16);
+  background: rgb(200 16 46 / 0.16);
   /* Lit from within, so it reads as the brand rather than as a grey chrome
      button borrowed from somewhere else. */
   box-shadow:
     0 0.5rem 2rem rgb(0 0 0 / 0.55),
-    0 0 2rem rgb(232 53 43 / 0.45);
+    0 0 2rem rgb(200 16 46 / 0.45);
 }
 
 .edge:hover,

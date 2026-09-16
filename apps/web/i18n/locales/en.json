@@ -24,7 +24,7 @@
     "footerTagline": "Made for people who love stories.",
     "friends": "Friends",
     "messages": "Messages",
-    "notificationsTab": "Notifications"
+    "notificationsTab": "Alerts"
   },
   "mediaType": {
     "movie": "Movie",
@@ -358,7 +358,8 @@
     "verifySentTo": "We sent a confirmation link to {email}. Open it to finish setting up your account.",
     "verifyUndelivered": "We could not send your confirmation email. Try again, and if it keeps failing get in touch.",
     "verifyResend": "Send it again",
-    "verifyWrongAddress": "Wrong address?"
+    "verifyWrongAddress": "Wrong address?",
+    "footnote": "A social home for every story."
   },
   "badges": {
     "first-rating": {

@@ -332,7 +332,7 @@ onMounted(() => {
     </aside>
 
     <div class="main">
-      <header class="bar safe-top">
+      <header class="bar">
         <!-- The wordmark rides the bar only where the rail is not there to
              carry it, so the desktop screen does not show it twice. -->
         <NuxtLink to="/" class="bar__brand" :aria-label="BRAND.name">
@@ -369,7 +369,7 @@ onMounted(() => {
                 : 'Messages'
             "
           >
-            <LayoutNavIcon name="messages" />
+            <LayoutNavIcon name="messages" class="bar__glyph" />
             <span v-if="auth.unreadMessages" class="bar__dot" aria-hidden="true" />
           </NuxtLink>
 
@@ -383,7 +383,7 @@ onMounted(() => {
                 : 'Notifications'
             "
           >
-            <LayoutNavIcon name="activity" />
+            <LayoutNavIcon name="activity" class="bar__glyph" />
             <span v-if="auth.unreadNotifications" class="bar__dot" aria-hidden="true" />
           </NuxtLink>
 
@@ -473,7 +473,21 @@ onMounted(() => {
    * underneath and disappeared. A page has no way to measure the shell around
    * it, so the shell states its height and the page offsets against it.
    */
-  --shell-bar: 5.25rem;
+  /*
+   * The row the controls sit in, plus the system status bar above it on a
+   * phone. Both are part of the height a page has to clear: before the inset
+   * was counted here, the bar grew by it and search's pinned row slid 27px
+   * underneath. 3.5rem is a phone app bar; the desktop row is set below.
+   */
+  --shell-bar-row: 3.5rem;
+  --shell-bar: calc(var(--shell-bar-row) + env(safe-area-inset-top, 0px));
+  /*
+   * And the space it keeps clear at the bottom: the tab bar and the home
+   * indicator on a phone. A page that fills the screen -- a conversation --
+   * needs both numbers, or it is taller than the room and the whole page
+   * scrolls instead of just its messages.
+   */
+  --shell-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-4));
 
   min-height: 100dvh;
   /*
@@ -606,7 +620,7 @@ onMounted(() => {
 
 .rail__link:hover {
   color: var(--text-primary);
-  background: linear-gradient(90deg, rgb(232 53 43 / 0.1), transparent 85%);
+  background: linear-gradient(90deg, rgb(200 16 46 / 0.1), transparent 85%);
 }
 
 .rail__link:hover::before {
@@ -622,18 +636,18 @@ onMounted(() => {
  */
 .rail__link--active {
   color: var(--text-primary);
-  background: linear-gradient(90deg, rgb(232 53 43 / 0.16), transparent 88%);
+  background: linear-gradient(90deg, rgb(200 16 46 / 0.16), transparent 88%);
 }
 
 .rail__link--active::before {
   transform: translateY(-50%) scaleY(1);
-  box-shadow: 0 0 0.75rem rgb(232 53 43 / 0.6);
+  box-shadow: 0 0 0.75rem rgb(200 16 46 / 0.6);
 }
 
 /* The icon picks up the colour too, so the row reads as one lit object
    rather than as a red bar next to a grey link. */
 .rail__link--active :deep(svg) {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .rail__count {
@@ -649,7 +663,7 @@ onMounted(() => {
   margin-left: auto;
   border-radius: var(--radius-full);
   background: var(--accent-lit);
-  box-shadow: 0 0 0.5rem rgb(232 53 43 / 0.7);
+  box-shadow: 0 0 0.5rem rgb(200 16 46 / 0.7);
 }
 
 .rail__promo {
@@ -693,7 +707,7 @@ onMounted(() => {
 }
 
 .rail__promo--action:hover .rail__orb {
-  box-shadow: 0 0 2.25rem rgb(232 53 43 / 0.75);
+  box-shadow: 0 0 2.25rem rgb(200 16 46 / 0.75);
 }
 
 .rail__promo--action .rail__orb {
@@ -704,7 +718,7 @@ onMounted(() => {
   font-size: var(--text-2xs);
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* The brand mark as an object rather than a glyph: the same red circle the
@@ -732,10 +746,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  /* `min-height` rather than `height`: the notch padding `safe-top` adds on a
-     phone has to push the bar taller, not squash what is in it. */
-  min-height: var(--shell-bar);
-  padding: var(--space-4) var(--space-5);
+  /*
+   * Exactly the height it publishes, so a page offsetting against
+   * `--shell-bar` meets its bottom edge rather than guessing at it. Nothing in
+   * the row is taller than the row.
+   */
+  height: var(--shell-bar);
+  /*
+   * The inset is padded here, not with the global `safe-top` class. This bar
+   * used to carry that class, and this declaration -- scoped, so more specific
+   * -- silently replaced its padding. On a phone the logo, messages and avatar
+   * sat under the system status bar while the class claimed to prevent it.
+   */
+  padding: env(safe-area-inset-top, 0px) var(--space-4) 0;
   background: rgb(10 10 12 / 0.86);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -747,6 +770,10 @@ onMounted(() => {
 }
 
 @media (min-width: 64rem) {
+  .shell {
+    --shell-bar-row: 5.25rem;
+  }
+
   .bar {
     padding-inline: var(--space-8);
   }
@@ -846,16 +873,22 @@ onMounted(() => {
 .bar__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  /* Tight on a phone: the buttons below carry their own space around a small
+     glyph, so a wide gap on top of that spread four controls across the bar. */
+  gap: var(--space-1);
   margin-left: auto;
 }
 
+/*
+ * A 44px target around a 20px glyph on a phone -- the size a thumb needs,
+ * without the glyph growing to fill it.
+ */
 .bar__icon {
   position: relative;
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: var(--radius-full);
   color: var(--text-secondary);
   transition:
@@ -868,15 +901,38 @@ onMounted(() => {
   background: var(--surface-raised);
 }
 
+/*
+ * The icon component has no size of its own and fills whatever holds it. The
+ * tab bar always sized it; up here nothing did, so the messages and
+ * notifications glyphs were drawn at the full 36px of their button -- more
+ * than twice the language globe beside them.
+ */
+.bar__glyph {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@media (min-width: 64rem) {
+  .bar__actions {
+    gap: var(--space-4);
+  }
+
+  .bar__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
 .bar__dot {
   position: absolute;
-  top: 0.35rem;
-  right: 0.4rem;
+  /* On the glyph's corner, whatever size the button around it is. */
+  top: calc(50% - 0.75rem);
+  right: calc(50% - 0.75rem);
   width: 0.45rem;
   height: 0.45rem;
   border-radius: var(--radius-full);
   background: var(--accent-lit);
-  box-shadow: 0 0 0.5rem rgb(232 53 43 / 0.7);
+  box-shadow: 0 0 0.5rem rgb(200 16 46 / 0.7);
   outline: 2px solid var(--surface-base);
 }
 
@@ -909,7 +965,7 @@ onMounted(() => {
 .bar__signin {
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: #fff;
   font-size: var(--text-sm);
   font-weight: 600;
@@ -927,7 +983,25 @@ onMounted(() => {
 
 .main__body {
   /* Clears the fixed tab bar plus the home indicator. */
-  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-4));
+  padding-bottom: var(--shell-bottom);
+}
+
+/*
+ * The tab bar steps aside while somebody is typing, on a phone.
+ *
+ * With the keyboard up the screen is about half its height, and the bar was
+ * sitting on top of the keyboard taking 60px of what was left -- in a
+ * conversation, a third of the room for the messages. Nothing on it is what
+ * anybody reaches for mid-sentence.
+ */
+@media (width < 64rem) {
+  .shell:has(textarea:focus, input:is(:not([type]), [type='text'], [type='search'], [type='email'], [type='password'], [type='url']):focus) {
+    --shell-bottom: var(--space-4);
+  }
+
+  .shell:has(textarea:focus, input:is(:not([type]), [type='text'], [type='search'], [type='email'], [type='password'], [type='url']):focus) .tabbar {
+    display: none;
+  }
 }
 
 .tabbar {
@@ -953,7 +1027,7 @@ onMounted(() => {
 }
 
 .tabbar__link--active {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .tabbar__icon-wrap {
@@ -998,13 +1072,27 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+/*
+ * No floating top bar to clear, on a phone.
+ *
+ * `--topbar-height` is what the heroes pad by to get out from under a bar laid
+ * over them -- which is the landing page's. Inside this shell the bar sits
+ * above the page instead, so the same padding was a 60px empty band before
+ * the first word, on a screen where 60px is a tenth of the view.
+ */
+@media (width < 64rem) {
+  .shell {
+    --topbar-height: 0px;
+  }
+}
+
 @media (min-width: 64rem) {
-  .tabbar {
-    display: none;
+  .shell {
+    --shell-bottom: var(--space-16);
   }
 
-  .main__body {
-    padding-bottom: var(--space-16);
+  .tabbar {
+    display: none;
   }
 }
 

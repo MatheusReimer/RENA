@@ -42,7 +42,7 @@ function isActive(to: string): boolean {
   <div class="landing">
     <a class="skip" href="#content">{{ $t('nav.skipToContent') }}</a>
 
-    <header class="topbar">
+    <header class="topbar safe-top">
       <div class="topbar__inner">
         <NuxtLink to="/" class="topbar__brand" :aria-label="BRAND.name">
           <LayoutAppLogo size="sm" spaced />

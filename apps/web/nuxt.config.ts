@@ -189,6 +189,47 @@ export default defineNuxtConfig({
        * set to the deployed origin or every request would hit the WebView.
        */
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
+      /**
+       * True only in the iOS/Android bundle, where requests carry a bearer
+       * token instead of a cookie. Set by the `native` environment below.
+       */
+      native: false,
+    },
+  },
+
+  /**
+   * The iOS and Android bundle (SPEC 4).
+   *
+   * `nuxt generate --envName native`, which is what `cap:sync` runs. Everything
+   * here differs from the website for one of two reasons.
+   *
+   * **No server rendering.** A generated site with SSR on renders each page once,
+   * at build time, and ships that HTML -- signed out, with the catalogue as it
+   * stood on the day of the build. Inside the app every page has to render on
+   * the phone, against the live API, for whoever is holding it.
+   *
+   * **Absolute origins, baked in.** A static bundle has no server to read
+   * runtime config from, so these are fixed at build time. They default to
+   * production because that is what a store build talks to; point
+   * `NUXT_PUBLIC_API_BASE` elsewhere to build against a local server.
+   */
+  $env: {
+    native: {
+      ssr: false,
+      // Its own build directory, so building the app while `pnpm dev` is
+      // running does not rewrite the dev server's `.nuxt` out from under it.
+      buildDir: '.nuxt-native',
+      runtimeConfig: {
+        public: {
+          native: true,
+          apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://rena.reviews',
+          appUrl: process.env.NUXT_PUBLIC_APP_URL || 'https://rena.reviews',
+          // The keys live on the server the app calls, not on the machine that
+          // builds it, so this cannot be derived from them here. Production
+          // has discovery on.
+          aiDiscovery: process.env.NUXT_PUBLIC_AI_DISCOVERY !== 'false',
+        },
+      },
     },
   },
 

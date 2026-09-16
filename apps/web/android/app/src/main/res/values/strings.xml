@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RENA</string>
+    <string name="title_activity_main">RENA</string>
+    <string name="package_name">net.thinklogic.rena</string>
+    <string name="custom_url_scheme">net.thinklogic.rena</string>
+</resources>

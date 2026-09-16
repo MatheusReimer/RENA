@@ -253,7 +253,7 @@ const tabs = computed(() => [
    colour is for. */
 .tabs__tab--on {
   color: var(--text-primary);
-  background: var(--accent);
+  background: var(--accent-fill);
 }
 
 /* -------------------------------- cards --------------------------------- */

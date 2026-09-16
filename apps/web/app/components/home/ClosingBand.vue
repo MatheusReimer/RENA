@@ -94,7 +94,7 @@ useConstellation(web)
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(46% 60% at 62% 38%, rgb(232 53 43 / 0.11), transparent 70%);
+  background: radial-gradient(46% 60% at 62% 38%, rgb(200 16 46 / 0.11), transparent 70%);
 }
 
 .closing__inner {

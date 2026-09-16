@@ -158,7 +158,7 @@ const SLOTS = 3
     linear-gradient(to top, rgb(10 10 12 / 0.86) 0%, transparent 44%),
     /* The ground the photograph is composited onto, and the whole section's
        appearance when there is no photograph to load. */
-    radial-gradient(90% 80% at 30% 30%, rgb(232 53 43 / 0.08), transparent 70%),
+    radial-gradient(90% 80% at 30% 30%, rgb(200 16 46 / 0.08), transparent 70%),
     linear-gradient(to bottom, #0b0b0e, #121016);
 }
 

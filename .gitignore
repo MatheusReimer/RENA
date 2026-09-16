@@ -4,14 +4,11 @@ node_modules/
 
 # nuxt / nitro
 .nuxt/
+.nuxt-native/
 .output/
 .data/
 dist/
 .vercel/
-
-# capacitor native projects (generated)
-apps/web/ios/
-apps/web/android/
 
 # env + secrets
 .env

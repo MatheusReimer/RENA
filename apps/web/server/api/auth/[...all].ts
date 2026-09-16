@@ -1,5 +1,7 @@
+import { SESSION_TOKEN_HEADER } from '@revy/shared/constants'
 import { useAuth } from '../../utils/auth'
 import { sendDomainError } from '../../utils/handler'
+import { isNativeAppRequest } from '../../utils/native'
 import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
 
 /**
@@ -44,5 +46,20 @@ export default defineEventHandler(async (event) => {
     return sendDomainError(event, error)
   }
 
-  return useAuth().handler(toWebRequest(event))
+  const response = await useAuth().handler(toWebRequest(event))
+
+  /*
+   * The session token, kept away from the website.
+   *
+   * The bearer plugin adds it to every response that sets the session cookie,
+   * as a header page script can read. The cookie is httpOnly so that an
+   * injected script cannot carry a session off-site; handing the same value
+   * over in a readable header would quietly undo that. Only the native apps,
+   * which have no cookie to fall back on, get to see it.
+   */
+  if (!isNativeAppRequest(event)) {
+    response.headers.delete(SESSION_TOKEN_HEADER)
+  }
+
+  return response
 })

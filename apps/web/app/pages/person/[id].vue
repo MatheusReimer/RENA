@@ -185,7 +185,7 @@ useSeoMeta({
   margin: var(--space-2) 0 0;
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .hero__count {

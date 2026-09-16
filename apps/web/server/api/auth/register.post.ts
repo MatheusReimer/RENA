@@ -1,5 +1,6 @@
 import { userService } from '@revy/core'
 import { schema } from '@revy/db'
+import { SESSION_TOKEN_HEADER } from '@revy/shared/constants'
 import { signUpSchema } from '@revy/shared/schemas'
 import { errors } from '@revy/shared/utils'
 import { eq } from 'drizzle-orm'
@@ -7,6 +8,7 @@ import { useAuth } from '../../utils/auth'
 import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
 import { useServiceContext } from '../../utils/context'
 import { defineApiHandler, readValidatedBodyOrThrow } from '../../utils/handler'
+import { isNativeAppRequest } from '../../utils/native'
 
 /**
  * Registration (SPEC 26).
@@ -114,6 +116,15 @@ export default defineApiHandler(async (event) => {
      */
     for (const cookie of authHeaders.getSetCookie()) {
       appendResponseHeader(event, 'set-cookie', cookie)
+    }
+
+    /*
+     * The native apps cannot use that cookie, so they get the token too. Only
+     * them: see the note in `[...all].ts` on why the website never does.
+     */
+    const token = authHeaders.get(SESSION_TOKEN_HEADER)
+    if (token && isNativeAppRequest(event)) {
+      setResponseHeader(event, SESSION_TOKEN_HEADER, token)
     }
 
     return { user }

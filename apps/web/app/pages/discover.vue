@@ -276,7 +276,7 @@ useSeoMeta({
   flex-shrink: 0;
   width: 2rem;
   height: 2rem;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .gems__mark svg {

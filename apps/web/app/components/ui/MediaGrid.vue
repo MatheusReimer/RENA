@@ -275,7 +275,7 @@ defineProps<{
 }
 
 .card:hover .card__title {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .card__meta {

@@ -28,7 +28,7 @@ import { BRAND } from '@revy/shared/constants'
       <slot />
     </div>
 
-    <p class="auth-layout__footnote">{{ BRAND.description }}</p>
+    <p class="auth-layout__footnote">{{ $t('auth.footnote') }}</p>
 
     <!-- Where a refused action explains itself. One per layout. -->
     <LayoutNoticeHost />
@@ -49,7 +49,10 @@ import { BRAND } from '@revy/shared/constants'
   justify-content: center;
   gap: var(--space-8);
   min-height: 100dvh;
-  padding: var(--space-6) var(--space-4);
+  /* Clear of the status bar and the home indicator: in the app, and on a
+     notched phone in the browser, the page runs edge to edge beneath both. */
+  padding: calc(var(--space-6) + env(safe-area-inset-top, 0px)) var(--space-4)
+    calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   /* No background of its own, but it still needs its own layer to paint above
      the ambient backdrop. */
   position: relative;

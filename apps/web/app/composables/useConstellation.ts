@@ -128,7 +128,7 @@ export function useConstellation(
             Math.hypot((a.x + b.x) / 2 - pointerX, (a.y + b.y) / 2 - pointerY) < 150
 
           ctx!.strokeStyle = near
-            ? `rgba(232, 53, 43, ${strength * 0.5})`
+            ? `rgba(200, 16, 46, ${strength * 0.5})`
             : `rgba(255, 255, 255, ${strength * 0.16})`
           ctx!.lineWidth = near ? 1 : 0.7
           ctx!.beginPath()
@@ -141,7 +141,7 @@ export function useConstellation(
       for (const p of points) {
         const near = Math.hypot(p.x - pointerX, p.y - pointerY) < 150
         ctx!.fillStyle = p.accent
-          ? `rgba(232, 53, 43, ${near ? 0.95 : 0.7})`
+          ? `rgba(200, 16, 46, ${near ? 0.95 : 0.7})`
           : `rgba(255, 255, 255, ${near ? 0.75 : 0.34})`
         ctx!.beginPath()
         ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2)

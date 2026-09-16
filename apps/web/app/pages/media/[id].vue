@@ -996,9 +996,23 @@ useSeoMeta({
   color: var(--text-tertiary);
 }
 
+/*
+ * Stacked on a phone, side by side from 30rem.
+ *
+ * Two across a 384px screen gave the rating button 190px for about 220px of
+ * stars and "Your rating · 4.5": the stars spilled out past its left edge and
+ * Add to list ran past the page margin.
+ */
 .actions {
   display: flex;
+  flex-direction: column;
   gap: var(--space-3);
+}
+
+@media (min-width: 30rem) {
+  .actions {
+    flex-direction: row;
+  }
 }
 
 /*
@@ -1093,7 +1107,7 @@ useSeoMeta({
 .status-chip--active {
   background: var(--accent-soft);
   border-color: var(--accent-border);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .status-chip:disabled {

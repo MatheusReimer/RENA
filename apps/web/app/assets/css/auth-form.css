@@ -48,7 +48,7 @@
   align-items: center;
   min-height: 1.5rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .auth-form__link:hover {

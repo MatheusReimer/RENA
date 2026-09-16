@@ -118,9 +118,9 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   transform-origin: 0 50%;
-  background: linear-gradient(90deg, #7d1611, var(--accent) 45%, #ff8a7d);
+  background: linear-gradient(90deg, #5e0816, var(--accent) 45%, #ff8095);
   /* Lit rather than painted, so on a near-black bar it reads as a filament. */
-  box-shadow: 0 0 0.75rem rgb(232 53 43 / 0.75);
+  box-shadow: 0 0 0.75rem rgb(200 16 46 / 0.75);
   transition: transform 220ms var(--ease-out);
 }
 
@@ -152,8 +152,8 @@ onBeforeUnmount(() => {
   transform-origin: 50% 0;
   background: linear-gradient(
     180deg,
-    rgb(232 53 43 / 0.28),
-    rgb(232 53 43 / 0.08) 45%,
+    rgb(200 16 46 / 0.28),
+    rgb(200 16 46 / 0.08) 45%,
     transparent
   );
   animation: sweep 900ms var(--ease-out) forwards;

@@ -253,7 +253,7 @@ const summary = computed(() => {
   border-radius: var(--radius-full);
   border: 1px solid var(--accent-border);
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .empty__mark svg {

@@ -152,7 +152,7 @@ button:disabled,
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(232 53 43 / 0.5) transparent;
+  scrollbar-color: rgb(200 16 46 / 0.5) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -165,7 +165,7 @@ button:disabled,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(232 53 43 / 0.5);
+  background: rgb(200 16 46 / 0.5);
   border-radius: var(--radius-full);
   /* A transparent border plus `content-box` clipping is what insets the thumb
      from the track -- the pseudo-element has no padding of its own. */
@@ -199,7 +199,7 @@ button:disabled,
  * its own contrast rather than being read white-on-red.
  */
 ::selection {
-  background: rgb(232 53 43 / 0.38);
+  background: rgb(200 16 46 / 0.38);
   color: #fff;
 }
 

@@ -237,7 +237,7 @@ useSeoMeta({
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .header__delete {

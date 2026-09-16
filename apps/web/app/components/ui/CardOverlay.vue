@@ -232,6 +232,25 @@ const kind = computed(() => {
   color: var(--text-secondary);
 }
 
+/*
+ * No pointer: the score stays, the blurb does not.
+ *
+ * Always on, the three-line excerpt plus the score covered the lower half of
+ * every poster on a phone -- two columns of text laid over the covers people
+ * scan by. Tapping a card already opens the quick sheet, which carries the
+ * full description, so nothing is lost; on a pointer the blurb still arrives
+ * with the hover, where it is asked for.
+ *
+ * After the rule above, not beside the other `hover: none` block: same
+ * specificity, so whichever comes later wins, and next to its siblings this
+ * lost to the `display` it was meant to replace.
+ */
+@media (hover: none) {
+  .score__blurb {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .score {
     transition: opacity var(--duration-fast) var(--ease-out);

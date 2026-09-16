@@ -78,7 +78,7 @@ withDefaults(
   margin-inline: 0.16em;
   border-radius: var(--radius-full);
   background: var(--accent);
-  box-shadow: 0 0 0.5em rgb(232 53 43 / 0.55);
+  box-shadow: 0 0 0.5em rgb(200 16 46 / 0.55);
   /* Sits on the cap-height line rather than the baseline, matching the mark. */
   align-self: center;
 }

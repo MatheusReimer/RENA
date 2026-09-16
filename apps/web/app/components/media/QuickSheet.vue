@@ -259,7 +259,7 @@ async function save() {
 }
 
 .quick__star {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .quick__count {
