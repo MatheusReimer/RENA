@@ -122,14 +122,10 @@ describe('deleting an account', () => {
 })
 
 describe('the published contact address', () => {
-  it('is an address somebody actually receives mail at', () => {
-    /*
-     * Printed in the privacy policy and in both store listings, so the test is
-     * about it being a real, deliverable address rather than about which
-     * domain it is on. A branded address needs a mailbox to receive at, and
-     * one that bounces is worse than a personal one that does not.
-     */
-    expect(MODERATION_EMAIL).toMatch(/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/)
-    expect(MODERATION_EMAIL).not.toMatch(/@rena\.reviews$/)
+  it('is a deliverable address on the product domain', () => {
+    // Printed in the privacy policy and in both store listings. The domain
+    // needs a mailbox behind it -- the address existing in this file is not
+    // the same as mail arriving, and only one of those a reviewer can test.
+    expect(MODERATION_EMAIL).toMatch(/^[^@\s]+@rena\.reviews$/)
   })
 })

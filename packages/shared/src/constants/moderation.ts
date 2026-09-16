@@ -61,16 +61,16 @@ export const DELETED_ACCOUNT_PREFIX = 'deleted-'
 /**
  * The address on the privacy policy and in both store listings.
  *
- * A personal inbox rather than `privacy@rena.reviews`, and deliberately: the
- * branded address would need a mailbox to receive at, the domain host charges
- * for one, and a contact address in a policy that reaches nobody is worse than
- * none -- it is a promise. This one already works.
+ * Published, so it has to be one somebody reads: a contact address in a policy
+ * that bounces is worse than none, because it is a promise a store reviewer
+ * will test. The mailbox behind it is Zoho's free tier, which receives at this
+ * domain using MX records alongside the DNS that Resend already sends from.
  *
- * Worth revisiting when there is a reason to: a free forwarder, or a mailbox
- * on the domain, turns this into one line and a redeploy. Until then the
- * honest address is the one that is read.
+ * Resend cannot be the mailbox, though it carries everything this app sends:
+ * its inbound side delivers to a webhook rather than to an inbox, so reading
+ * mail here would mean writing a forwarder and maintaining it.
  */
-export const MODERATION_EMAIL = 'matheusreimer1@gmail.com'
+export const MODERATION_EMAIL = 'privacy@rena.reviews'
 
 /**
  * When the privacy policy last changed, as the page prints it.
