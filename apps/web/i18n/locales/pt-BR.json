@@ -490,9 +490,8 @@
     "loadFailed": "Não conseguimos carregar nenhum título.",
     "loadFailedBody": "O problema é nosso, não das suas escolhas. Tente de novo ou pule esta etapa e avalie quando quiser.",
     "step": {
-      "kinds": "Passo 1 de 3",
-      "moods": "Passo 2 de 3",
-      "rate": "Passo 3 de 3"
+      "kinds": "Passo 1 de 2",
+      "rate": "Passo 2 de 2"
     }
   },
   "entry": {

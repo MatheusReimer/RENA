@@ -11,11 +11,19 @@ import type { MediaType, SeedTitle } from '@revy/shared/types'
  * ratings is the difference between a recommender that can find taste
  * neighbours and one that cannot.
  *
- * Three steps, and they are in this order because each one narrows the next:
- * the kinds decide which moods are worth offering, and the moods decide which
- * titles are worth putting in front of somebody to rate. Asking for ratings
- * first would mean offering a grid of romantic comedies to someone who only
- * plays strategy games.
+ * Two screens. The kinds and the moods share the first, because they are one
+ * question -- the moods are only there to colour the kinds, and they narrow to
+ * match as soon as a kind is picked. They had a screen of their own once; a
+ * whole click-through for a question whose own subtitle admits it "decides what
+ * we put in front of you, not what you get" is a step that costs more signups
+ * than it earns signal.
+ *
+ * The rating grid keeps its own screen, and comes second, because it is the
+ * part that actually feeds the recommender. Asking for ratings first would mean
+ * offering romantic comedies to somebody who only plays strategy games.
+ *
+ * The moods still reach the model -- `recommend.service.ts` puts their titles
+ * in the prompt. Folding the screen away does not drop the answer.
  *
  * Skippable at every step, and that is not a courtesy -- a wall between signup
  * and the product is the single most reliable way to lose the signup. A skip
@@ -31,7 +39,7 @@ const { t } = useI18n()
 const SEED_LIMIT = 24
 const ENOUGH_RATINGS = 5
 
-type Step = 'kinds' | 'moods' | 'rate'
+type Step = 'kinds' | 'rate'
 const step = ref<Step>('kinds')
 
 const kinds = ref<MediaType[]>([])
@@ -81,12 +89,22 @@ function toggleMood(key: string) {
  * execute is what keeps a reader who changes their mind twice on step one from
  * firing three catalogue queries nobody will read.
  */
+/*
+ * Not awaited: there is nothing here to wait for.
+ *
+ * `immediate: false` means no request starts at setup, so the awaited promise
+ * resolves on the spot -- all a top-level `await` buys is making the page an
+ * async component, which delays its mount behind Suspense for no data. The
+ * other pages in this app await theirs because they fetch immediately and want
+ * SSR to hold for the result; this one fetches from `loadSeeds()` on the way
+ * to the rating step instead.
+ */
 const {
   data: seeds,
   status: seedStatus,
   error: seedError,
   execute: loadSeeds,
-} = await useAsyncData(
+} = useAsyncData(
   'onboarding-seeds',
   () => api.taste.seeds(kinds.value, moods.value, SEED_LIMIT),
   /*
@@ -106,14 +124,9 @@ const {
 const titles = computed(() => seeds.value?.titles ?? [])
 
 async function next() {
-  if (step.value === 'kinds') {
-    step.value = 'moods'
-    return
-  }
-  if (step.value === 'moods') {
-    step.value = 'rate'
-    await loadSeeds()
-  }
+  if (step.value !== 'kinds') return
+  step.value = 'rate'
+  await loadSeeds()
 }
 
 /**
@@ -164,38 +177,52 @@ useHead({ title: t('onboarding.title') })
       <p class="onboard__sub">{{ t(`onboarding.${step}Sub`) }}</p>
     </header>
 
-    <!-- 1. Kinds -->
-    <div v-if="step === 'kinds'" class="chips">
-      <button
-        v-for="kind in MEDIA_TYPES"
-        :key="kind"
-        type="button"
-        class="chip"
-        :class="{ 'chip--on': kinds.includes(kind) }"
-        :aria-pressed="kinds.includes(kind)"
-        @click="toggleKind(kind)"
-      >
-        {{ t(`mediaType.${kind}_plural`) }}
-      </button>
+    <!-- 1. Kinds, and the moods they narrow to. -->
+    <div v-if="step === 'kinds'" class="pick">
+      <div class="chips">
+        <button
+          v-for="kind in MEDIA_TYPES"
+          :key="kind"
+          type="button"
+          class="chip"
+          :class="{ 'chip--on': kinds.includes(kind) }"
+          :aria-pressed="kinds.includes(kind)"
+          @click="toggleKind(kind)"
+        >
+          {{ t(`mediaType.${kind}_plural`) }}
+        </button>
+      </div>
+
+      <!--
+        Revealed by the first pick rather than shown from the start.
+
+        `availableMoods` is filtered by the chosen kinds, so before anything is
+        picked this is either every mood or, read honestly, a question asked
+        before the thing it depends on. Waiting also keeps the first thing a new
+        account sees down to four chips.
+      -->
+      <section v-if="kinds.length > 0" class="pick__moods">
+        <h2 class="pick__heading">{{ t('onboarding.moodsTitle') }}</h2>
+        <p class="pick__sub">{{ t('onboarding.moodsSub') }}</p>
+
+        <div class="moods">
+          <button
+            v-for="mood in availableMoods"
+            :key="mood.key"
+            type="button"
+            class="mood"
+            :class="{ 'mood--on': moods.includes(mood.key) }"
+            :aria-pressed="moods.includes(mood.key)"
+            @click="toggleMood(mood.key)"
+          >
+            <img class="mood__art" :src="`/moods/${mood.key}.webp`" alt="" loading="lazy" />
+            <span class="mood__name">{{ t(`mood.${mood.key}`) }}</span>
+          </button>
+        </div>
+      </section>
     </div>
 
-    <!-- 2. Moods -->
-    <div v-else-if="step === 'moods'" class="moods">
-      <button
-        v-for="mood in availableMoods"
-        :key="mood.key"
-        type="button"
-        class="mood"
-        :class="{ 'mood--on': moods.includes(mood.key) }"
-        :aria-pressed="moods.includes(mood.key)"
-        @click="toggleMood(mood.key)"
-      >
-        <img class="mood__art" :src="`/moods/${mood.key}.webp`" alt="" loading="lazy" />
-        <span class="mood__name">{{ t(`mood.${mood.key}`) }}</span>
-      </button>
-    </div>
-
-    <!-- 3. Rate -->
+    <!-- 2. Rate -->
     <div v-else class="rate">
       <div v-if="seedStatus === 'pending'" class="grid">
         <UiSkeletonBlock v-for="i in 12" :key="i" height="9rem" radius="var(--radius-md)" />
@@ -286,6 +313,30 @@ useHead({ title: t('onboarding.title') })
 }
 
 .onboard__sub {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.pick__moods {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pick__heading {
+  text-align: center;
+  font-size: var(--text-lg);
+}
+
+.pick__sub {
+  margin-bottom: var(--space-4);
+  text-align: center;
   font-size: var(--text-sm);
   color: var(--text-secondary);
 }

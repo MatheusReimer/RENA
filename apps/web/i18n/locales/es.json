@@ -490,9 +490,8 @@
     "loadFailed": "No pudimos cargar ningún título.",
     "loadFailedBody": "Es cosa nuestra, no de lo que elegiste. Inténtalo de nuevo o sáltate este paso y puntúa cuando quieras.",
     "step": {
-      "kinds": "Paso 1 de 3",
-      "moods": "Paso 2 de 3",
-      "rate": "Paso 3 de 3"
+      "kinds": "Paso 1 de 2",
+      "rate": "Paso 2 de 2"
     }
   },
   "entry": {

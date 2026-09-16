@@ -490,9 +490,8 @@
     "loadFailed": "We couldn't load any titles.",
     "loadFailedBody": "That's on us, not on what you picked. Try again, or skip ahead and rate things whenever you like.",
     "step": {
-      "kinds": "Step 1 of 3",
-      "moods": "Step 2 of 3",
-      "rate": "Step 3 of 3"
+      "kinds": "Step 1 of 2",
+      "rate": "Step 2 of 2"
     }
   },
   "entry": {
