@@ -44,15 +44,26 @@ export async function sendReportNotice(
     return
   }
 
-  const mailer = createMailer({
-    resendApiKey: config.resendApiKey,
-    from: config.from,
-    isProduction: process.env.NODE_ENV === 'production',
-  })
-
   const link = config.appUrl ? `${config.appUrl}/${targetPath(notice)}` : targetPath(notice)
 
+  /*
+   * Building the mailer is inside the try, not before it.
+   *
+   * `createMailer` throws in production when no mail credentials are set --
+   * deliberately, because the alternative is printing password-reset links
+   * into a log. Constructed outside this block, that throw escaped into the
+   * request and answered a reader who had just reported something vile with
+   * a 500, even though their report was already stored. They did their part.
+   */
+  let mailer: ReturnType<typeof createMailer> | null = null
+
   try {
+    mailer = createMailer({
+      resendApiKey: config.resendApiKey,
+      from: config.from,
+      isProduction: process.env.NODE_ENV === 'production',
+    })
+
     await mailer.send({
       to: config.to,
       subject: `RENA report: ${notice.reason} on a ${notice.targetType}`,
@@ -73,9 +84,16 @@ export async function sendReportNotice(
         .join(NEWLINE),
     })
   } catch (error) {
-    // Logged without the note, which is somebody's words about somebody else.
+    /*
+     * Logged without the note, which is somebody's words about somebody else.
+     *
+     * `mailer` is null when the failure was building it -- no credentials --
+     * which is a different problem from a send that was refused, and the log
+     * line has to be able to say which.
+     */
     console.error(
-      `[revy] could not mail report ${notice.reportId} via "${mailer.kind}"`,
+      `[revy] could not mail report ${notice.reportId}` +
+        (mailer ? ` via "${mailer.kind}"` : ' (no mail transport configured)'),
       error instanceof Error ? error.message : error,
     )
   }
