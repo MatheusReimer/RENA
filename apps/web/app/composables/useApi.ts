@@ -186,8 +186,12 @@ export function useApi() {
           unreadMessages: number
           /** False when the deployment has no message encryption key. */
           messaging: boolean
-          /** False until the address is confirmed; gates outbound actions. */
+          /** False until the address is confirmed. Everything is walled until it is true. */
           emailVerified: boolean
+          /** True when the confirmation mail could not be sent, so the wall can say so. */
+          verificationMailFailed: boolean
+          /** The viewer's own address, sent only while unconfirmed, for the wall to print. */
+          email: string | null
         }>('/api/me'),
 
       register: (body: {

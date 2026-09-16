@@ -30,12 +30,30 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Whether the signed-in address is confirmed (SPEC 26).
    *
-   * Global for the same reason the counts are: the shell draws the banner on
-   * every screen, and the soft gate decides which controls to offer. Never
-   * trusted for permission -- the server re-checks every gated write, because
-   * a flag the client holds is a flag the client can set.
+   * Global for the same reason the counts are, and load-bearing in a way they
+   * are not: the route middleware reads it on every navigation to decide
+   * whether the reader sees the product or the wall. Never trusted for
+   * permission -- `useAuthenticatedContext` re-checks it against the database
+   * on every request, because a flag the client holds is a flag the client
+   * can set.
    */
   const emailVerified = ref(false)
+  /**
+   * The address the confirmation link was sent to, while it is unconfirmed.
+   *
+   * Only the wall screen reads it, and the server only sends it while the wall
+   * is up -- printing it is how somebody notices they typed their own address
+   * wrong, which is otherwise an invisible reason to be locked out.
+   */
+  const verificationEmail = ref<string | null>(null)
+  /**
+   * Whether the confirmation mail failed to send.
+   *
+   * The difference between "check your inbox" and "we could not send it",
+   * which on a walled account is the difference between waiting and knowing
+   * to press Resend.
+   */
+  const verificationMailFailed = ref(false)
   const initialised = ref(false)
   const pending = ref(false)
 
@@ -57,12 +75,16 @@ export const useAuthStore = defineStore('auth', () => {
       unreadMessages.value = result.unreadMessages
       messagingEnabled.value = result.messaging
       emailVerified.value = result.emailVerified
+      verificationEmail.value = result.email
+      verificationMailFailed.value = result.verificationMailFailed
     } catch {
       // A failed session lookup means signed out, not a broken app.
       user.value = null
       unreadNotifications.value = 0
       unreadMessages.value = 0
       emailVerified.value = false
+      verificationEmail.value = null
+      verificationMailFailed.value = false
     } finally {
       initialised.value = true
       pending.value = false
@@ -116,6 +138,8 @@ export const useAuthStore = defineStore('auth', () => {
       unreadNotifications.value = 0
       unreadMessages.value = 0
       emailVerified.value = false
+      verificationEmail.value = null
+      verificationMailFailed.value = false
       await navigateTo('/signin')
     } finally {
       pending.value = false
@@ -177,6 +201,8 @@ export const useAuthStore = defineStore('auth', () => {
     signIn,
     register,
     emailVerified,
+    verificationEmail,
+    verificationMailFailed,
     signOut,
     markNotificationsRead,
     refreshBadges,

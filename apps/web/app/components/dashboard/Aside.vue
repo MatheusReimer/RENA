@@ -165,6 +165,18 @@ const counters = computed(() => [
   transition: color var(--duration-fast) var(--ease-out);
 }
 
+/*
+ * "View all" measured 51x22. `align-items: baseline` on the header is what
+ * keeps this sitting on the heading's baseline, so the target is grown with a
+ * min-height and centred contents rather than with padding, which would push
+ * it off that baseline.
+ */
+.panel__head a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+}
+
 .panel__head a:hover,
 .panel__more:hover {
   color: var(--text-primary);

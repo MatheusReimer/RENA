@@ -77,6 +77,9 @@ function isActive(to: string): boolean {
       <slot />
     </main>
 
+    <!-- Where a refused action explains itself. One per layout. -->
+    <LayoutNoticeHost />
+
     <footer class="foot">
       <div class="foot__inner">
         <NuxtLink to="/" :aria-label="BRAND.name">
@@ -160,7 +163,20 @@ function isActive(to: string): boolean {
   gap: var(--space-6);
   max-width: var(--page-max);
   margin-inline: auto;
-  padding: var(--space-5) var(--space-6);
+  /*
+   * A tighter gutter than the rest of the page uses, below 30rem only.
+   *
+   * This bar now carries both ways in rather than one, and in Portuguese the
+   * join pill alone reads "Criar conta". Every rem here is a rem the two
+   * controls do not have.
+   */
+  padding: var(--space-5) var(--space-4);
+}
+
+@media (min-width: 30rem) {
+  .topbar__inner {
+    padding-inline: var(--space-6);
+  }
 }
 
 @media (min-width: 60rem) {
@@ -226,12 +242,24 @@ function isActive(to: string): boolean {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-5);
+  gap: var(--space-3);
   margin-left: auto;
 }
 
+@media (min-width: 30rem) {
+  .topbar__actions {
+    gap: var(--space-5);
+  }
+}
+
+/*
+ * Search is the one thing in this bar that is said again somewhere the reader
+ * can see without scrolling: the hero's second button goes to Explore, and so
+ * does the footer. Signing in is not said anywhere else at all, so on the
+ * narrowest screens the magnifier yields to it and comes back at 30rem.
+ */
 .topbar__icon {
-  display: grid;
+  display: none;
   place-items: center;
   width: 2rem;
   height: 2rem;
@@ -239,25 +267,39 @@ function isActive(to: string): boolean {
   transition: color var(--duration-fast) var(--ease-out);
 }
 
+@media (min-width: 30rem) {
+  .topbar__icon {
+    display: grid;
+  }
+}
+
 .topbar__icon:hover {
   color: var(--text-primary);
 }
 
+/*
+ * Shown at every width, including the narrowest.
+ *
+ * This was hidden below 30rem, which left the join pill as the only control
+ * in the bar -- so on a phone somebody who already had an account was offered
+ * nothing but a button that reads "Criar conta" and a screen that creates a
+ * second one. A visitor with no account loses nothing by seeing this; a
+ * member with one loses the product.
+ */
 .topbar__signin {
-  display: none;
+  /* inline-flex with padding rather than `block`: it sits beside a pill and
+     needs the same 24px of thumb as everything else in the bar. */
+  display: inline-flex;
+  align-items: center;
+  padding-block: var(--space-1);
   font-size: var(--text-sm);
+  white-space: nowrap;
   color: var(--text-secondary);
   transition: color var(--duration-fast) var(--ease-out);
 }
 
 .topbar__signin:hover {
   color: var(--text-primary);
-}
-
-@media (min-width: 30rem) {
-  .topbar__signin {
-    display: block;
-  }
 }
 
 /*
@@ -270,8 +312,9 @@ function isActive(to: string): boolean {
  * is what makes it the thing your eye lands on.
  */
 .topbar__join {
-  padding: var(--space-2) var(--space-5);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
+  white-space: nowrap;
   background: var(--text-primary);
   color: var(--text-inverse);
   font-size: var(--text-sm);
@@ -279,6 +322,12 @@ function isActive(to: string): boolean {
   transition:
     background-color var(--duration-base) var(--ease-out),
     transform var(--duration-base) var(--ease-out);
+}
+
+@media (min-width: 30rem) {
+  .topbar__join {
+    padding-inline: var(--space-5);
+  }
 }
 
 .topbar__join:hover {
@@ -318,12 +367,18 @@ function isActive(to: string): boolean {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   gap: var(--space-6);
   font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
+/* 23px of link in a row of three, at the bottom of a page, on a phone. The
+   gap already separates them, so the extra height costs no layout. */
 .foot__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
   transition: color var(--duration-fast) var(--ease-out);
 }
 

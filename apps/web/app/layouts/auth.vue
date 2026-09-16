@@ -29,6 +29,9 @@ import { BRAND } from '@revy/shared/constants'
     </div>
 
     <p class="auth-layout__footnote">{{ BRAND.description }}</p>
+
+    <!-- Where a refused action explains itself. One per layout. -->
+    <LayoutNoticeHost />
   </div>
 </template>
 

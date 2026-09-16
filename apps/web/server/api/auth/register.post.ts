@@ -63,6 +63,22 @@ export default defineApiHandler(async (event) => {
         email: input.email,
         password: input.password,
         name: input.displayName,
+        /*
+         * Where the confirmation link lands, and the reason onboarding still
+         * happens at all.
+         *
+         * Sign-up used to go straight to `/onboarding`. It cannot now -- the
+         * wall stands between the two, and `/onboarding` was the only route
+         * into that screen anywhere in the app, so leaving the callback at
+         * `/` would have quietly deleted the questions that feed the
+         * recommender for every account created from here on.
+         *
+         * So the confirmation link lands exactly where sign-up used to send
+         * them, one step later than before. `autoSignInAfterVerification`
+         * means they arrive signed in and confirmed, which is the only state
+         * in which the taste endpoints will answer them.
+         */
+        callbackURL: '/onboarding',
       },
       headers: event.headers,
       asResponse: false,

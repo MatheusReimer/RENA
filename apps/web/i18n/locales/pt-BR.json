@@ -41,7 +41,7 @@
     "titleRest": "mais",
     "titleAccent": "juntos.",
     "lede": "A RENA é uma comunidade para resenhas sinceras, conversas que valem a pena e tudo o que você ama assistir, ler e jogar.",
-    "join": "Entrar na comunidade",
+    "join": "Faça parte da comunidade",
     "explore": "Explorar",
     "membersNote": "Compartilhando histórias. Encontrando pessoas.",
     "member": "membro",
@@ -144,7 +144,9 @@
     "copied": "Link copiado",
     "copyFailed": "Não foi possível copiar",
     "like": "Curtir",
-    "unlike": "Descurtir"
+    "unlike": "Descurtir",
+    "chooseSection": "Escolha uma seção",
+    "dismiss": "Dispensar"
   },
   "explore": {
     "heroTitle": "Explore. Descubra. Pertença.",
@@ -323,12 +325,9 @@
     "incompleteTitle": "Este link está incompleto",
     "incompleteBody": "Links de redefinição só funcionam por inteiro, direto do e-mail. Peça um novo e abra pela sua caixa de entrada.",
     "requestNewLink": "Pedir um novo link",
-    "verifyBanner": "Confirme seu e-mail para publicar, avaliar e enviar mensagens.",
-    "verifyBannerShort": "Confirme seu e-mail",
     "verifySend": "Enviar o e-mail",
     "verifySendIn": "Enviar de novo em {seconds}s",
     "verifySent": "Enviado. Confira sua caixa de entrada.",
-    "verifyDismiss": "Agora não",
     "notVerified": "Confirme seu endereço de e-mail para fazer isso.",
     "signInFailed": "Esse e-mail e senha não conferem.",
     "signUpFailed": "Não foi possível criar sua conta. Tente de novo.",
@@ -349,7 +348,13 @@
     "signUpAction": "Criar conta",
     "newHere": "Novo por aqui?",
     "createAnAccount": "Crie uma conta",
-    "haveAccount": "Já tem uma conta?"
+    "haveAccount": "Já tem uma conta?",
+    "verifyTitle": "Confirme seu e-mail",
+    "verifyBody": "Abra o link que enviamos para terminar de configurar sua conta.",
+    "verifySentTo": "Enviamos um link de confirmação para {email}. Abra-o para terminar de configurar sua conta.",
+    "verifyUndelivered": "Não conseguimos enviar seu e-mail de confirmação. Tente de novo e, se continuar falhando, fale com a gente.",
+    "verifyResend": "Enviar de novo",
+    "verifyWrongAddress": "Endereço errado?"
   },
   "badges": {
     "first-rating": {
@@ -676,5 +681,26 @@
   "app": {
     "appStore": "Baixe na App Store",
     "googlePlay": "Disponível no Google Play"
+  },
+  "block": {
+    "emailNotVerified": "Confirme seu e-mail para fazer isso.",
+    "confirmEmail": "Confirmar e-mail",
+    "signInNeeded": "Entre para fazer isso.",
+    "sessionExpired": "Sua sessão expirou. Entre de novo para continuar.",
+    "forbidden": "Você não tem acesso a isso.",
+    "userBlocked": "Você não pode fazer isso com esta pessoa.",
+    "notFriends": "Você só pode fazer isso com pessoas que são suas amigas.",
+    "alreadyFriends": "Vocês já são amigos.",
+    "requestPending": "Esse pedido de amizade já foi enviado.",
+    "cannotFriendSelf": "Você não pode adicionar a si mesmo.",
+    "reviewExists": "Você já avaliou isto. Edite sua resenha.",
+    "commentDepth": "Esta conversa não vai mais fundo. Responda mais acima.",
+    "notReleased": "Isso ainda não foi lançado, então não há o que avaliar.",
+    "messagingUnavailable": "As mensagens estão indisponíveis no momento.",
+    "rateLimited": "Rápido demais. Espere um momento e tente de novo.",
+    "providerUnavailable": "Esse serviço não está respondendo. Tente daqui a pouco.",
+    "internal": "Algo deu errado do nosso lado. Tente de novo.",
+    "conflict": "Isso mudou enquanto você trabalhava. Atualize e tente de novo.",
+    "gone": "Isso não está mais disponível."
   }
 }

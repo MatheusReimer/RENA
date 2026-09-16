@@ -222,6 +222,10 @@ function page(direction: 1 | -1) {
 }
 
 .row__all {
+  display: inline-flex;
+  align-items: center;
+  /* See `PosterRow.vue`: one line of 15px type is 23px, and 2.5.8 wants 24. */
+  padding-block: var(--space-1);
   font-size: var(--text-sm);
   color: var(--text-tertiary);
   transition: color var(--duration-fast) var(--ease-out);

@@ -144,7 +144,9 @@
     "copied": "Link copied",
     "copyFailed": "Couldn't copy",
     "like": "Like",
-    "unlike": "Unlike"
+    "unlike": "Unlike",
+    "chooseSection": "Choose a section",
+    "dismiss": "Dismiss"
   },
   "explore": {
     "heroTitle": "Explore. Discover. Belong.",
@@ -323,12 +325,9 @@
     "incompleteTitle": "This link is incomplete",
     "incompleteBody": "Password reset links only work in full, straight from the email. Ask for a new one and open it from your inbox.",
     "requestNewLink": "Request a new link",
-    "verifyBanner": "Confirm your email to post, review and message.",
-    "verifyBannerShort": "Confirm your email",
     "verifySend": "Send the email",
     "verifySendIn": "Send again in {seconds}s",
     "verifySent": "Sent. Check your inbox.",
-    "verifyDismiss": "Not now",
     "notVerified": "Confirm your email address to do that.",
     "signInFailed": "That email and password do not match.",
     "signUpFailed": "Could not create your account. Please try again.",
@@ -349,7 +348,13 @@
     "signUpAction": "Create account",
     "newHere": "New here?",
     "createAnAccount": "Create an account",
-    "haveAccount": "Already have an account?"
+    "haveAccount": "Already have an account?",
+    "verifyTitle": "Confirm your email",
+    "verifyBody": "Open the link we sent you to finish setting up your account.",
+    "verifySentTo": "We sent a confirmation link to {email}. Open it to finish setting up your account.",
+    "verifyUndelivered": "We could not send your confirmation email. Try again, and if it keeps failing get in touch.",
+    "verifyResend": "Send it again",
+    "verifyWrongAddress": "Wrong address?"
   },
   "badges": {
     "first-rating": {
@@ -676,5 +681,26 @@
   "app": {
     "appStore": "Get it on the App Store",
     "googlePlay": "Get it on Google Play"
+  },
+  "block": {
+    "emailNotVerified": "Confirm your email address to do that.",
+    "confirmEmail": "Confirm email",
+    "signInNeeded": "Sign in to do that.",
+    "sessionExpired": "Your session expired. Sign in again to carry on.",
+    "forbidden": "You don't have access to that.",
+    "userBlocked": "You cannot do that with this person.",
+    "notFriends": "You can only do that with people you are friends with.",
+    "alreadyFriends": "You are already friends.",
+    "requestPending": "That friend request has already been sent.",
+    "cannotFriendSelf": "You cannot add yourself as a friend.",
+    "reviewExists": "You have already reviewed this. Edit your review instead.",
+    "commentDepth": "This thread is as deep as it goes. Reply higher up.",
+    "notReleased": "That is not out yet, so there is nothing to rate.",
+    "messagingUnavailable": "Messaging is unavailable right now.",
+    "rateLimited": "That is a bit too fast. Wait a moment and try again.",
+    "providerUnavailable": "That service is not responding. Try again shortly.",
+    "internal": "Something went wrong on our end. Try again.",
+    "conflict": "That changed while you were working. Refresh and try again.",
+    "gone": "That is no longer available."
   }
 }

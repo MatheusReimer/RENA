@@ -128,6 +128,15 @@ const emit = defineEmits<{ open: [key: string] }>()
   font-size: var(--text-sm);
   color: var(--text-tertiary);
   transition: color var(--duration-fast) var(--ease-out);
+  /*
+   * Tall enough to hit with a thumb.
+   *
+   * One line of 15px type is a 23px box, and WCAG 2.2 asks for 24 (2.5.8).
+   * One pixel sounds like pedantry until it is a standalone control in a
+   * section header being aimed at on a moving train; the padding is symmetric,
+   * so nothing moves visually.
+   */
+  padding-block: var(--space-1);
 }
 
 .moods__all svg {

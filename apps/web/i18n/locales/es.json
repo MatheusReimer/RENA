@@ -144,7 +144,9 @@
     "copied": "Enlace copiado",
     "copyFailed": "No se pudo copiar",
     "like": "Me gusta",
-    "unlike": "Ya no me gusta"
+    "unlike": "Ya no me gusta",
+    "chooseSection": "Elige una sección",
+    "dismiss": "Descartar"
   },
   "explore": {
     "heroTitle": "Explora. Descubre. Pertenece.",
@@ -323,12 +325,9 @@
     "incompleteTitle": "Este enlace está incompleto",
     "incompleteBody": "Los enlaces de restablecimiento solo funcionan completos, directamente desde el correo. Pide uno nuevo y ábrelo desde tu bandeja.",
     "requestNewLink": "Pedir un enlace nuevo",
-    "verifyBanner": "Confirma tu correo para publicar, reseñar y enviar mensajes.",
-    "verifyBannerShort": "Confirma tu correo",
     "verifySend": "Enviar el correo",
     "verifySendIn": "Enviar de nuevo en {seconds}s",
     "verifySent": "Enviado. Revisa tu bandeja de entrada.",
-    "verifyDismiss": "Ahora no",
     "notVerified": "Confirma tu dirección de correo para hacer eso.",
     "signInFailed": "Ese correo y esa contraseña no coinciden.",
     "signUpFailed": "No pudimos crear tu cuenta. Inténtalo de nuevo.",
@@ -349,7 +348,13 @@
     "signUpAction": "Crear cuenta",
     "newHere": "¿Nuevo por aquí?",
     "createAnAccount": "Crea una cuenta",
-    "haveAccount": "¿Ya tienes una cuenta?"
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "verifyTitle": "Confirma tu correo",
+    "verifyBody": "Abre el enlace que te enviamos para terminar de configurar tu cuenta.",
+    "verifySentTo": "Enviamos un enlace de confirmación a {email}. Ábrelo para terminar de configurar tu cuenta.",
+    "verifyUndelivered": "No pudimos enviar tu correo de confirmación. Inténtalo de nuevo y, si sigue fallando, escríbenos.",
+    "verifyResend": "Enviar de nuevo",
+    "verifyWrongAddress": "¿Dirección equivocada?"
   },
   "badges": {
     "first-rating": {
@@ -676,5 +681,26 @@
   "app": {
     "appStore": "Consíguelo en el App Store",
     "googlePlay": "Disponible en Google Play"
+  },
+  "block": {
+    "emailNotVerified": "Confirma tu correo para hacer eso.",
+    "confirmEmail": "Confirmar correo",
+    "signInNeeded": "Inicia sesión para hacer eso.",
+    "sessionExpired": "Tu sesión expiró. Inicia sesión de nuevo para continuar.",
+    "forbidden": "No tienes acceso a eso.",
+    "userBlocked": "No puedes hacer eso con esta persona.",
+    "notFriends": "Solo puedes hacer eso con personas que son tus amigos.",
+    "alreadyFriends": "Ya son amigos.",
+    "requestPending": "Esa solicitud de amistad ya fue enviada.",
+    "cannotFriendSelf": "No puedes agregarte a ti mismo.",
+    "reviewExists": "Ya reseñaste esto. Edita tu reseña en su lugar.",
+    "commentDepth": "Este hilo no puede ir más hondo. Responde más arriba.",
+    "notReleased": "Eso aún no se estrenó, así que no hay nada que puntuar.",
+    "messagingUnavailable": "Los mensajes no están disponibles ahora mismo.",
+    "rateLimited": "Vas demasiado rápido. Espera un momento e inténtalo de nuevo.",
+    "providerUnavailable": "Ese servicio no responde. Inténtalo en un momento.",
+    "internal": "Algo salió mal de nuestro lado. Inténtalo de nuevo.",
+    "conflict": "Eso cambió mientras trabajabas. Recarga e inténtalo de nuevo.",
+    "gone": "Eso ya no está disponible."
   }
 }

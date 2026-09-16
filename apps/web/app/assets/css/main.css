@@ -254,6 +254,10 @@ button:disabled,
   margin-inline: calc(var(--space-4) * -1);
   padding-inline: var(--space-4);
   padding-bottom: var(--space-2);
+  /* Snapping aligns to the scrollport, which sits inside the padding -- so
+     without this the first card snaps flush to the bleed and the gutter that
+     was just restored is scrolled straight back off. */
+  scroll-padding-inline: var(--space-4);
 }
 
 .rail::-webkit-scrollbar {

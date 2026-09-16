@@ -383,7 +383,6 @@ onMounted(() => {
       <!-- Above the content and below the header: it is a standing condition
            of the account, not of the page, so it should not scroll away with
            one screen's content or sit inside the page transition. -->
-      <LayoutVerifyEmailBanner />
 
       <main id="content" class="main__body" tabindex="-1">
         <slot />
@@ -419,6 +418,9 @@ onMounted(() => {
         </span>
       </NuxtLink>
     </nav>
+
+    <!-- Where a refused action explains itself. One per layout. -->
+    <LayoutNoticeHost />
 
     <!-- Teleports to the body, so it is never clipped by the shell's grid or
          by the sidebar's own scroll container. -->
@@ -727,10 +729,31 @@ onMounted(() => {
   }
 }
 
+/*
+ * Not on a phone, where it was never a field so much as the idea of one.
+ *
+ * `flex: 1` with `min-width: 0` means this takes whatever the wordmark and the
+ * icon row leave behind, and at 390px that is about 50px signed in and 95px
+ * signed out -- a pill too narrow to show its own placeholder, which rendered
+ * as "Sear" or as a bare circle. It read as a broken control rather than as a
+ * search box.
+ *
+ * Nothing is lost by removing it. Search is a destination in the bottom tab
+ * bar on exactly the widths where this is hidden, and that screen opens with a
+ * full-width field and the keyboard focus already in it -- which is a better
+ * version of this control than this control was.
+ */
 .bar__search {
-  flex: 1;
-  max-width: 30rem;
-  min-width: 0;
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  .bar__search {
+    display: block;
+    flex: 1;
+    max-width: 30rem;
+    min-width: 0;
+  }
 }
 
 .bar__search form {
@@ -754,7 +777,7 @@ onMounted(() => {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   background: var(--surface-raised);
-  font-size: var(--text-sm);
+  font-size: var(--text-input);
   transition: border-color var(--duration-fast) var(--ease-out);
 }
 

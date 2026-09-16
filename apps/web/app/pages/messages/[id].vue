@@ -19,6 +19,7 @@ import { ApiError } from '~/composables/useApi'
  */
 const route = useRoute()
 const api = useApi()
+const notice = useNotice()
 const auth = useAuthStore()
 const { t } = useI18n()
 
@@ -175,6 +176,8 @@ async function loadOlder() {
      */
     await nextTick()
     if (element) element.scrollTop = element.scrollHeight - previousHeight
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     loadingMore.value = false
   }
@@ -235,9 +238,12 @@ async function hide(message: Message) {
   messages.value = messages.value.filter((item) => item.id !== message.id)
   try {
     await api.conversations.hideMessage(conversationId.value, message.id)
-  } catch {
-    // Put it back rather than leaving the screen disagreeing with the server.
+  } catch (error) {
+    // Put it back rather than leaving the screen disagreeing with the server --
+    // and say why, or a message the reader just deleted silently reappears,
+    // which reads as the app undoing their action on purpose.
     await refreshThread()
+    notice.fromError(error)
   }
 }
 
@@ -604,7 +610,7 @@ useHead(() => ({
   background: var(--surface-raised);
   color: var(--text-primary);
   font: inherit;
-  font-size: var(--text-sm);
+  font-size: var(--text-input);
   resize: none;
   field-sizing: content;
 }

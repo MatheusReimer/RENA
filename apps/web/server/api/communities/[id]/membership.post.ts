@@ -1,7 +1,7 @@
 import { communityService } from '@revy/core'
 import { uuidSchema } from '@revy/shared/schemas'
 import { z } from 'zod'
-import { useAuthenticatedContext, useVerifiedContext } from '../../../utils/context'
+import { useAuthenticatedContext } from '../../../utils/context'
 import { defineApiHandler, readValidatedBodyOrThrow } from '../../../utils/handler'
 
 /**
@@ -10,11 +10,12 @@ import { defineApiHandler, readValidatedBodyOrThrow } from '../../../utils/handl
  * One endpoint taking the desired state rather than two verbs, so a
  * double-tapped Join button converges instead of toggling.
  *
- * Only joining needs a confirmed address. Leaving must always be possible:
- * the two directions share an endpoint, and gating the whole handler would
- * shut an unconfirmed member inside a community with no way out -- a door
- * that locks from the inside because the lock was fitted to the doorway
- * rather than to the direction of travel.
+ * Both directions need a confirmed address now, where once only joining did.
+ *
+ * The old split existed so an unconfirmed member could still leave a community
+ * -- a door that locks from the inside. That door no longer opens either way:
+ * an unconfirmed session cannot reach the community screen to press the button
+ * at all, so the two directions have nothing left to disagree about.
  */
 export default defineApiHandler(async (event) => {
   const mediaId = uuidSchema.parse(getRouterParam(event, 'id'))
@@ -25,6 +26,6 @@ export default defineApiHandler(async (event) => {
     return communityService.leave(ctx, mediaId)
   }
 
-  const ctx = await useVerifiedContext(event)
+  const ctx = await useAuthenticatedContext(event)
   return communityService.join(ctx, mediaId)
 })

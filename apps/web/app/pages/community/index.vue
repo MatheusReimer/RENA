@@ -10,6 +10,7 @@ import type { CommunityScope, CommunitySummary } from '@revy/shared/types'
  * ranked by how recently that happened.
  */
 const api = useApi()
+const notice = useNotice()
 const { absolute } = useShareLink()
 const auth = useAuthStore()
 
@@ -136,6 +137,8 @@ async function loadMore() {
     const result = await api.communities.list('browse', next, search.value || undefined)
     page.value = next
     extra.value = [...extra.value, ...result.communities]
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     loadingMore.value = false
   }
@@ -162,9 +165,19 @@ async function toggleMembership(community: CommunitySummary) {
     const result = await api.communities.setMembership(community.media.id, target)
     community.joined = result.joined
     community.memberCount = result.memberCount
-  } catch {
+  } catch (error) {
+    /*
+     * The rollback was already here; the explanation was not.
+     *
+     * The comment above says a Join button that silently does nothing is worse
+     * than one that visibly fails -- and then this put the row back exactly as
+     * it was and said nothing, which is the silent version it warns against.
+     * The snap-back is now the second half of a sentence whose first half is
+     * on screen.
+     */
     community.joined = before.joined
     community.memberCount = before.memberCount
+    notice.fromError(error)
   }
 }
 
@@ -349,7 +362,7 @@ useSeoMeta({
   border: none;
   background: none;
   color: var(--text-primary);
-  font-size: var(--text-sm);
+  font-size: var(--text-input);
   outline: none;
 }
 

@@ -18,6 +18,7 @@ import { relativeTime } from '@revy/shared/utils'
  * one tab away and keeps its counter in the tab bar.
  */
 const api = useApi()
+const notice = useNotice()
 const auth = useAuthStore()
 const { t } = useI18n()
 
@@ -138,6 +139,8 @@ async function respond(request: FriendRequest, action: 'accept' | 'reject') {
   try {
     await api.friends.respond(request.id, action)
     await refresh()
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     pendingId.value = null
   }
@@ -149,6 +152,8 @@ async function cancel(request: FriendRequest) {
   try {
     await api.friends.remove(request.user.id)
     await refresh()
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     pendingId.value = null
   }

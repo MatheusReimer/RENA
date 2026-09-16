@@ -171,24 +171,66 @@ const tabs = computed(() => [
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  /* A flex item will not shrink below its content unless told it may, and the
+     content here is five pills plus a link -- 417px of it on a 390px phone. */
+  min-width: 0;
 }
 
+/* Never the thing that gets shrunk or scrolled away: it is one short link,
+   and losing it would cost the only route to the full list. */
 .row__all {
+  flex: none;
   font-size: var(--text-sm);
   color: var(--text-tertiary);
   transition: color var(--duration-fast) var(--ease-out);
+  display: inline-flex;
+  align-items: center;
+  /*
+   * Tall enough to hit with a thumb.
+   *
+   * One line of 15px type is a 23px box, and WCAG 2.2 asks for 24 (2.5.8).
+   * One pixel sounds like pedantry until it is a standalone control in a
+   * section header being aimed at on a moving train; the padding is symmetric,
+   * so nothing moves visually.
+   */
+  padding-block: var(--space-1);
 }
 
 .row__all:hover {
   color: var(--text-primary);
 }
 
+/*
+ * The pill group scrolls rather than overflowing.
+ *
+ * Five media types plus "All" do not fit beside a "See all" link at 390px, and
+ * the three that did not fit were simply painted past the edge of the screen
+ * and clipped -- reachable on a desktop, invisible and untappable on a phone.
+ *
+ * The same treatment the card rails get in `main.css`: the scrollbar is
+ * hidden, and the half-visible next pill is the affordance. It is a filter
+ * rather than navigation, so nothing here is lost if it is never scrolled --
+ * "All" is first and is the default.
+ */
 .tabs {
   display: flex;
   gap: 0.15rem;
   padding: 0.2rem;
   border-radius: var(--radius-full);
   background: var(--surface-raised);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Stops a flex row from stretching the pills vertically as it shrinks. */
+  flex-shrink: 1;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs__tab {
+  flex: none;
 }
 
 .tabs__tab {

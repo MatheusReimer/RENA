@@ -207,6 +207,15 @@ function reasonOf(item: PopularItem | RecommendedItem): RecommendedItem | null {
   font-size: var(--text-sm);
   color: var(--text-tertiary);
   transition: color var(--duration-fast) var(--ease-out);
+  /*
+   * Tall enough to hit with a thumb.
+   *
+   * One line of 15px type is a 23px box, and WCAG 2.2 asks for 24 (2.5.8).
+   * One pixel sounds like pedantry until it is a standalone control in a
+   * section header being aimed at on a moving train; the padding is symmetric,
+   * so nothing moves visually.
+   */
+  padding-block: var(--space-1);
 }
 
 .row__all svg {
@@ -239,6 +248,17 @@ function reasonOf(item: PopularItem | RecommendedItem): RecommendedItem | null {
   overflow-x: auto;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
+  /*
+   * Snapping has to respect the gutter, or it eats it.
+   *
+   * `scroll-snap-align: start` aligns an item to the *scrollport* edge, and
+   * the scrollport edge is inside the padding. So on arrival the browser
+   * snapped the first card flush to the screen and left `scrollLeft` sitting
+   * at exactly the padding -- every row rendered looking as though somebody
+   * had already swiped it, with its first card breaking the left margin that
+   * its own heading still observed.
+   */
+  scroll-padding-inline: var(--space-6);
 }
 
 .rail::-webkit-scrollbar {
@@ -248,6 +268,7 @@ function reasonOf(item: PopularItem | RecommendedItem): RecommendedItem | null {
 @media (min-width: 64rem) {
   .rail {
     padding-inline: var(--space-8);
+    scroll-padding-inline: var(--space-8);
   }
 }
 

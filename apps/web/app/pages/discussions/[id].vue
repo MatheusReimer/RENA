@@ -8,6 +8,7 @@ import { BRAND } from '@revy/shared/constants'
  */
 const route = useRoute()
 const api = useApi()
+const notice = useNotice()
 const { t } = useI18n()
 const { absolute } = useShareLink()
 const auth = useAuthStore()
@@ -41,6 +42,8 @@ async function removeThread() {
   try {
     await api.discussions.remove(thread.value.id)
     await navigateTo(`/media/${thread.value.mediaId}`)
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     deleting.value = false
   }

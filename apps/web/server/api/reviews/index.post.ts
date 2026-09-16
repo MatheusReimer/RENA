@@ -1,6 +1,6 @@
 import { reviewService } from '@revy/core'
 import { createReviewSchema } from '@revy/shared/schemas'
-import { useVerifiedContext } from '../../utils/context'
+import { useAuthenticatedContext } from '../../utils/context'
 import { defineApiHandler, readValidatedBodyOrThrow } from '../../utils/handler'
 import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
 
@@ -12,7 +12,7 @@ import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
  */
 export default defineApiHandler(async (event) => {
   const input = await readValidatedBodyOrThrow(event, createReviewSchema)
-  const ctx = await useVerifiedContext(event)
+  const ctx = await useAuthenticatedContext(event)
 
   // Limited after the context is built, not before: `identify` keys on
   // `viewerId`, which only exists once the session is resolved. Keying writes

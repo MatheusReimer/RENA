@@ -372,6 +372,21 @@ const STATEMENT_WORDS = computed(() =>
  * image out to transparency, and what is wanted is a blend into a specific
  * near-black, which is what the page behind it actually is.
  */
+/*
+ * The narrow-screen fade is a scrim, not a left-to-right wipe.
+ *
+ * The stops below were drawn for a layout where the type is a column on the
+ * left and the photograph is what fills the space beside it. On a phone there
+ * is no space beside it: the panel is the width of the screen, so a gradient
+ * that reaches `transparent` at 70% leaves the last quarter of every line
+ * sitting on an unattenuated photograph -- which on this image is the lamp,
+ * the orb, and the spines with words printed on them. Two sets of words on
+ * top of each other.
+ *
+ * So below the breakpoint the whole width keeps a ground, weakest at the far
+ * edge where no text reaches. The photograph still reads; it simply stops
+ * competing with the sentence over it.
+ */
 .hero__fade {
   position: absolute;
   inset: 0;
@@ -379,9 +394,9 @@ const STATEMENT_WORDS = computed(() =>
     linear-gradient(
       to right,
       var(--surface-base) 0%,
-      rgb(10 10 12 / 0.92) 22%,
-      rgb(10 10 12 / 0.45) 48%,
-      transparent 72%
+      rgb(10 10 12 / 0.93) 30%,
+      rgb(10 10 12 / 0.78) 66%,
+      rgb(10 10 12 / 0.58) 100%
     ),
     linear-gradient(to bottom, rgb(10 10 12 / 0.72) 0%, transparent 22%),
     linear-gradient(to top, var(--surface-base) 0%, transparent 26%);

@@ -9,6 +9,7 @@ import { relativeTime } from '@revy/shared/utils'
  * the navigation counts.
  */
 const api = useApi()
+const notice = useNotice()
 const { t } = useI18n()
 const auth = useAuthStore()
 
@@ -111,6 +112,8 @@ async function respond(notificationId: string, friendshipId: string, action: 'ac
     // what happened, instead of vanishing under the reader's cursor.
     friendRequests.value.set(notificationId, action === 'accept' ? 'accepted' : 'rejected')
     friendRequests.value = new Map(friendRequests.value)
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     pendingId.value = null
   }

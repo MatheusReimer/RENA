@@ -144,33 +144,46 @@ export async function useServiceContext(event: H3Event): Promise<ServiceContext>
 }
 
 /**
- * Context for a route that requires authentication (SPEC 27).
+ * Context for a route that requires a session but NOT a confirmed address.
  *
- * Throws before the handler body runs, so a protected endpoint cannot forget
- * the check -- it either asks for this context or it is not protected.
+ * Rare, and deliberately awkward to reach for. Confirming an address is now a
+ * wall rather than a soft gate, so an endpoint that accepts an unconfirmed
+ * session is an endpoint that helps somebody get past the wall -- resending
+ * the link, and reading `/api/me` so the client knows to show the wall at all.
+ * Anything else wants `useAuthenticatedContext`.
+ *
+ * Named for what it permits rather than what it requires, so that a route
+ * granting the weaker check has to say so in its own file.
  */
-export async function useAuthenticatedContext(event: H3Event): Promise<AuthenticatedContext> {
+export async function useUnverifiedContext(event: H3Event): Promise<AuthenticatedContext> {
   const ctx = await useServiceContext(event)
   return requireViewer(ctx)
 }
 
 /**
- * Context for an action that reaches other people (SPEC 26).
+ * Context for a route that requires authentication (SPEC 27).
  *
- * The soft gate. An unconfirmed account can read everything, rate anything and
- * keep its own lists -- none of that touches anybody else, and blocking the
- * first session is the largest single drop-off in any sign-up flow. What it
- * cannot do is publish, message, or arrive in somebody's notifications, which
- * is the whole of what an address actually buys us: somewhere to point abuse
- * back at.
+ * Throws before the handler body runs, so a protected endpoint cannot forget
+ * the check -- it either asks for this context or it is not protected.
  *
- * Asked for per endpoint rather than applied by a blanket middleware, for the
- * same reason `useAuthenticatedContext` is: a route either asks for this
- * context or it is not gated, and that is visible in the file rather than in a
- * matcher somewhere else.
+ * A confirmed address is now part of what authentication means here.
+ *
+ * It used to be a soft gate: `useVerifiedContext` guarded the eight endpoints
+ * that reach other people, and everything else accepted an unconfirmed
+ * session. That traded a confirmed address for a lower drop-off, and the
+ * trade has been called off -- so rather than leaving two contexts whose
+ * difference no longer decides anything, the check moved in here and the
+ * second one is gone. One rule, in the place every protected route already
+ * asks for.
+ *
+ * The client wall in `middleware/verified.global.ts` is a courtesy, not the
+ * enforcement: it exists so somebody meets an explanation instead of a wall of
+ * failed requests. This is the enforcement, and it re-reads the flag from the
+ * database on every request -- see `resolveViewerId` for why not from the
+ * session.
  */
-export async function useVerifiedContext(event: H3Event): Promise<AuthenticatedContext> {
-  const ctx = await useAuthenticatedContext(event)
+export async function useAuthenticatedContext(event: H3Event): Promise<AuthenticatedContext> {
+  const ctx = await useUnverifiedContext(event)
   if (event.context.viewerEmailVerified !== true) throw errors.emailNotVerified()
   return ctx
 }

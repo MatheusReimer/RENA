@@ -56,6 +56,22 @@ const ICONS: Record<MediaType, string> = {
   align-items: center;
   gap: 0.3em;
   flex-shrink: 0;
+  /*
+   * Never wider than the word inside it.
+   *
+   * `inline-flex` sizes to its content -- but a flex item is blockified, so
+   * the moment one of these is dropped into a flex column it becomes `flex`,
+   * stretches to the column, and the chip is as wide as whatever happens to
+   * sit above it. In the "Popular right now" chart that made the same word
+   * render at 109px beside a long title and 68px beside a short one: four
+   * tags, four different sizes, none of them the size of their own text.
+   *
+   * `align-self` is the cross axis, so in a column this stops the horizontal
+   * stretch and in a row it leaves the chip at its natural height rather than
+   * letting a tall neighbour pull it. Both are what a chip wants, which is why
+   * this belongs on the component and not on each of its dozen call sites.
+   */
+  align-self: start;
   border-radius: var(--radius-full);
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -72,9 +88,18 @@ const ICONS: Record<MediaType, string> = {
   font-size: var(--text-2xs);
 }
 
+/*
+ * 12px, not 10.
+ *
+ * This is the label that says whether a card is a film or a book, sitting
+ * under poster art on a phone -- 10px of letter-spaced type is the kind of
+ * thing that reads fine on a laptop at arm's length and is a smudge in a hand.
+ * The chip grows by a couple of pixels, which is within the space it already
+ * had beside a title.
+ */
 .tag--sm {
   padding: 0.1rem 0.4rem;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 
 /*

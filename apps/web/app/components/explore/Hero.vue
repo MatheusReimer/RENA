@@ -244,12 +244,20 @@ const WORD_INDEX = computed(() =>
 }
 
 /*
- * Reaches further right than the other two heroes, because this one carries a
- * search field and a row of chips as well as a statement -- but only to 62%.
+ * On a phone the statement is the width of the screen, so the fade has to be.
  *
- * It was taken to 82% first and that was a mistake worth recording: past
- * about two thirds the scene is not "held back", it is gone, and the section
- * reads as a black box somebody forgot to put an image in.
+ * The note below records that taking this to 82% on a desktop was a mistake --
+ * past about two thirds the scene stops being held back and is simply gone.
+ * That lesson is about a layout where the type occupies the left half and the
+ * picture is what fills the rest. Narrow screens have no rest: the panel runs
+ * edge to edge, and a fade that clears at 62% puts the last third of every
+ * line on the lit half of the photograph, over the orb and over the printed
+ * words in the scene itself.
+ *
+ * So this holds a ground the whole way across, but never reaches opaque -- it
+ * is still 42% photograph at the right edge, which is what keeps it from
+ * becoming the black box that comment warns about. The desktop values are
+ * restored intact at 64rem.
  */
 .hero__fade {
   position: absolute;
@@ -258,12 +266,35 @@ const WORD_INDEX = computed(() =>
     linear-gradient(
       to right,
       var(--surface-base) 0%,
-      rgb(10 10 12 / 0.93) 20%,
-      rgb(10 10 12 / 0.45) 40%,
-      transparent 62%
+      rgb(10 10 12 / 0.93) 30%,
+      rgb(10 10 12 / 0.78) 66%,
+      rgb(10 10 12 / 0.58) 100%
     ),
     linear-gradient(to bottom, rgb(10 10 12 / 0.7) 0%, transparent 20%),
     linear-gradient(to top, var(--surface-base) 0%, transparent 24%);
+}
+
+/*
+ * Reaches further right than the other two heroes, because this one carries a
+ * search field and a row of chips as well as a statement -- but only to 62%.
+ *
+ * It was taken to 82% first and that was a mistake worth recording: past
+ * about two thirds the scene is not "held back", it is gone, and the section
+ * reads as a black box somebody forgot to put an image in.
+ */
+@media (min-width: 64rem) {
+  .hero__fade {
+    background:
+      linear-gradient(
+        to right,
+        var(--surface-base) 0%,
+        rgb(10 10 12 / 0.93) 20%,
+        rgb(10 10 12 / 0.45) 40%,
+        transparent 62%
+      ),
+      linear-gradient(to bottom, rgb(10 10 12 / 0.7) 0%, transparent 20%),
+      linear-gradient(to top, var(--surface-base) 0%, transparent 24%);
+  }
 }
 
 .hero__inner {

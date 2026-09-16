@@ -27,6 +27,7 @@ import {
  */
 const route = useRoute()
 const api = useApi()
+const notice = useNotice()
 const { absolute } = useShareLink()
 const auth = useAuthStore()
 const { locale, t } = useI18n()
@@ -163,6 +164,8 @@ async function loadMembers() {
     const result = await api.communities.get(media.value.id)
     members.value = result.community.members
     membersLoaded.value = true
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     membersLoading.value = false
   }
@@ -311,6 +314,8 @@ async function saveProgress() {
   try {
     await api.ratings.setStatus(media.value.id, 'in_progress', progressDraft.value ?? 0)
     await refresh()
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     savingProgress.value = false
   }
@@ -329,6 +334,8 @@ async function setStatus(next: MediaStatus) {
     // something finished changes what it says -- and finishing something is
     // exactly the moment somebody looks at it.
     await Promise.all([refresh(), refreshPresence()])
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     savingStatus.value = false
   }
@@ -371,6 +378,8 @@ async function loadThreads() {
     const page = await api.media.discussions(media.value.id)
     threads.value = page.items
     threadsLoaded.value = true
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     threadsLoading.value = false
   }
@@ -401,6 +410,8 @@ watch([tab, media], async ([value]) => {
       const page = await api.media.reviews(media.value.id)
       reviews.value = page.items
       reviewsLoaded.value = true
+    } catch (error) {
+      notice.fromError(error)
     } finally {
       reviewsLoading.value = false
     }
@@ -1115,7 +1126,7 @@ useSeoMeta({
   border: 1px solid var(--border-default);
   background: var(--surface-base);
   color: var(--text-primary);
-  font-size: var(--text-sm);
+  font-size: var(--text-input);
   font-variant-numeric: tabular-nums;
 }
 

@@ -90,8 +90,21 @@ defineProps<{
   object-position: 72% 42%;
 }
 
-/* Shorter than the landing hero's, because the panel is shorter: the type
-   needs a ground for half the width rather than for two thirds. */
+/*
+ * The narrow-screen fade is a scrim, not a left-to-right wipe.
+ *
+ * The stops below were drawn for a layout where the type is a column on the
+ * left and the photograph is what fills the space beside it. On a phone there
+ * is no space beside it: the panel is the width of the screen, so a gradient
+ * that reaches `transparent` at 70% leaves the last quarter of every line
+ * sitting on an unattenuated photograph -- which on this image is the lamp,
+ * the orb, and the spines with words printed on them. Two sets of words on
+ * top of each other.
+ *
+ * So below the breakpoint the whole width keeps a ground, weakest at the far
+ * edge where no text reaches. The photograph still reads; it simply stops
+ * competing with the sentence over it.
+ */
 .hero__fade {
   position: absolute;
   inset: 0;
@@ -99,11 +112,27 @@ defineProps<{
     linear-gradient(
       to right,
       var(--surface-base) 0%,
-      rgb(10 10 12 / 0.92) 16%,
-      rgb(10 10 12 / 0.4) 44%,
-      transparent 70%
+      rgb(10 10 12 / 0.93) 30%,
+      rgb(10 10 12 / 0.78) 66%,
+      rgb(10 10 12 / 0.58) 100%
     ),
     linear-gradient(to top, var(--surface-base) 0%, transparent 30%);
+}
+
+/* Shorter than the landing hero's, because the panel is shorter: the type
+   needs a ground for half the width rather than for two thirds. */
+@media (min-width: 64rem) {
+  .hero__fade {
+    background:
+      linear-gradient(
+        to right,
+        var(--surface-base) 0%,
+        rgb(10 10 12 / 0.92) 16%,
+        rgb(10 10 12 / 0.4) 44%,
+        transparent 70%
+      ),
+      linear-gradient(to top, var(--surface-base) 0%, transparent 30%);
+  }
 }
 
 .hero__panel {

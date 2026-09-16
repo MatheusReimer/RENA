@@ -210,6 +210,31 @@ useSeoMeta({
   padding-bottom: var(--space-12);
 }
 
+/*
+ * The one line that lets this screen fit on a phone.
+ *
+ * A grid item defaults to `min-width: auto`, which means it refuses to be
+ * narrower than its own content -- and the content here is poster art and
+ * review covers at their natural size. On a 390px phone that resolved to a
+ * 1280px column: every row inside it was laid out 1280px wide and then simply
+ * clipped by the `overflow-x: hidden` on `body`.
+ *
+ * Nothing looked obviously broken, which is what made it survive. The page did
+ * not scroll sideways, because the clip hid the evidence. What it did instead
+ * was quieter and worse: the poster rails are `overflow-x: auto`, and a
+ * scroller that is already as wide as its content has nothing to scroll -- so
+ * all four rails sat at `scrollWidth === clientWidth`, showed two and a half
+ * posters, and the rest of every row was unreachable on a touch screen. The
+ * review covers were being decoded and painted at 1230px to show 390 of them.
+ *
+ * `minmax(0, 1fr)` on the wide layout does the same job there, which is why
+ * this was only ever wrong below 80rem.
+ */
+.board__main,
+.board__side {
+  min-width: 0;
+}
+
 @media (min-width: 80rem) {
   .board {
     grid-template-columns: minmax(0, 1fr) 20rem;

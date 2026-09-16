@@ -5,6 +5,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import type { H3Event } from 'h3'
 import { useDatabase } from './db'
+import { recordVerificationMailFailure } from './verification-mail'
 
 /**
  * Better Auth instance (SPEC 26).
@@ -37,14 +38,22 @@ function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof cr
     emailAndPassword: {
       enabled: true,
       /*
-       * Verification is sent but does not gate sign-in.
+       * False here, and the address is still required -- the wall is ours.
        *
-       * Blocking the first session until somebody has been to their inbox is
-       * the single largest drop-off in any sign-up flow, and the risk it
-       * mitigates -- someone registering an address they do not own -- is
-       * small on a product where the account owns nothing but opinions. The
-       * address is confirmed, the flag is stored, and gating specific actions
-       * on it later is one condition rather than a migration.
+       * This reads like the gate is off. It is not: `useAuthenticatedContext`
+       * refuses every authenticated route until the flag is true, and
+       * `middleware/verified.global.ts` sends the reader to the wall screen.
+       * Turning this on as well would be the same rule enforced twice, badly.
+       *
+       * Better Auth's version refuses to establish a session at all. That
+       * leaves nowhere to explain anything: no session means no `/api/me`, no
+       * resend endpoint that can read the address off the session, and no
+       * screen to say why the password that was just typed correctly did not
+       * work. Somebody whose confirmation mail never arrived would be left
+       * with a sign-in form that rejects them forever.
+       *
+       * Letting the session exist and walling what it can reach keeps the
+       * reader somewhere they can be told what happened and press Resend.
        */
       requireEmailVerification: false,
       minPasswordLength: 8,
@@ -101,12 +110,22 @@ function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof cr
        * empty. That is exactly what an unverified Resend sending domain --
        * a 403 on send -- did to this app in production.
        *
-       * Swallowing it is only defensible because `requireEmailVerification`
-       * is false above. The address stays unconfirmed and the account works,
-       * which is the trade already made there. `sendResetPassword`
-       * deliberately does NOT do this: there the mail *is* the flow, and
-       * failing quietly leaves somebody waiting on an email that is never
-       * coming.
+       * It is no longer only swallowed, because it can no longer only be a
+       * log line. `requireEmailVerification` is still false -- Better Auth's
+       * own gate refuses the session, which would leave nowhere to explain
+       * anything -- but the app gates every authenticated route on the flag
+       * instead, so an unconfirmed account is now walled rather than merely
+       * limited. A send that fails silently is therefore an account that
+       * cannot be used and cannot be told why.
+       *
+       * So the failure is recorded as well as logged, and the wall screen
+       * reads it. The sign-up still succeeds: rolling it back would turn the
+       * 403 this comment already describes into a total sign-up outage rather
+       * than a recoverable one, and Resend on the wall screen is the recovery.
+       *
+       * `sendResetPassword` deliberately does NOT do this: there the mail *is*
+       * the flow, and failing quietly leaves somebody waiting on an email that
+       * is never coming.
        */
       async sendVerificationEmail({ user, url }) {
         try {
@@ -134,6 +153,7 @@ function buildAuth(secret: string, baseURL: string, mailer: ReturnType<typeof cr
             `[revy] confirmation mail failed via "${mailer.kind}"; sign-up continued.`,
             error instanceof Error ? error.message : error,
           )
+          await recordVerificationMailFailure(user.id)
         }
       },
     },

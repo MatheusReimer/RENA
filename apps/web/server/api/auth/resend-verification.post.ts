@@ -1,7 +1,8 @@
 import { useAuth, getAuthSession } from '../../utils/auth'
-import { useAuthenticatedContext } from '../../utils/context'
+import { useUnverifiedContext } from '../../utils/context'
 import { defineApiHandler } from '../../utils/handler'
 import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
+import { clearVerificationMailFailure } from '../../utils/verification-mail'
 
 /**
  * Sends another confirmation email, to the signed-in address (SPEC 26).
@@ -20,13 +21,31 @@ import { RATE_LIMITS, assertRateLimit } from '../../utils/rate-limit'
  *    for other people, and a profile carrying an address leaks one to every
  *    visitor. Reading it here keeps it server-side.
  *
- * Always answers the same way. Better Auth does not report whether the address
- * was already confirmed, and neither does this: an error for "already done"
- * reads as a fault when it is the outcome the reader wanted.
+ * Reports whether the mail actually went.
+ *
+ * It used to answer `{ sent: true }` whatever happened, and log the failure.
+ * That was defensible while an unconfirmed account still worked: the reader
+ * could do nothing with a provider outage, and the cooldown already paced the
+ * retries. It is not defensible now. Confirming is a wall, so a send that
+ * fails silently is an account that is locked out with no explanation and no
+ * way to tell a slow inbox from an outage -- and the confirmation mail has
+ * failed on this deployment before, on an unverified sending domain.
+ *
+ * "Already confirmed" still answers `sent: true`. That is not a failure, it is
+ * the outcome the reader wanted, and it is the one case where saying nothing
+ * is the honest answer.
+ *
+ * The provider's message is deliberately not forwarded. It is written for an
+ * operator, it can name infrastructure, and the reader's next move is the same
+ * whatever it says.
  */
 export default defineApiHandler(async (event) => {
-  // Establishes the session, and refuses anonymous callers outright.
-  await useAuthenticatedContext(event)
+  /*
+   * The one context that accepts an unconfirmed session, and the reason that
+   * context exists: the endpoint whose whole job is getting somebody past the
+   * wall cannot be behind it.
+   */
+  await useUnverifiedContext(event)
   await assertRateLimit(event, RATE_LIMITS.auth)
 
   const session = await getAuthSession(event)
@@ -39,18 +58,20 @@ export default defineApiHandler(async (event) => {
 
   try {
     await useAuth().api.sendVerificationEmail({
-      body: { email, callbackURL: '/' },
+      // Same destination as the link sent at sign-up; see `register.post.ts`.
+      body: { email, callbackURL: '/onboarding' },
       headers: event.headers,
     })
   } catch (error) {
-    // Logged, not surfaced. A provider outage is ours to fix, and the reader
-    // can do nothing with it but try again -- which the cooldown already
-    // paces. The address is left out: this lands in a shared log.
+    // The address is left out of the log line: this lands in a shared
+    // aggregator, and it says who is currently unable to get in.
     console.error(
       '[revy] confirmation resend failed;',
       error instanceof Error ? error.message : error,
     )
+    return { sent: false }
   }
 
+  await clearVerificationMailFailure(session.user.id)
   return { sent: true }
 })

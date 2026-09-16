@@ -726,7 +726,7 @@ const hasAnswer = computed(() => answer.value !== null)
   background: var(--surface-raised);
   color: var(--text-primary);
   font: inherit;
-  font-size: var(--text-sm);
+  font-size: var(--text-input);
 }
 
 .refine__input:focus {

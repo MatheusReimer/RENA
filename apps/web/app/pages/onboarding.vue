@@ -36,6 +36,7 @@ import type { MediaType, SeedTitle } from '@revy/shared/types'
 definePageMeta({ layout: 'auth' })
 
 const api = useApi()
+const notice = useNotice()
 const auth = useAuthStore()
 const { t } = useI18n()
 
@@ -53,6 +54,32 @@ const scores = ref<Record<string, number>>({})
 const rated = computed(() => Object.keys(scores.value).length)
 
 const saving = ref(false)
+
+/**
+ * Somebody who has already answered does not get asked again.
+ *
+ * This screen used to be reachable from exactly one place -- the moment after
+ * sign-up -- so it could assume a reader who had never seen it. It is now
+ * where a confirmation link lands, and those are followed by people who
+ * confirmed late: an account created under the old soft gate could have
+ * answered these questions months ago and only be confirming the address now.
+ *
+ * `taste` is null only while the question has never been put, and a recorded
+ * skip counts as an answer -- which is the whole point of recording it.
+ *
+ * Client-side, and lazily: the answer cannot change what the server renders,
+ * and holding SSR for a request whose only outcome is a redirect would make
+ * every arrival wait on it.
+ */
+onMounted(async () => {
+  try {
+    const { taste } = await api.taste.get()
+    if (taste) await navigateTo('/')
+  } catch {
+    // Asking again is a wasted minute; refusing to render the screen because
+    // one request failed is a reader stuck on a blank page.
+  }
+})
 
 function toggleKind(kind: MediaType) {
   kinds.value = kinds.value.includes(kind)
@@ -118,10 +145,13 @@ async function rate(title: SeedTitle, score: number | null) {
   scores.value = { ...scores.value, [title.id]: score }
   try {
     await api.ratings.upsert(title.id, score)
-  } catch {
-    // Put the star back rather than showing a score that was never stored.
+  } catch (error) {
+    // Put the star back rather than showing a score that was never stored --
+    // and say why, or the star simply un-fills under the reader's thumb and
+    // looks like the tap missed.
     const { [title.id]: _dropped, ...rest } = scores.value
     scores.value = rest
+    notice.fromError(error)
   }
 }
 
@@ -138,6 +168,17 @@ async function finish(skipped: boolean) {
     })
     // The badge and rating counts in the shell are stale after a rating run.
     await auth.refreshBadges?.()
+  } catch (error) {
+    /*
+     * Reported, and then left anyway.
+     *
+     * Onboarding is skippable by design -- a wall between sign-up and the
+     * product is the most reliable way to lose the sign-up -- so a failed save
+     * must not trap somebody on this screen. But it did mean the answers were
+     * discarded in silence. The notice store outlives the navigation, so the
+     * explanation arrives on the screen they land on.
+     */
+    notice.fromError(error)
   } finally {
     saving.value = false
     await navigateTo('/')

@@ -10,6 +10,7 @@ import { releaseYear } from '@revy/shared/utils'
  */
 const route = useRoute()
 const api = useApi()
+const notice = useNotice()
 const auth = useAuthStore()
 const { absolute } = useShareLink()
 const { t } = useI18n()
@@ -42,6 +43,8 @@ async function removeItem(mediaId: string) {
   try {
     await api.lists.removeItem(list.value.id, mediaId)
     await refresh()
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     removing.value = null
   }
@@ -53,6 +56,8 @@ async function deleteList() {
   try {
     await api.lists.remove(list.value.id)
     await navigateTo('/lists')
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     deleting.value = false
   }
@@ -79,6 +84,8 @@ async function move(index: number, direction: -1 | 1) {
   try {
     await api.lists.reorder(list.value.id, order)
     await refresh()
+  } catch (error) {
+    notice.fromError(error)
   } finally {
     reordering.value = false
   }

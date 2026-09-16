@@ -88,14 +88,24 @@ async function submit() {
   try {
     await auth.register(parsed.data)
     /*
-     * Straight to onboarding, not to the home screen (SPEC 21).
+     * To the wall, not to onboarding (SPEC 21, 26).
      *
-     * This is the one moment a reader has agreed to spend time on us and has
-     * nothing to look at yet -- a home screen with no personalised rows is a
-     * worse first impression than four questions. It is skippable, and the
-     * skip is recorded, so nobody who declines is asked again.
+     * This went straight to `/onboarding` for as long as an unconfirmed
+     * account could use the product. It cannot now: the taste endpoints
+     * refuse an unconfirmed address like every other authenticated route, so
+     * the questions would have been asked and then failed to save.
+     *
+     * Onboarding has not been dropped, it has moved one step later -- the
+     * confirmation link lands on it, which is the same "you have agreed to
+     * spend time on us and have nothing to look at yet" moment this comment
+     * was always about. See `server/api/auth/register.post.ts`.
+     *
+     * Navigated to explicitly rather than left to the global middleware. The
+     * redirect would land in the same place, and a visible bounce through a
+     * screen that immediately throws the reader somewhere else is a worse
+     * first second than going there directly.
      */
-    await navigateTo('/onboarding')
+    await navigateTo('/verify-email')
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.fields) fieldErrors.value = error.fields

@@ -38,7 +38,15 @@
   color: var(--text-secondary);
 }
 
+/*
+ * "Create an account" and "Sign in" measured 19px tall -- the shortest targets
+ * anywhere in the product, on the screens where getting it wrong means not
+ * getting in. WCAG 2.2 asks for 24 (2.5.8).
+ */
 .auth-form__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
   font-weight: 600;
   color: var(--accent);
 }

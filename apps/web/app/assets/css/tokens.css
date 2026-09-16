@@ -150,6 +150,19 @@
   --text-3xl: 2.375rem; /* 38px -- profile name, big numbers */
   --text-4xl: 3.25rem; /* 52px -- hero rating */
 
+  /*
+   * The floor for anything a reader types into.
+   *
+   * Mobile Safari zooms the whole page in when a control under 16px takes
+   * focus, and it does not zoom back out when the keyboard closes -- so a
+   * 15px search field does not merely look small, it leaves the reader on a
+   * page they now have to drag sideways to read, for the rest of the visit.
+   *
+   * `max()` rather than a flat 1rem so this stays a floor: if the scale is
+   * ever retuned upwards, inputs follow it instead of being pinned below it.
+   */
+  --text-input: max(1rem, var(--text-sm));
+
   --leading-tight: 1.2;
   --leading-snug: 1.35;
   --leading-normal: 1.55;

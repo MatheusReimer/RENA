@@ -13,6 +13,7 @@ import { xpProgressRatio } from '@revy/shared/utils'
 const route = useRoute()
 const api = useApi()
 const auth = useAuthStore()
+const notice = useNotice()
 const badgeText = useBadgeText()
 const { t } = useI18n()
 const { share, absolute } = useShareLink()
@@ -114,6 +115,10 @@ watch(tab, async (value) => {
     const result = await api.lists.forUser(username.value)
     lists.value = result.lists
     listsLoaded.value = true
+  } catch (error) {
+    // A tab that stops loading and shows nothing reads as "no lists", which is
+    // a different and wrong answer.
+    notice.fromError(error)
   } finally {
     listsLoading.value = false
   }
@@ -185,6 +190,10 @@ async function openConversation() {
   try {
     const result = await api.conversations.start(profile.value.id)
     await navigateTo(`/messages/${result.conversation.id}`)
+  } catch (error) {
+    // Messaging is gated on a confirmed address and on being friends, so this
+    // is refused often and for reasons the reader can act on.
+    notice.fromError(error)
   } finally {
     messagePending.value = false
   }
@@ -206,6 +215,16 @@ async function runFriendAction() {
       if (friendshipId) await api.friends.respond(friendshipId, 'accept')
     }
     await refresh()
+  } catch (error) {
+    /*
+     * The refusal this whole notice system was built for.
+     *
+     * This was `try`/`finally` with no catch: an unconfirmed address made the
+     * request 403, the spinner stopped, the button said "Add friend" exactly
+     * as before, and nothing anywhere said why. Indistinguishable from a
+     * broken button.
+     */
+    notice.fromError(error)
   } finally {
     friendPending.value = false
   }
