@@ -42,6 +42,16 @@ export const RATE_LIMITS = {
   write: { bucket: 'write', limit: 60, windowSeconds: 60 },
 
   /*
+   * Reporting content or a person.
+   *
+   * Loose enough that somebody meeting a spam run can report all of it, tight
+   * enough that the report button is not itself a way to flood a moderator's
+   * inbox. Duplicate reports of the same thing by the same person are dropped
+   * before this anyway, so this bounds the breadth rather than the repetition.
+   */
+  report: { bucket: 'report', limit: 20, windowSeconds: 3600 },
+
+  /*
    * Sending a direct message (SPEC 12).
    *
    * Its own bucket rather than sharing `write`, and the reason is the shape of

@@ -53,6 +53,42 @@ onBeforeUnmount(() => {
   if (shareTimer) clearTimeout(shareTimer)
 })
 
+/* ------------------------------------------------------------------ *
+ * Reporting and blocking
+ *
+ * Both stores require them of an app carrying other people's writing, and a
+ * profile is where somebody arrives once they have decided a person -- rather
+ * than one thing they wrote -- is the problem.
+ * ------------------------------------------------------------------ */
+
+const reportOpen = ref(false)
+const blocking = ref(false)
+
+/**
+ * Blocking, behind a confirmation.
+ *
+ * It is not destructive -- it undoes from settings -- but it is silent and
+ * mutual, and somebody who tapped it by accident would be left wondering where
+ * a person went. The confirmation says what it will do rather than asking
+ * "are you sure".
+ */
+async function runBlock() {
+  if (!profile.value || blocking.value) return
+  if (!confirm(t('block.confirmBlock', { name: profile.value.displayName }))) return
+
+  blocking.value = true
+  try {
+    await api.moderation.block(profile.value.username)
+    // Their profile is now invisible to this viewer, so staying on it would
+    // mean sitting on a screen that no longer loads.
+    await navigateTo('/')
+  } catch (error) {
+    notice.fromError(error)
+  } finally {
+    blocking.value = false
+  }
+}
+
 /**
  * Signing out, with its failure visible.
  *
@@ -401,12 +437,51 @@ useSeoMeta({
           <UiAppButton
             v-if="profile.isSelf"
             variant="secondary"
+            @click="navigateTo('/settings')"
+          >
+            {{ $t('nav.settings') }}
+          </UiAppButton>
+
+          <UiAppButton
+            v-if="profile.isSelf"
+            variant="secondary"
             :loading="signingOut"
             @click="runSignOut"
           >
             {{ $t('auth.signOut') }}
           </UiAppButton>
+
+          <!--
+            Report and block sit last, and only on somebody else's profile.
+            Quiet by placement rather than by being hidden in a menu: a reader
+            who needs them should not have to hunt, and everybody else reads
+            past them.
+          -->
+          <UiAppButton
+            v-if="!profile.isSelf && auth.isSignedIn"
+            variant="ghost"
+            @click="reportOpen = true"
+          >
+            {{ $t('report.action') }}
+          </UiAppButton>
+
+          <UiAppButton
+            v-if="!profile.isSelf && auth.isSignedIn"
+            variant="ghost"
+            :loading="blocking"
+            @click="runBlock"
+          >
+            {{ $t('block.action') }}
+          </UiAppButton>
         </div>
+
+        <ModerationReportSheet
+          v-if="!profile.isSelf"
+          v-model:open="reportOpen"
+          target-type="user"
+          :target-id="profile.id"
+          :author-name="profile.displayName"
+        />
 
         <!-- One line, self-clearing. Only for the clipboard path: a native
              share sheet was its own feedback. -->

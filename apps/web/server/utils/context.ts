@@ -3,6 +3,7 @@ import {
   createMessageCipher,
   createProviderRegistry,
   type MessageCipher,
+  moderationRepository,
   requireViewer,
   type ServiceContext,
   userRepository,
@@ -131,10 +132,22 @@ export async function isViewerVerified(event: H3Event): Promise<boolean> {
 
 /** Context for a route that works signed in or signed out. */
 export async function useServiceContext(event: H3Event): Promise<ServiceContext> {
+  const db = useDatabase()
+  const viewerId = await resolveViewerId(event)
+
   return {
-    db: useDatabase(),
+    db,
     providers: useProviders(),
-    viewerId: await resolveViewerId(event),
+    viewerId,
+    /*
+     * Resolved here, once, rather than inside each service that needs it.
+     *
+     * A block that applies to the feed and not to search is not a block, and
+     * the way that happens is a service forgetting to ask. One query per
+     * request, usually returning nothing, is the price of it applying
+     * everywhere by default.
+     */
+    blockedUserIds: await moderationRepository.blockedIds(db, viewerId),
     messageCipher: useMessageCipher(),
     // Read from the same place `defineApiHandler` reads it, so a provider
     // call and the row-swapping boundary can never disagree about which

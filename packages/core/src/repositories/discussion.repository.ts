@@ -1,5 +1,6 @@
 import { type Executor, schema } from '@revy/db'
 import { and, asc, desc, eq, inArray, lt, sql } from 'drizzle-orm'
+import { notBlocked } from './filters'
 
 /** Data access for media discussions (SPEC 14). */
 
@@ -60,8 +61,12 @@ export const discussionRepository = {
     mediaId: string,
     limit: number,
     cursor: Date | null,
+    blockedUserIds: readonly string[] = [],
   ) {
-    const scope = eq(schema.discussionThreads.mediaId, mediaId)
+    const scope = and(
+      eq(schema.discussionThreads.mediaId, mediaId),
+      notBlocked(schema.discussionThreads.userId, blockedUserIds),
+    )
 
     return db
       .select({
@@ -138,7 +143,12 @@ export const discussionRepository = {
    * would work too, but at MVP thread sizes it buys nothing over sorting a few
    * hundred rows in memory.
    */
-  async listCommentsForThread(db: Executor, threadId: string, limit: number) {
+  async listCommentsForThread(
+    db: Executor,
+    threadId: string,
+    limit: number,
+    blockedUserIds: readonly string[] = [],
+  ) {
     return db
       .select({
         comment: schema.discussionComments,
@@ -146,7 +156,12 @@ export const discussionRepository = {
       })
       .from(schema.discussionComments)
       .innerJoin(schema.users, eq(schema.users.id, schema.discussionComments.userId))
-      .where(eq(schema.discussionComments.threadId, threadId))
+      .where(
+        and(
+          eq(schema.discussionComments.threadId, threadId),
+          notBlocked(schema.discussionComments.userId, blockedUserIds),
+        ),
+      )
       .orderBy(asc(schema.discussionComments.createdAt))
       .limit(limit)
   },

@@ -1,3 +1,4 @@
+import type { Executor } from '@revy/db'
 import { COMMENT_MAX_DEPTH, PAGE_SIZE_DEFAULT } from '@revy/shared/constants'
 import type { CreateCommentInput, CreateThreadInput } from '@revy/shared/schemas'
 import type {
@@ -71,7 +72,7 @@ export const discussionService = {
       await xpService.award(tx, auth.viewerId, 'create_discussion')
       await badgeService.evaluate(tx, auth.viewerId, 'discussion')
 
-      const author = await requireAuthor(ctx, auth.viewerId)
+      const author = await requireAuthor(tx, auth.viewerId)
 
       return {
         id: thread.id,
@@ -99,6 +100,7 @@ export const discussionService = {
       mediaId,
       limit + 1,
       parseCursor(cursor),
+      ctx.blockedUserIds,
     )
 
     const hasMore = rows.length > limit
@@ -138,6 +140,7 @@ export const discussionService = {
       ctx.db,
       threadId,
       MAX_COMMENTS_PER_THREAD,
+      ctx.blockedUserIds,
     )
 
     const comments: DiscussionComment[] = commentRows.map((entry) => ({
@@ -254,7 +257,7 @@ export const discussionService = {
       return comment
     })
 
-    const author = await requireAuthor(ctx, auth.viewerId)
+    const author = await requireAuthor(ctx.db, auth.viewerId)
 
     return {
       id: created.id,
@@ -340,8 +343,23 @@ function parseCursor(cursor: string | null): Date | null {
 }
 
 /** Loads the author row that every thread and comment response embeds. */
-async function requireAuthor(ctx: ServiceContext, userId: string) {
-  const user = await userRepository.findById(ctx.db, userId)
+/**
+ * The author, read through whichever executor the caller is inside.
+ *
+ * Takes the executor rather than the context, and that is the whole point: it
+ * used to take `ctx` and read through `ctx.db`, which on a connection pool
+ * quietly opened a *second* connection while the first held an open
+ * transaction. On the embedded development database, which has exactly one
+ * connection, that is a deadlock -- the read waits for the transaction to
+ * commit and the transaction waits for the read. Posting a discussion or a
+ * comment hung forever, locally, with no error anywhere.
+ *
+ * Passing the transaction also makes the read correct rather than merely
+ * unblocked: the author is being named in the same breath as the row being
+ * written, so it should be read inside the same transaction.
+ */
+async function requireAuthor(db: Executor, userId: string) {
+  const user = await userRepository.findById(db, userId)
   if (!user) throw errors.userNotFound()
   return toUserSummary(user)
 }

@@ -23,11 +23,21 @@ export const users = pgTable(
   'users',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    /** 1:1 link to the auth provider's user record. */
+    /**
+     * 1:1 link to the auth provider's user record, until the account is deleted.
+     *
+     * Nullable, and `set null` rather than `cascade`, because deleting an
+     * account anonymises this row instead of removing it: the credentials, the
+     * sessions and the address go, and the reviews and discussion comments
+     * stay under "Deleted account" so threads other people replied to remain
+     * readable. Cascading here would take those with it.
+     *
+     * A null therefore means exactly one thing -- this account was deleted --
+     * and `deleted_at` below records when.
+     */
     authUserId: text('auth_user_id')
-      .notNull()
       .unique()
-      .references(() => authUser.id, { onDelete: 'cascade' }),
+      .references(() => authUser.id, { onDelete: 'set null' }),
     username: text('username').notNull(),
     displayName: text('display_name').notNull(),
     avatarUrl: text('avatar_url'),
@@ -63,6 +73,16 @@ export const users = pgTable(
      * somebody earns their first.
      */
     titleBadgeSlug: text('title_badge_slug'),
+    /**
+     * When this account was deleted, or null while it exists.
+     *
+     * The row stays so that what this person wrote in public can stay too --
+     * see `auth_user_id` above. Everything that reads a person rather than a
+     * piece of writing filters on this: search, profiles, friend suggestions,
+     * the member lists. A deleted account is a name on an old comment, not
+     * somebody you can find, follow or message.
+     */
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

@@ -19,6 +19,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{ reply: [commentId: string | null] }>()
 
+const reportOpen = ref(false)
+
 /**
  * Declared explicitly rather than inferred.
  *
@@ -71,7 +73,24 @@ const canReply = computed(() => props.comment.depth < COMMENT_MAX_DEPTH)
           {{ replyingTo === comment.id ? 'Cancel' : 'Reply' }}
         </button>
         <span v-else class="comment__maxed">Nesting limit reached</span>
+
+        <!-- Reporting, on everybody's comment but the reader's own. -->
+        <button
+          v-if="auth.isSignedIn && comment.user.id !== auth.user?.id"
+          type="button"
+          class="comment__report"
+          @click="reportOpen = true"
+        >
+          {{ $t('report.action') }}
+        </button>
       </footer>
+
+      <ModerationReportSheet
+        v-model:open="reportOpen"
+        target-type="comment"
+        :target-id="comment.id"
+        :author-name="comment.user.displayName"
+      />
 
       <slot name="composer" :comment-id="comment.id" />
     </div>
@@ -141,7 +160,20 @@ const canReply = computed(() => props.comment.depth < COMMENT_MAX_DEPTH)
 }
 
 .comment__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
   margin-top: var(--space-2);
+}
+
+.comment__report {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.comment__report:hover {
+  color: var(--text-secondary);
 }
 
 .comment__reply {

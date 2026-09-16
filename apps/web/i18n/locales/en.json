@@ -24,7 +24,8 @@
     "footerTagline": "Made for people who love stories.",
     "friends": "Friends",
     "messages": "Messages",
-    "notificationsTab": "Alerts"
+    "notificationsTab": "Alerts",
+    "settings": "Settings"
   },
   "mediaType": {
     "movie": "Movie",
@@ -147,7 +148,9 @@
     "like": "Like",
     "unlike": "Unlike",
     "chooseSection": "Choose a section",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "cancel": "Cancel",
+    "done": "Done"
   },
   "explore": {
     "heroTitle": "Explore. Discover. Belong.",
@@ -706,6 +709,84 @@
     "providerUnavailable": "That service is not responding. Try again shortly.",
     "internal": "Something went wrong on our end. Try again.",
     "conflict": "That changed while you were working. Refresh and try again.",
-    "gone": "That is no longer available."
+    "gone": "That is no longer available.",
+    "action": "Block",
+    "confirmBlock": "Block {name}? Neither of you will see the other anywhere on RENA, and you can undo this in Settings.",
+    "cannotBlockSelf": "You cannot block yourself.",
+    "cannotReportSelf": "You cannot report your own content."
+  },
+  "report": {
+    "action": "Report",
+    "title": "Report this",
+    "titleFor": "Report {name}'s content",
+    "hint": "We read every report. Nothing is sent to the person you are reporting.",
+    "reasonLegend": "Why are you reporting this?",
+    "reason": {
+      "spam": "Spam or advertising",
+      "harassment": "Harassment or bullying",
+      "hate": "Hate speech",
+      "sexual": "Sexual content",
+      "violence": "Violence or threats",
+      "spoiler": "Unmarked spoilers",
+      "other": "Something else"
+    },
+    "noteLabel": "Anything to add? (optional)",
+    "notePlaceholder": "What should we know?",
+    "submit": "Send report",
+    "sentTitle": "Report sent",
+    "sentBody": "Thank you. We look at reports within a day and will act if this breaks the rules.",
+    "failed": "The report could not be sent. Try again in a moment."
+  },
+  "settings": {
+    "blockedTitle": "Blocked accounts",
+    "blockedHint": "Neither of you sees the other anywhere on RENA.",
+    "blockedEmpty": "You have not blocked anyone.",
+    "unblock": "Unblock",
+    "legalTitle": "Legal",
+    "legalHint": "What we collect, why, and what you can ask us to do with it.",
+    "deleteTitle": "Delete account",
+    "deleteHint": "This cannot be undone.",
+    "deleteKeeps": "Your reviews and discussion comments stay, under \"Deleted account\", so conversations others joined remain readable.",
+    "deleteRemoves": "Your profile, library, lists, messages, friends and sign-in details are deleted.",
+    "deleteFinal": "Your email address is freed, and you can sign up again with it.",
+    "deleteAction": "Delete my account",
+    "deleteConfirmLabel": "Type {username} to confirm",
+    "deleteConfirm": "Delete forever",
+    "deleteFailed": "The account could not be deleted. Try again in a moment."
+  },
+  "legal": {
+    "privacy": "Privacy",
+    "updated": "Last updated {date}",
+    "privacyIntro": "{brand} is a place to rate and discuss what you watch, read and play. This page says what we store, why, and how to get rid of it.",
+    "collectTitle": "What we collect",
+    "collectBody": "Only what the product needs to work:",
+    "collectItem1": "Your email address and password, to sign you in. The password is stored hashed and is never readable by us.",
+    "collectItem2": "Your profile: username, display name, bio and language.",
+    "collectItem3": "What you do here: ratings, reviews, lists, discussions, friends and direct messages.",
+    "collectItem4": "Ordinary server logs, which include IP addresses, kept briefly to keep the service running and to stop abuse.",
+    "useTitle": "What we use it for",
+    "useBody": "Running the product, and nothing else:",
+    "useItem1": "Showing your ratings, reviews and lists to whoever you chose to show them to.",
+    "useItem2": "Recommending titles based on what you have rated and told us you like.",
+    "useItem3": "Sending you the emails the account needs: confirming your address and resetting your password.",
+    "useItem4": "There is no advertising, no profiling for advertisers and no tracking across other sites.",
+    "shareTitle": "Who else sees it",
+    "shareBody": "A small number of services we depend on, each doing one job:",
+    "shareItem1": "Our hosting and database providers, which store the data on our behalf.",
+    "shareItem2": "Our email provider, which sends account emails.",
+    "shareItem3": "Catalogue providers are asked about titles, never about you: a search sends the words you typed, never who typed them.",
+    "keepTitle": "How long we keep it",
+    "keepBody": "As long as the account exists, unless you remove things sooner:",
+    "keepItem1": "Delete a review, list or message and it is gone.",
+    "keepItem2": "Direct messages are stored encrypted, and are readable only by the people in the conversation.",
+    "keepItem3": "Delete your account and your profile and private data go; reviews and comments stay under \"Deleted account\" so conversations others joined remain readable.",
+    "rightsTitle": "What you can ask for",
+    "rightsBody": "Whether or not the law where you live requires it:",
+    "rightsItem1": "A copy of what we hold about you.",
+    "rightsItem2": "A correction, which for most things you can make yourself in the app.",
+    "rightsItem3": "Deletion, which you can do yourself in Settings at any time.",
+    "rightsItem4": "An answer to any question about the above, from a person.",
+    "contactTitle": "Contact",
+    "contactBody": "Questions about this page, or about a report you filed, reach us here:"
   }
 }

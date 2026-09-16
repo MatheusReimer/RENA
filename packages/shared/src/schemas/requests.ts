@@ -10,6 +10,9 @@ import {
   MESSAGE_PAGE_SIZE,
   MESSAGE_POLL_MAX,
   MEDIA_TYPES,
+  REPORT_NOTE_MAX,
+  REPORT_REASONS,
+  REPORT_TARGETS,
 } from '../constants'
 import {
   bioSchema,
@@ -420,3 +423,32 @@ export const seedQuerySchema = z.object({
     .transform((value) => (value ? value.split(',').map((part) => part.trim()).filter(Boolean) : [])),
   limit: z.coerce.number().int().min(1).max(60).default(24),
 })
+
+/**
+ * Reporting a piece of content or a person.
+ *
+ * `targetType` decides what `targetId` points at, and the server resolves the
+ * author from it rather than accepting one: a client that can name the
+ * reported person is a client that can get anybody reported.
+ */
+export const reportSchema = z.object({
+  targetType: z.enum(REPORT_TARGETS),
+  targetId: uuidSchema,
+  reason: z.enum(REPORT_REASONS),
+  note: userText(1, REPORT_NOTE_MAX, 'Note').optional(),
+})
+
+export type ReportInput = z.infer<typeof reportSchema>
+
+/**
+ * Deleting your own account.
+ *
+ * The username has to be typed back, and it is checked on the server as well
+ * as in the form. This is the one irreversible action in the product, and the
+ * confirmation is the difference between meaning it and having tapped twice.
+ */
+export const deleteAccountSchema = z.object({
+  confirmUsername: z.string().min(1),
+})
+
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>

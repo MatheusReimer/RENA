@@ -1,5 +1,6 @@
 import { type Executor, schema } from '@revy/db'
 import { and, count, eq, ilike, inArray, or, sql } from 'drizzle-orm'
+import { notBlocked, notDeleted } from './filters'
 
 /** Data access for the user domain (SPEC 6, 22). */
 
@@ -66,13 +67,29 @@ export const userRepository = {
     return row ?? null
   },
 
-  /** People search for the search screen's People tab (SPEC 20). */
-  async search(db: Executor, query: string, limit: number): Promise<UserRow[]> {
+  /**
+   * People search for the search screen's People tab (SPEC 20).
+   *
+   * Never returns a blocked account or a deleted one. A deleted account is a
+   * name on an old comment, not somebody who can still be found and opened.
+   */
+  async search(
+    db: Executor,
+    query: string,
+    limit: number,
+    blockedUserIds: readonly string[] = [],
+  ): Promise<UserRow[]> {
     const pattern = `%${query}%`
     return db
       .select()
       .from(schema.users)
-      .where(or(ilike(schema.users.username, pattern), ilike(schema.users.displayName, pattern)))
+      .where(
+        and(
+          or(ilike(schema.users.username, pattern), ilike(schema.users.displayName, pattern)),
+          notBlocked(schema.users.id, blockedUserIds),
+          notDeleted(),
+        ),
+      )
       .limit(limit)
   },
 

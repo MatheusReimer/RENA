@@ -53,16 +53,23 @@ export const userService = {
     return row ? toUser(row) : null
   },
 
-  /** The profile screen payload (SPEC 22). */
+  /**
+   * The profile screen payload (SPEC 22).
+   *
+   * A blocked profile is reported as missing rather than refused, in both
+   * directions. "This person blocked you" is a message that starts arguments,
+   * and "you blocked this person" is already known to whoever blocked them --
+   * they undo it from their own settings, not from the profile they hid.
+   */
   async getProfileByUsername(ctx: ServiceContext, username: string): Promise<UserProfile> {
     const row = await userRepository.findByUsername(ctx.db, username)
-    if (!row) throw errors.userNotFound()
+    if (!row || ctx.blockedUserIds.includes(row.id)) throw errors.userNotFound()
     return buildProfile(ctx, row)
   },
 
   async getProfileById(ctx: ServiceContext, userId: string): Promise<UserProfile> {
     const row = await userRepository.findById(ctx.db, userId)
-    if (!row) throw errors.userNotFound()
+    if (!row || ctx.blockedUserIds.includes(row.id)) throw errors.userNotFound()
     return buildProfile(ctx, row)
   },
 
@@ -83,7 +90,7 @@ export const userService = {
   async search(ctx: ServiceContext, query: string, limit: number): Promise<UserSummary[]> {
     const trimmed = query.trim()
     if (trimmed.length === 0) return []
-    const rows = await userRepository.search(ctx.db, trimmed, limit)
+    const rows = await userRepository.search(ctx.db, trimmed, limit, ctx.blockedUserIds)
     return rows.map(toUserSummary)
   },
 

@@ -13,6 +13,8 @@ const props = defineProps<{ review: Review }>()
 const api = useApi()
 const auth = useAuthStore()
 
+const reportOpen = ref(false)
+
 const liked = ref(props.review.likedByViewer)
 const likeCount = ref(props.review.likeCount)
 const pending = ref(false)
@@ -114,11 +116,45 @@ async function toggleLike() {
           <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
         </svg>
       </NuxtLink>
+
+      <!--
+        Reporting, on every review that is not the reader's own.
+
+        A quiet text button rather than an icon: an icon for this is either
+        mistaken for something else or hunted for, and neither is what somebody
+        needs from it. Signed-out readers do not see it, because a report has
+        to come from an account for a moderator to act on it.
+      -->
+      <button
+        v-if="auth.isSignedIn && review.user.id !== auth.user?.id"
+        type="button"
+        class="review__report"
+        @click="reportOpen = true"
+      >
+        {{ $t('report.action') }}
+      </button>
     </footer>
+
+    <ModerationReportSheet
+      v-model:open="reportOpen"
+      target-type="review"
+      :target-id="review.id"
+      :author-name="review.user.displayName"
+    />
   </article>
 </template>
 
 <style scoped>
+.review__report {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.review__report:hover {
+  color: var(--text-secondary);
+}
+
 .review__permalink {
   display: inline-grid;
   place-items: center;
@@ -176,6 +212,9 @@ async function toggleLike() {
 }
 
 .review__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   margin-top: var(--space-3);
 }
 

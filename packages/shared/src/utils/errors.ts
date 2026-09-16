@@ -72,6 +72,8 @@ export function statusForCode(code: ApiErrorCode): number {
     case 'MEDIA_NOT_RELEASED':
     case 'USERNAME_RESERVED':
     case 'CANNOT_FRIEND_SELF':
+    case 'CANNOT_BLOCK_SELF':
+    case 'CANNOT_REPORT_SELF':
     case 'COMMENT_DEPTH_EXCEEDED':
     case 'NOT_FRIENDS':
       return 422

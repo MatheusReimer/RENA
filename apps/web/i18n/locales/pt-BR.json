@@ -24,7 +24,8 @@
     "footerTagline": "Feito para quem ama histórias.",
     "friends": "Amigos",
     "messages": "Mensagens",
-    "notificationsTab": "Avisos"
+    "notificationsTab": "Avisos",
+    "settings": "Configurações"
   },
   "mediaType": {
     "movie": "Filme",
@@ -147,7 +148,9 @@
     "like": "Curtir",
     "unlike": "Descurtir",
     "chooseSection": "Escolha uma seção",
-    "dismiss": "Dispensar"
+    "dismiss": "Dispensar",
+    "cancel": "Cancelar",
+    "done": "Pronto"
   },
   "explore": {
     "heroTitle": "Explore. Descubra. Pertença.",
@@ -706,6 +709,84 @@
     "providerUnavailable": "Esse serviço não está respondendo. Tente daqui a pouco.",
     "internal": "Algo deu errado do nosso lado. Tente de novo.",
     "conflict": "Isso mudou enquanto você trabalhava. Atualize e tente de novo.",
-    "gone": "Isso não está mais disponível."
+    "gone": "Isso não está mais disponível.",
+    "action": "Bloquear",
+    "confirmBlock": "Bloquear {name}? Vocês dois deixam de se ver em qualquer lugar da RENA, e você pode desfazer isso em Configurações.",
+    "cannotBlockSelf": "Você não pode bloquear a si mesmo.",
+    "cannotReportSelf": "Você não pode denunciar o próprio conteúdo."
+  },
+  "report": {
+    "action": "Denunciar",
+    "title": "Denunciar isto",
+    "titleFor": "Denunciar o conteúdo de {name}",
+    "hint": "Lemos todas as denúncias. Nada é enviado para a pessoa denunciada.",
+    "reasonLegend": "Por que você está denunciando?",
+    "reason": {
+      "spam": "Spam ou propaganda",
+      "harassment": "Assédio ou perseguição",
+      "hate": "Discurso de ódio",
+      "sexual": "Conteúdo sexual",
+      "violence": "Violência ou ameaças",
+      "spoiler": "Spoiler sem aviso",
+      "other": "Outro motivo"
+    },
+    "noteLabel": "Quer acrescentar algo? (opcional)",
+    "notePlaceholder": "O que precisamos saber?",
+    "submit": "Enviar denúncia",
+    "sentTitle": "Denúncia enviada",
+    "sentBody": "Obrigado. Analisamos as denúncias em até um dia e agimos se isso quebrar as regras.",
+    "failed": "Não foi possível enviar a denúncia. Tente de novo em instantes."
+  },
+  "settings": {
+    "blockedTitle": "Contas bloqueadas",
+    "blockedHint": "Vocês dois não se veem em nenhum lugar da RENA.",
+    "blockedEmpty": "Você não bloqueou ninguém.",
+    "unblock": "Desbloquear",
+    "legalTitle": "Jurídico",
+    "legalHint": "O que guardamos, por quê, e o que você pode pedir que a gente faça com isso.",
+    "deleteTitle": "Excluir conta",
+    "deleteHint": "Isso não pode ser desfeito.",
+    "deleteKeeps": "Suas resenhas e comentários continuam, como \"Conta excluída\", para que as conversas de que outras pessoas participaram sigam legíveis.",
+    "deleteRemoves": "Seu perfil, biblioteca, listas, mensagens, amizades e dados de acesso são apagados.",
+    "deleteFinal": "Seu e-mail fica livre, e você pode criar outra conta com ele.",
+    "deleteAction": "Excluir minha conta",
+    "deleteConfirmLabel": "Digite {username} para confirmar",
+    "deleteConfirm": "Excluir para sempre",
+    "deleteFailed": "Não foi possível excluir a conta. Tente de novo em instantes."
+  },
+  "legal": {
+    "privacy": "Privacidade",
+    "updated": "Atualizado em {date}",
+    "privacyIntro": "A {brand} é um lugar para avaliar e conversar sobre o que você assiste, lê e joga. Esta página diz o que guardamos, por quê, e como se livrar disso.",
+    "collectTitle": "O que coletamos",
+    "collectBody": "Só o que o produto precisa para funcionar:",
+    "collectItem1": "Seu e-mail e sua senha, para entrar. A senha é guardada como hash e nunca é legível por nós.",
+    "collectItem2": "Seu perfil: nome de usuário, nome de exibição, bio e idioma.",
+    "collectItem3": "O que você faz aqui: notas, resenhas, listas, discussões, amizades e mensagens diretas.",
+    "collectItem4": "Registros comuns de servidor, que incluem endereços de IP, mantidos por pouco tempo para manter o serviço no ar e conter abusos.",
+    "useTitle": "Para que usamos",
+    "useBody": "Para o produto funcionar, e nada além disso:",
+    "useItem1": "Mostrar suas notas, resenhas e listas para quem você escolheu mostrar.",
+    "useItem2": "Recomendar títulos a partir do que você avaliou e do que nos contou que gosta.",
+    "useItem3": "Enviar os e-mails que a conta exige: confirmação de endereço e redefinição de senha.",
+    "useItem4": "Não há publicidade, nem perfis para anunciantes, nem rastreamento em outros sites.",
+    "shareTitle": "Quem mais vê",
+    "shareBody": "Um punhado de serviços de que dependemos, cada um com uma função:",
+    "shareItem1": "Nossos provedores de hospedagem e de banco de dados, que armazenam os dados por nós.",
+    "shareItem2": "Nosso provedor de e-mail, que envia os e-mails da conta.",
+    "shareItem3": "Os catálogos são consultados sobre títulos, nunca sobre você: uma busca envia o que foi digitado, nunca quem digitou.",
+    "keepTitle": "Por quanto tempo guardamos",
+    "keepBody": "Enquanto a conta existir, a menos que você apague antes:",
+    "keepItem1": "Apagou uma resenha, lista ou mensagem, acabou.",
+    "keepItem2": "Mensagens diretas são guardadas criptografadas e só podem ser lidas por quem está na conversa.",
+    "keepItem3": "Ao excluir a conta, seu perfil e seus dados privados vão embora; resenhas e comentários ficam como \"Conta excluída\", para que as conversas de outras pessoas sigam legíveis.",
+    "rightsTitle": "O que você pode pedir",
+    "rightsBody": "Independentemente de a lei do seu país exigir:",
+    "rightsItem1": "Uma cópia do que guardamos sobre você.",
+    "rightsItem2": "Uma correção, que para quase tudo você mesmo faz no app.",
+    "rightsItem3": "A exclusão, que você faz sozinho em Configurações quando quiser.",
+    "rightsItem4": "Uma resposta de uma pessoa a qualquer dúvida sobre o que está acima.",
+    "contactTitle": "Contato",
+    "contactBody": "Dúvidas sobre esta página, ou sobre uma denúncia que você enviou, chegam aqui:"
   }
 }

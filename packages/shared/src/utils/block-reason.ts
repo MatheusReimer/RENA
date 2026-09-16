@@ -74,6 +74,8 @@ const REASONS: Partial<Record<ApiErrorCode, BlockReason>> = {
   ALREADY_FRIENDS: { messageKey: 'block.alreadyFriends' },
   FRIEND_REQUEST_EXISTS: { messageKey: 'block.requestPending' },
   CANNOT_FRIEND_SELF: { messageKey: 'block.cannotFriendSelf' },
+  CANNOT_BLOCK_SELF: { messageKey: 'block.cannotBlockSelf' },
+  CANNOT_REPORT_SELF: { messageKey: 'block.cannotReportSelf' },
   REVIEW_ALREADY_EXISTS: { messageKey: 'block.reviewExists' },
   COMMENT_DEPTH_EXCEEDED: { messageKey: 'block.commentDepth' },
   MEDIA_NOT_RELEASED: { messageKey: 'block.notReleased' },

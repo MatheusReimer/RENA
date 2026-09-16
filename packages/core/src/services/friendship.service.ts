@@ -33,7 +33,15 @@ export const friendshipService = {
     }
 
     const target = await userRepository.findById(auth.db, targetUserId)
-    if (!target) throw errors.userNotFound()
+    if (!target || target.deletedAt) throw errors.userNotFound()
+
+    /*
+     * A blocked pair cannot become friends, in either direction, and the
+     * refusal is the same "no such person" a stranger would get -- for the
+     * same reason the profile is: a request that fails differently is a way to
+     * find out you have been blocked.
+     */
+    if (auth.blockedUserIds.includes(targetUserId)) throw errors.userNotFound()
 
     const existing = await friendshipRepository.findBetween(auth.db, auth.viewerId, targetUserId)
 

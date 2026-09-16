@@ -142,6 +142,16 @@ export default defineNuxtConfig({
     mailResendApiKey: process.env.MAIL_RESEND_API_KEY ?? '',
     mailFrom: process.env.MAIL_FROM ?? '',
     /*
+     * Where reports of content go.
+     *
+     * Both stores require a way to report what other people wrote, and a
+     * decision within a day of it being reported. The row is the record; this
+     * address is what makes somebody look. Unset, reports are still stored and
+     * the server logs that nobody was told -- which is the honest failure, and
+     * the one worth noticing in a log.
+     */
+    moderationEmail: process.env.MODERATION_EMAIL ?? '',
+    /*
      * Anthropic, for described-request discovery (SPEC 40).
      *
      * Server-only, and the one credential here where absence is a normal

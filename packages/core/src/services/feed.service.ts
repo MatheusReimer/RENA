@@ -65,6 +65,7 @@ async function loadActivities(
     limit + 1,
     parseCursor(cursor),
     type,
+    ctx.blockedUserIds,
   )
 
   const hasMore = rows.length > limit

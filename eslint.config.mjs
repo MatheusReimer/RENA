@@ -15,6 +15,11 @@ export default tseslint.config(
     ignores: [
       '**/node_modules/**',
       '**/.nuxt/**',
+      // The phone build's own build directory, and the copy of its output that
+      // Capacitor syncs into the native project. Both are generated.
+      '**/.nuxt-native/**',
+      '**/android/app/src/main/assets/**',
+      '**/android/app/build/**',
       '**/.output/**',
       '**/dist/**',
       '**/migrations/**',

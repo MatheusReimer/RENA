@@ -31,6 +31,15 @@ export const VERIFY_WALL_OPEN_PATHS: readonly string[] = [
   '/signup',
   '/forgot-password',
   '/reset-password',
+  /*
+   * Settings, because deleting your account lives there.
+   *
+   * Somebody who signed up with a typo in their address can never confirm it,
+   * and both stores require that leaving is possible from inside the app. A
+   * wall that also blocks the exit would leave them holding an account they
+   * can neither use nor remove.
+   */
+  '/settings',
 ]
 
 export interface WallState {

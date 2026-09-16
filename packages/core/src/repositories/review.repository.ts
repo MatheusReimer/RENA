@@ -1,5 +1,6 @@
 import { type Executor, schema } from '@revy/db'
 import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm'
+import { notBlocked } from './filters'
 
 /** Data access for reviews (SPEC 11). */
 
@@ -61,7 +62,13 @@ export const reviewRepository = {
     mediaId: string,
     limit: number,
     cursor: Date | null,
+    blockedUserIds: readonly string[] = [],
   ) {
+    const scope = and(
+      eq(schema.reviews.mediaId, mediaId),
+      notBlocked(schema.reviews.userId, blockedUserIds),
+    )
+
     return db
       .select({
         review: schema.reviews,
@@ -71,11 +78,7 @@ export const reviewRepository = {
       .from(schema.reviews)
       .innerJoin(schema.users, eq(schema.users.id, schema.reviews.userId))
       .leftJoin(schema.ratings, eq(schema.ratings.id, schema.reviews.ratingId))
-      .where(
-        cursor
-          ? and(eq(schema.reviews.mediaId, mediaId), lt(schema.reviews.createdAt, cursor))
-          : eq(schema.reviews.mediaId, mediaId),
-      )
+      .where(cursor ? and(scope, lt(schema.reviews.createdAt, cursor)) : scope)
       .orderBy(desc(schema.reviews.createdAt))
       .limit(limit)
   },

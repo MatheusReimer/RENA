@@ -52,6 +52,7 @@ import type {
   MessageQueryInput,
   NotificationQueryInput,
   UpdateListInput,
+  ReportInput,
   UpdateProfileInput,
 } from '@revy/shared/schemas'
 
@@ -470,6 +471,49 @@ export function useApi() {
 
       updateProfile: (body: UpdateProfileInput) =>
         request<{ user: UserProfile }>('/api/users/me', { method: 'PATCH', body }),
+    },
+
+    /* -------------------------------------------------------------- *
+     * Blocking, reporting and leaving
+     *
+     * Grouped together because they are one requirement rather than three
+     * features: both stores refuse an app that carries other people's writing
+     * without a way to report it, block whoever wrote it, and delete your own
+     * account from inside the app.
+     * -------------------------------------------------------------- */
+    moderation: {
+      report: (body: ReportInput) => request<{ received: true }>('/api/reports', {
+        method: 'POST',
+        body,
+      }),
+
+      block: (username: string) =>
+        request<{ blocked: boolean }>(`/api/users/${encodeURIComponent(username)}/block`, {
+          method: 'POST',
+          body: {},
+        }),
+
+      unblock: (username: string) =>
+        request<{ blocked: boolean }>(`/api/users/${encodeURIComponent(username)}/block`, {
+          method: 'DELETE',
+        }),
+
+      /** Who the viewer has blocked, for the settings screen to undo from. */
+      blocked: () => request<{ users: UserSummary[] }>('/api/me/blocks'),
+    },
+
+    account: {
+      /**
+       * Deletes the viewer's own account, for good.
+       *
+       * The username goes with it and is checked again on the server: this is
+       * the one irreversible thing in the product.
+       */
+      remove: (confirmUsername: string) =>
+        request<{ deleted: true }>('/api/me', {
+          method: 'DELETE',
+          body: { confirmUsername },
+        }),
     },
 
     friends: {

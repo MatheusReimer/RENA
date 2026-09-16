@@ -1,6 +1,7 @@
 import { type Executor, schema } from '@revy/db'
 import type { ActivityType } from '@revy/shared/types'
 import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm'
+import { notBlocked } from './filters'
 
 /** Data access for the activity feed (SPEC 13, 18). */
 
@@ -58,12 +59,14 @@ export const activityRepository = {
     limit: number,
     cursor: Date | null,
     type?: ActivityType,
+    blockedUserIds: readonly string[] = [],
   ) {
     if (userIds.length === 0) return []
 
     const scope = and(
       inArray(schema.activities.userId, userIds),
       type ? eq(schema.activities.type, type) : undefined,
+      notBlocked(schema.activities.userId, blockedUserIds),
     )
 
     return db

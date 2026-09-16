@@ -200,6 +200,7 @@ export const reviewService = {
       mediaId,
       limit + 1,
       parseCursor(cursor),
+      ctx.blockedUserIds,
     )
 
     // Fetching one extra row is how we know whether another page exists

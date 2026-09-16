@@ -393,6 +393,19 @@ async function assertCanMessage(
   auth: AuthenticatedContext,
   targetUserId: string,
 ): Promise<void> {
+  /*
+   * A block ends the conversation, in both directions.
+   *
+   * Checked here rather than in `start` alone, because this guard is also what
+   * `send` calls: blocking somebody has to stop the messages they were already
+   * exchanging, not merely stop a new thread being opened.
+   *
+   * Blocking removes the friendship too, so `canMessage` would refuse most of
+   * these anyway -- but "most" is not a protection, and the two rules answer
+   * different questions.
+   */
+  if (auth.blockedUserIds.includes(targetUserId)) throw errors.userNotFound()
+
   if (!(await canMessage(auth, targetUserId))) throw errors.notFriends()
 }
 

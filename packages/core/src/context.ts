@@ -31,6 +31,19 @@ export interface ServiceContext {
    */
   messageCipher: MessageCipher | null
   /**
+   * Everyone invisible to this viewer, in both directions.
+   *
+   * Blocking is mutual: somebody the viewer blocked and somebody who blocked
+   * the viewer are equally absent, so one list covers both. Resolved once per
+   * request and handed to the queries that list other people's writing --
+   * feeds, reviews, comments, search, members, conversations.
+   *
+   * On the context rather than fetched per service, because a block that
+   * applies on the feed and not in search is not a block. Empty for a
+   * signed-out reader, who has blocked nobody and is invisible to nobody.
+   */
+  blockedUserIds: readonly string[]
+  /**
    * The language this request wants its catalogue text in (SPEC 31).
    *
    * Already applied to stored rows by `localiseMedia` at the API boundary.
